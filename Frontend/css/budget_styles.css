@@ -1,0 +1,342 @@
+/* ======================= */
+/* :ROOT - משתני צבעים (WedManage Dark Style) */
+/* ======================= */
+:root {
+    --primary-color: #0A1121; /* רקע כהה מאוד */
+    --secondary-color: #16243D; /* רקע לכרטיסים/Header */
+    --accent-color: #B8860B; /* זהב (הדגשה ראשית) */
+    --accent-light: #5c5f4d; /* צבע הדגשה משני/בהיר יותר */
+    --text-color: #EAECEF; /* טקסט בהיר ראשי */
+    --text-light: #A3B1C6; /* טקסט אפור בהיר משני */
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); /* צל עמוק */
+    --hover-card: #1D3150; /* צבע ריחוף כהה */
+    --border-radius: 12px;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+}
+
+/* ======================= */
+/* GLOBAL STYLES          */
+/* ======================= */
+* {
+    box-sizing: border-box;
+    font-family: 'Heebo', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: var(--primary-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    direction: rtl;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ======================= */
+/* HEADER                 */
+/* ======================= */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 50px;
+    background: var(--secondary-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+}
+
+.header .logo {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--accent-light);
+}
+
+.back-btn {
+    background: transparent;
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 12px 22px;
+    border-radius: var(--border-radius);
+    font-weight: 700;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.back-btn:hover {
+    background: var(--accent-color);
+    color: var(--primary-color);
+    box-shadow: 0 0 15px var(--accent-color);
+    transform: scale(1.05);
+}
+
+/* ======================= */
+/* MAIN CONTENT           */
+/* ======================= */
+.main-content {
+    padding: 60px 20px 80px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1, h2, h3 {
+    margin-bottom: 30px;
+    color: var(--text-color);
+}
+
+h1 i, h2 i {
+    margin-inline-end: 10px;
+}
+
+h2 {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent-color);
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--secondary-color);
+    width: fit-content;
+    margin: 0 auto 30px auto;
+}
+
+/* ======================= */
+/* SUMMARY CARDS          */
+/* ======================= */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px; 
+    margin-bottom: 50px;
+}
+
+.summary-card {
+    background: var(--secondary-color);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-right: 5px solid var(--accent-color);
+}
+
+.summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9);
+}
+
+.summary-card h3 {
+    color: var(--accent-light);
+    font-size: 18px;
+    margin: 0 0 15px 0;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+}
+
+.summary-card .value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-color);
+}
+.summary-card.budget .value { color: var(--accent-color); }
+.summary-card.spent .value { color: var(--danger-color); }
+.summary-card.remaining .value { color: var(--success-color); }
+
+
+/* ======================= */
+/* PROGRESS BAR           */
+/* ======================= */
+.progress-section {
+    margin-bottom: 50px;
+}
+
+.progress-bar-container {
+    height: 30px;
+    background: var(--hover-card);
+    border-radius: var(--border-radius); 
+    overflow: hidden;
+    margin-top: 15px;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-light) 0%, var(--accent-color) 100%);
+    width: 0%; 
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-inline-end: 15px; 
+    color: var(--primary-color);
+    font-weight: 700;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 10px rgba(184, 134, 11, 0.7);
+}
+
+/* ======================= */
+/* EXPENSE FORM (מבנה מעוצב ופשוט יותר) */
+/* ======================= */
+.input-form-section {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto 60px auto;
+}
+
+/* עיצוב כותרת הטופס */
+.input-form-section > h2 { 
+    color: var(--accent-color) !important;
+    font-size: 32px;
+    text-align: right !important;
+    margin-bottom: 20px;
+    padding-right: 0;
+    width: auto !important;
+    border-bottom: none !important;
+}
+
+.expense-form {
+    background: var(--secondary-color); /* רקע כהה */
+    border-radius: var(--border-radius);
+    padding: 40px;
+    box-shadow: var(--card-shadow);
+    border-top: 5px solid var(--accent-color);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+/* FORM GROUPS */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+/* הכלל החשוב שמבטיח ש-full-width יעבוד ב-Grid */
+.form-group.full-width {
+    grid-column: 1 / span 2; 
+}
+
+.expense-form label {
+    font-weight: 500;
+    color: var(--text-light);
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.expense-form input,
+.expense-form select,
+.expense-form textarea {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--hover-card); 
+    background: var(--primary-color); 
+    color: var(--text-color); 
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.expense-form input:focus,
+.expense-form select:focus,
+.expense-form textarea:focus {
+    border-color: var(--accent-color);
+    outline: none;
+    box-shadow: 0 0 5px rgba(184, 134, 11, 0.5);
+}
+
+.add-expense-btn {
+    grid-column: 1 / span 2; /* כפתור תמיד תופס שורה מלאה */
+    padding: 15px;
+    background: var(--accent-color);
+    border: none;
+    border-radius: var(--border-radius);
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.4s;
+    margin-top: 10px;
+}
+
+.add-expense-btn:hover {
+    background: var(--accent-light);
+    transform: scale(1.01);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ======================= */
+/* EXPENSE TABLE          */
+/* ======================= */
+.expenses-table {
+    width: 100%;
+    border-collapse: separate; 
+    border-spacing: 0;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+}
+
+.expenses-table th,
+.expenses-table td {
+    padding: 18px;
+    border-bottom: 1px solid var(--hover-card);
+    text-align: right; 
+}
+
+.expenses-table th {
+    background: var(--accent-color);
+    color: var(--primary-color);
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+}
+
+.expenses-table td {
+    background: var(--secondary-color);
+    color: var(--text-light);
+    transition: background-color 0.3s ease;
+}
+
+.expenses-table tr:hover td {
+    background-color: var(--hover-card);
+}
+.expenses-table tr:last-child td {
+    border-bottom: none;
+}
+
+
+.expenses-table .paid {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.expenses-table .pending {
+    color: var(--danger-color);
+    font-weight: 600;
+}
+
+/* ======================= */
+/* MEDIA QUERIES          */
+/* ======================= */
+@media (max-width: 768px) {
+    .main-content { padding: 40px 15px; }
+    .header { padding: 20px 20px; }
+    
+    .expense-form {
+        grid-template-columns: 1fr;
+        padding: 25px;
+    }
+
+    /* בטל את ה-full-width בנייד, כדי שגם שדות ארוכים יתנהגו כרגיל */
+    .form-group.full-width {
+        grid-column: span 1 !important;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .expenses-table th, .expenses-table td { 
+        padding: 12px 10px;
+        font-size: 14px;
+    }
+}

@@ -158,6 +158,30 @@
     margin-top: 5px;
     height: 15px; /* שומר מקום כדי למנוע קפיצות בפריסה */
     }
+
+    /* --- סגנונות חדשים לכפתור העין --- */
+.password-wrapper {
+  position: relative; /* חיוני למיקום הכפתור באופן יחסי לשדה */
+}
+
+.toggle-password-btn {
+  position: absolute;
+  left: 5px; 
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 18px;
+  color: #777;
+  transition: color 0.2s;
+}
+
+.toggle-password-btn:hover {
+  color: #007bff;
+}
+
   </style>
 </head>
 <body>
@@ -171,7 +195,7 @@
       <span class="error-message" id="emailError"></span> 
     </div>
 
-    <div class="input-container">
+  <div class="input-container">
       <label for="password">סיסמה:</label>
       <div class="password-wrapper">
         <input type="password" id="password" name="password" required placeholder="••••••••">
@@ -179,6 +203,12 @@
       </div>
       <span class="error-message" id="passwordError"></span> 
     </div>
+  
+  <span class="error-message" id="passwordError"></span> 
+</div>
+  
+  <span class="error-message" id="passwordError"></span> 
+</div>
 
     <button type="submit">התחבר</button>
 

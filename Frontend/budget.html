@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 תקציב ובקרה פיננסית | WedManage</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/budget_styles.css"> 
+
+</head>
+
+<body>
+
+    <header class="header">
+        <a href="homePage.html" class="logo">WedManage</a>
+        <button class="back-btn" onclick="window.history.back();">
+            <i class="fas fa-arrow-right"></i> חזרה ללוח הבקרה
+        </button>
+    </header>
+
+    <div class="main-content">
+        <h1><i class="fas fa-funnel-dollar"></i> תקציב ובקרה פיננסית</h1>
+
+        <div class="summary-grid">
+            <div class="summary-card budget">
+                <h3>תקציב כולל שהוגדר <button id="editBudgetBtn" class="edit-btn"><i class="fas fa-edit"></i></button></h3>
+                <span class="value" id="totalBudget">₪ 250,000</span>
+                <div id="budgetInputArea" style="display: none; margin-top: 10px;">
+                    <input type="number" id="newBudgetAmount" placeholder="הזן סכום חדש" min="10000" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; width: 100%; margin-bottom: 5px;">
+                    <button id="saveBudgetBtn" class="add-expense-btn" style="width: 100%; padding: 8px; font-size: 14px; margin-top: 0; background: var(--success-color);">שמור</button>
+                </div>
+            </div>
+            <div class="summary-card spent">
+                <h3>סה"כ הוצאות ששולמו</h3>
+                <span class="value" id="totalPaid">₪ 0</span>
+            </div>
+            <div class="summary-card remaining">
+                <h3>תקציב פנוי נותר</h3>
+                <span class="value" id="remainingBudget">₪ 250,000</span>
+            </div>
+            <div class="summary-card remaining">
+                <h3>סה"כ הוצאות שטרם שולמו</h3>
+                <span class="value" id="totalPending">₪ 0</span>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <h3 style="color: var(--text-color); font-weight: 600;"><span id="progressText">% מהתקציב נוצל: 0%</span></h3>
+            <div class="progress-bar-container">
+                <div id="progressBar" class="progress-bar" style="width: 0%;">
+                    <span id="progressLabel" class="progress-label">0%</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-form-section">
+            
+            <div class="input-container"> 
+                <div class="input-header">
+                    <h2><i class="fas fa-plus-circle"></i> הוספת הוצאה חדשה</h2>
+                    <p>מלא את הפרטים לשמירה ומעקב. כל השדות המסומנים נדרשים.</p>
+                </div>
+
+                <form id="expenseForm" class="expense-form">
+                    
+                    <div class="form-group">
+                        <label for="expenseCategory">קטגוריה:</label>
+                        <select id="expenseCategory" required>
+                            <option value="">בחר קטגוריה</option>
+                            <option value="לוקיישן">לוקיישן</option>
+                            <option value="קייטרינג">קייטרינג</option>
+                            <option value="מוזיקה">מוזיקה</option>
+                            <option value="צילום ומדיה">צילום ומדיה</option>
+                            <option value="עיצוב ואווירה">עיצוב ואווירה</option>
+                            <option value="ביגוד ואיפור">ביגוד ואיפור</option>
+                            <option value="אחר">אחר</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expenseAmount">סכום (₪):</label>
+                        <input type="number" id="expenseAmount" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expenseDate">תאריך הוצאה/צפוי:</label>
+                        <input type="date" id="expenseDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expenseStatus">סטטוס תשלום:</label>
+                        <select id="expenseStatus" required>
+                            <option value="paid">שולם</option>
+                            <option value="pending">טרם שולם</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="expenseNotes">הערות (אופציונלי):</label>
+                        <textarea id="expenseNotes" rows="2"></textarea>
+                    </div>
+                    
+                    
+                    <button type="submit" class="add-expense-btn">
+                        <i class="fas fa-save"></i> שמור הוצאה
+                    </button>
+                </form>
+            </div> 
+        </div>
+        <div class="table-section">
+            <h2>טבלת הוצאות ותשלומים</h2>
+            <table class="expenses-table">
+                <thead>
+                    <tr>
+                        <th>קטגוריה</th>
+                        <th>סכום</th>
+                        <th>תאריך</th>
+                        <th>סטטוס</th>
+                        <th>הערות</th>
+                    </tr>
+                </thead>
+                <tbody id="expensesTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="js/budget_script.js"></script> 
+
+</body>
+</html>
