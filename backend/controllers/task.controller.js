@@ -1,5 +1,5 @@
 const Task = require('../models/Task');
-const Expense = require('../models/Expense');
+
 
 // ✅ שליפת משימות: סינון לפי המשתמש המחובר
 exports.getTasks = async (req, res) => {
@@ -77,46 +77,5 @@ exports.updateTaskDescription = async (req, res) => {
         
     } catch (error) {
          res.status(500).json({ error: 'שגיאה בעדכון התיאור.' });
-    }
-};
-
-exports.createExpense = async (req, res) => {
-    try {
-        // המידע שהגיע מה-body של הבקשה (form)
-        const { category, amount, date, status, notes } = req.body;
-        
-        // מזהה המשתמש מגיע מתוך ה-middleware (auth.middleware.js)
-        const UserId = req.user.id; 
-        
-        // 1. אימות בסיסית של הנתונים
-        if (!category || !amount || !date || !status) {
-            return res.status(400).json({ msg: 'נא למלא את כל שדות החובה של ההוצאה.' });
-        }
-        
-        // ודא ש-amount הוא מספר חיובי ותקין
-        const parsedAmount = parseInt(amount, 10);
-        if (isNaN(parsedAmount) || parsedAmount <= 0) {
-             return res.status(400).json({ msg: 'סכום ההוצאה חייב להיות מספר חיובי תקין.' });
-        }
-
-        // 2. יצירת האובייקט בבסיס הנתונים
-        const newExpense = await Expense.create({
-            category,
-            amount: parsedAmount, // שימוש בסכום שעבר המרה
-            date,
-            status,
-            notes: notes || null, 
-            UserId // הקשר למשתמש (ForeignKey)
-        });
-
-        // 3. שליחת תגובה חזרה ללקוח
-        res.status(201).json({
-            message: 'הוצאה נשמרה בהצלחה!',
-            expense: newExpense
-        });
-
-    } catch (error) {
-        console.error("Error creating expense:", error);
-        res.status(500).json({ error: 'שגיאת שרת פנימית בעת שמירת ההוצאה.' });
     }
 };

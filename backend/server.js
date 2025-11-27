@@ -9,6 +9,7 @@ const { connectDB, syncDB } = require('./db');
 require('./models/associations.js');
 const authRoutes = require('./routes/auth.routes.js'); // *** תיקון: משתמש בנתיב auto.routes.js כפי שצוין ***
 const taskRoutes = require('./routes/task.routes.js');
+const expenseRoutes = require('./routes/expenses.routes.js');
 const cors = require('cors'); // ייבוא של CORS
 const app = express();
 const PORT = process.env.PORT || 3000; // אפשרות להגדיר פורט דרך משתני סביבה
@@ -16,7 +17,7 @@ const PORT = process.env.PORT || 3000; // אפשרות להגדיר פורט ד�
 // 1. הפעלת CORS (מאפשר גישה מכל מקור, פותר שגיאות רשת)
 
 app.use(cors({
-    origin: [
+   origin: [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
         'http://localhost:5500', // המקור של Live Server (בדרך כלל localhost)
@@ -40,9 +41,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // --- חיבור ראוטרים ---
 // כל הניתובים לאימות (הרשמה/התחברות) יתחילו ב-/api/auth
 app.use('/api/auth', authRoutes); // משאיר את ה-URL כ- '/api/auth' כדי להתאים לקוד ה-JS של הלקוח
-
 app.use('/api/tasks', taskRoutes);
 
+app.use('/api/expenses', expenseRoutes);
+const guestRoutes = require('./routes/guest.routes.js'); 
+app.use('/api/guests', guestRoutes);
 
 
 // --- הפעלת השרת ---

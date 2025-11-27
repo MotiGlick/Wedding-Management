@@ -49,7 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) { 
                 // ⬇️ 2. שמירת ה-Token באחסון המקומי - התיקון הקריטי
                 if (data.token) {
-                    localStorage.setItem('authToken', data.token); 
+                    sessionStorage.setItem('authToken', data.token);
+                    //localStorage.setItem('authToken', data.token); 
                     console.log('JWT Token successfully saved.');
                     
                     // 3. ניתוב לדף המשימות (task.html)

@@ -3,14 +3,16 @@
 // =======================================================
 
 function getToken() {
-  return localStorage.getItem('authToken'); 
+    return sessionStorage.getItem('authToken');
+  //return localStorage.getItem('authToken'); 
 }
 
 function handleUnauthorized() {
     console.error("401: Unauthorized - נדרש להתחבר מחדש.");
     
     // 1. ניקוי הטוקן הפג תוקף
-    localStorage.removeItem('authToken'); 
+    sessionStorage.removeItem('authToken');
+    //localStorage.removeItem('authToken'); 
     
     // 2. הודעה למשתמש
     alert("החיבור פג תוקף או אינו מאומת. אנא התחבר מחדש.");

@@ -124,6 +124,9 @@ form.addEventListener('submit', async (e) => {
         });
 
         if (response.ok) { 
+            if (data.token) {
+                sessionStorage.setItem('authToken', data.token);
+            }
             formMessage.textContent = 'ההרשמה הצליחה! מנתב לדף הבית...';
             formMessage.className = 'msg success';
             window.location.href = 'homePage.html'; 
@@ -144,4 +147,4 @@ form.addEventListener('submit', async (e) => {
     }
 });
 
-updateSubmitState();
+updateSubmitState(); 

@@ -70,12 +70,14 @@
                         <label for="expenseCategory">קטגוריה:</label>
                         <select id="expenseCategory" required>
                             <option value="">בחר קטגוריה</option>
-                            <option value="לוקיישן">לוקיישן</option>
+                            <option value="אולם">אולם</option>
                             <option value="קייטרינג">קייטרינג</option>
                             <option value="מוזיקה">מוזיקה</option>
                             <option value="צילום ומדיה">צילום ומדיה</option>
                             <option value="עיצוב ואווירה">עיצוב ואווירה</option>
-                            <option value="ביגוד ואיפור">ביגוד ואיפור</option>
+                            <option value="ביגוד ">ביגוד </option>
+                            <option value="איפור ועיצוב שיער">איפור ועיצוב שיער</option>
+                            <option value="הסעות">הסעות</option>
                             <option value="אחר">אחר</option>
                         </select>
                     </div>
@@ -120,11 +122,59 @@
                         <th>תאריך</th>
                         <th>סטטוס</th>
                         <th>הערות</th>
+                        <th>פעולות</th>
                     </tr>
                 </thead>
                 <tbody id="expensesTableBody">
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> עריכת הוצאה</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <form id="editExpenseForm" class="expense-form modal-form">
+                <input type="hidden" id="editExpenseId"> <div class="form-group">
+                    <label for="editExpenseCategory">קטגוריה:</label>
+                    <select id="editExpenseCategory" required>
+                        <option value="אולם">אולם</option>
+                        <option value="קייטרינג">קייטרינג</option>
+                        <option value="מוזיקה">מוזיקה</option>
+                        <option value="צילום ומדיה">צילום ומדיה</option>
+                        <option value="עיצוב ואווירה">עיצוב ואווירה</option>
+                        <option value="ביגוד ">ביגוד </option>
+                        <option value="איפור ועיצוב שיער">איפור ועיצוב שיער</option>
+                        <option value="הסעות">הסעות</option>
+                        <option value="אחר">אחר</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editExpenseAmount">סכום (₪):</label>
+                    <input type="number" id="editExpenseAmount" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="editExpenseDate">תאריך:</label>
+                    <input type="date" id="editExpenseDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="editExpenseStatus">סטטוס:</label>
+                    <select id="editExpenseStatus" required>
+                        <option value="paid">שולם</option>
+                        <option value="pending">טרם שולם</option>
+                    </select>
+                </div>
+                <div class="form-group full-width">
+                    <label for="editExpenseNotes">הערות:</label>
+                    <textarea id="editExpenseNotes" rows="2"></textarea>
+                </div>
+                <button type="submit" class="add-expense-btn">
+                    <i class="fas fa-sync-alt"></i> עדכן פרטים
+                </button>
+            </form>
         </div>
     </div>
 

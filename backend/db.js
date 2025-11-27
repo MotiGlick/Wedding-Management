@@ -28,6 +28,8 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
 // פונקציה לבדיקת החיבור
 async function connectDB() {
     try {
+    // כולל את הקבצים המקשרים כדי להבטיח את טעינת כל המודלים
+        require('./models/associations'); // מומלץ לוודא שהקשרים נטענו
         //console.log("🚩 [DB] Attempting to AUTHENTICATE...");
         await sequelize.authenticate();
         //console.log('✅ [DB] Connection to PostgreSQL established successfully.');
