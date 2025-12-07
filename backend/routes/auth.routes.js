@@ -14,7 +14,8 @@ router.post('/register', authController.register);
 
 // ראוט התחברות חדש
 router.post('/login', authController.login); // מוסיף ראוט POST חדש
-
+router.post('/forgotpassword', authController.forgotPassword);
+router.post('/resetpassword/:resetToken', authController.resetPassword);
 module.exports = router;
 
 // הערה: קובץ זה צריך להיות מחובר לאפליקציה הראשית שלך (server.js/app.js) באמצעות app.use('/api/auth', authRouter);

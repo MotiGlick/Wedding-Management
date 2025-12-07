@@ -32,47 +32,35 @@
       box-shadow: 0 10px 35px rgba(0,0,0,0.12);
     }
 
-   .password-wrapper {
-  position: relative;
-  width: 100%;
-}
+    .password-wrapper {
+      position: relative;
+      width: 100%;
+    }
 
-.password-wrapper input {
-  width: 100%;
-  padding: 13px 13px 13px 40px; /* Padding: top right bottom left */
-  font-size: 15px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-sizing: border-box;
-  line-height: 1.4;
-}
+    .password-wrapper input {
+      width: 100%;
+      padding: 13px 13px 13px 40px; /* Padding: top right bottom left */
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      line-height: 1.4;
+    }
 
-.toggle-password {
-  position: absolute;
-  left: 13px; /* מקום לצד שמאל */
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: #888;
-  font-size: 16px;
-}
+    .toggle-password {
+      position: absolute;
+      left: 13px; /* האייקון בצד שמאל */
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #888;
+      font-size: 16px;
+      transition: color 0.2s;
+    }
 
-.toggle-password {
-  position: absolute;
-  left: 13px; /* האייקון בצד שמאל */
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: #888;
-  font-size: 16px;
-  transition: color 0.2s;
-}
-
-.toggle-password:hover {
-  color: #007bff;
-}
-
-    /* --- סוף סגנונות חדשים --- */
+    .toggle-password:hover {
+      color: #007bff;
+    }
 
     h2 {
       text-align: center;
@@ -152,36 +140,12 @@
       margin-top: 10px;
     }
     .error-message {
-    display: block; 
-    color: #e74c3c; 
-    font-size: 13px;
-    margin-top: 5px;
-    height: 15px; /* שומר מקום כדי למנוע קפיצות בפריסה */
+      display: block; 
+      color: #e74c3c; 
+      font-size: 13px;
+      margin-top: 5px;
+      height: 15px; /* שומר מקום כדי למנוע קפיצות בפריסה */
     }
-
-    /* --- סגנונות חדשים לכפתור העין --- */
-.password-wrapper {
-  position: relative; /* חיוני למיקום הכפתור באופן יחסי לשדה */
-}
-
-.toggle-password-btn {
-  position: absolute;
-  left: 5px; 
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-  font-size: 18px;
-  color: #777;
-  transition: color 0.2s;
-}
-
-.toggle-password-btn:hover {
-  color: #007bff;
-}
-
   </style>
 </head>
 <body>
@@ -195,7 +159,7 @@
       <span class="error-message" id="emailError"></span> 
     </div>
 
-  <div class="input-container">
+    <div class="input-container">
       <label for="password">סיסמה:</label>
       <div class="password-wrapper">
         <input type="password" id="password" name="password" required placeholder="••••••••">
@@ -203,17 +167,11 @@
       </div>
       <span class="error-message" id="passwordError"></span> 
     </div>
-  
-  <span class="error-message" id="passwordError"></span> 
-</div>
-  
-  <span class="error-message" id="passwordError"></span> 
-</div>
 
     <button type="submit">התחבר</button>
 
     <div class="links-container">
-      <a href="email_password.html">שכחתי סיסמה?</a>
+      <a href="email_password.html" id="forgotPasswordLink">שכחתי סיסמה?</a>
       <p>אין לך חשבון? <a href="registration.html">הירשם כאן</a></p>
     </div>
   </form>
