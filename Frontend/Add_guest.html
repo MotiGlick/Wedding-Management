@@ -6,7 +6,6 @@
     <title>💎 הוספת אורח | WedManage</title>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
     <style>
         :root {
             --primary-color: #0A1121;
@@ -100,6 +99,9 @@
             border: 2px solid transparent;
             font-weight: 700;
             letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .btn-primary {
@@ -123,7 +125,6 @@
             .header { padding: 16px; }
             .logo { font-size: 20px; }
         }
-
     </style>
 </head>
 <body>
@@ -190,24 +191,22 @@
                     <textarea id="notes" name="notes" rows="4" placeholder="הערות מיוחדות או בקשות" style="resize:vertical;"></textarea>
                 </div>
 
-               <div class="actions">
-    <button type="submit" class="btn btn-primary">
-        <i class="fas fa-user-check"></i>&nbsp; הוסף אורח
-    </button>
-    <button type="button" class="btn btn-ghost" onclick="document.getElementById('guestForm').reset();">
-        נקה טופס
-    </button>
-    <!-- כפתור חדש למחיקה -->
-    <a href="delete_guest.html" class="btn btn-ghost">
-        <i class="fas fa-user-minus"></i>&nbsp; מחק אורח
-    </a>
-</div>
-
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary">
+                         <i class="fas fa-user-check"></i>&nbsp; הוסף אורח
+                   </button>
+                     <button type="button" class="btn btn-ghost" onclick="document.getElementById('guestForm').reset();">
+                       נקה טופס
+                     </button>
+                        <!-- כפתור חדש למחיקה -->
+                       <a href="delete_guest.html" class="btn btn-ghost">
+                       <i class="fas fa-user-minus"></i>&nbsp; מחק אורח
+                       </a>
+                </div>
 
                 <p class="small">* שמות ישמרו באנגלית/עברית כפי שהוזנו. זו דוגמה מקומית — חיבור לשרת / API לא בוצע.</p>
             </form>
         </section>
-
     </main>
 
     <script>
@@ -216,20 +215,29 @@
             const form = document.getElementById('guestForm');
             const data = Object.fromEntries(new FormData(form).entries());
 
-            // קליינט-סייד ולידציה פשוטה
             if (!data.firstName || !data.lastName || !data.rsvp) {
                 alert('נא למלא שם פרטי, שם משפחה וסטטוס אישור הגעה.');
                 return;
             }
 
-            // כאן במקום API: הדגמה של איך הנתונים יוכלו להיראות
             console.log('guest data:', data);
-
-            // סימולציה לשמירה
             alert(`האורח ${data.firstName} ${data.lastName} נוסף בהצלחה!`);
             form.reset();
         }
-    </script>
 
+        function handleDelete() {
+            const fullName = prompt("הכנס שם מלא של האורח למחיקה:");
+            const email = prompt("הכנס מייל של האורח למחיקה:");
+
+            if (!fullName || !email) {
+                alert("יש למלא שם מלא ומייל למחיקה.");
+                return;
+            }
+
+            // כאן במקום API: רק הדגמה
+            console.log('delete guest:', { fullName, email });
+            alert(`האורח ${fullName} נמחק בהצלחה!`);
+        }
+    </script>
 </body>
 </html>
