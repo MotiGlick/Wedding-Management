@@ -3,28 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💎 הוספת אורח | WedManage</title>
+    <title> הוספת אורח | WedManage</title>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
             --primary-color: #0A1121;
             --secondary-color: #16243D;
-            --accent-color: #B8860B;
-            --accent-light: #5c5f4d;
-            --text-color: #EAECEF;
-            --text-light: #A3B1C6;
-            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            --accent-color: #9418ce;
+            --accent-light: #114da8;
+            --text-color: #5b605c;
+            --text-light: #165dc9;
+            --card-shadow: 0 10px 30px rgba(196, 22, 22, 0.372);
             --hover-card: #1D3150;
             --border-radius: 12px;
             --input-bg: rgba(255,255,255,0.03);
         }
 
         * { box-sizing: border-box; }
+
         body {
             margin: 0;
             font-family: 'Heebo', sans-serif;
-            background: linear-gradient(180deg, var(--primary-color) 0%, #07101A 100%);
+            background: linear-gradient(180deg, var(--primary-color) 0%, #10409f 100%);
             color: var(--text-color);
             min-height: 100vh;
             display: flex;
@@ -41,20 +42,24 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 4px 15px rgba(87, 18, 206, 0.8);
         }
 
         .logo { font-size: 26px; font-weight: 800; color: var(--accent-light); letter-spacing: 2px; text-decoration: none; }
 
+        /* Wrapper מרכזי */
+        .main-wrapper {
+            flex: 1; /* ממלא את שאר הגובה */
+            display: flex;
+            justify-content: center; /* מרכז אופקי */
+            align-items: center;     /* מרכז אנכי */
+            padding: 20px;
+        }
+
         .main {
             width: 100%;
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: 1fr 420px;
-            gap: 30px;
-            align-items: start;
+            max-width: 600px;
+            display: block;
         }
 
         .form-card {
@@ -65,12 +70,12 @@
             border-top: 3px solid var(--accent-color);
         }
 
-        .form-card h1 { margin: 0 0 8px 0; font-size: 26px; color: var(--accent-light); }
+        .form-card h1 { margin: 0 0 18px 0; font-size: 26px; color: var(--accent-light); }
         .form-card p { margin: 0 0 18px 0; color: var(--text-light); font-weight: 300; }
 
-        form { display: grid; gap: 14px; }
+        form { display: grid; gap: 18px; }
 
-        .row { display: flex; gap: 14px; }
+        .row { display: flex; gap: 18px; }
         .row .col { flex: 1; }
 
         label { display: block; font-size: 13px; color: var(--text-light); margin-bottom: 6px; }
@@ -80,17 +85,17 @@
             padding: 12px 14px;
             background: var(--input-bg);
             color: var(--text-color);
-            border: 1px solid rgba(255,255,255,0.06);
+            border: 1px solid rgba(171, 16, 16, 0);
             border-radius: 10px;
             outline: none;
             font-size: 15px;
         }
 
-        input:focus, select:focus, textarea:focus { box-shadow: 0 6px 18px rgba(0,0,0,0.7); transform: translateY(-2px); }
+        input:focus, select:focus, textarea:focus { box-shadow: 0 6px 18px rgba(193, 8, 8, 0.265); transform: translateY(-2px); }
 
         .small { font-size: 13px; color: var(--text-light); }
 
-        .actions { display:flex; gap:12px; margin-top: 6px; }
+        .actions { display:flex; gap:12px; margin-top: 6px; flex-wrap: wrap; }
 
         .btn {
             padding: 12px 18px;
@@ -107,23 +112,20 @@
         .btn-primary {
             background: var(--accent-color);
             color: var(--primary-color);
-            border-color: rgba(0,0,0,0.2);
+            border-color: rgba(161, 158, 174, 0.753);
             box-shadow: 0 8px 30px rgba(184,134,11,0.12);
         }
 
         .btn-ghost {
             background: transparent;
             color: var(--text-light);
-            border: 1px solid rgba(255,255,255,0.06);
-        }
-
-        @media (max-width: 980px) {
-            .main { grid-template-columns: 1fr; }
+            border: 1px solid rgba(98, 87, 87, 0.728);
         }
 
         @media (max-width: 480px) {
             .header { padding: 16px; }
             .logo { font-size: 20px; }
+            .row { flex-direction: column; }
         }
     </style>
 </head>
@@ -137,77 +139,78 @@
         </div>
     </header>
 
-    <main class="main">
-        <section class="form-card" aria-labelledby="guest-form-title">
-            <h1 id="guest-form-title">הוספת אורח חדש</h1>
-            <p>מלא את פרטי האורח כדי להוסיף אותו לרשימת המוזמנים. השדות המסומנים הם חובה.</p>
+    <div class="main-wrapper">
+        <main class="main">
+            <section class="form-card" aria-labelledby="guest-form-title">
+                <h1 id="guest-form-title">הוספת אורח חדש</h1>
+                <p>מלא את פרטי האורח כדי להוסיף אותו לרשימת המוזמנים. השדות המסומנים הם חובה.</p>
 
-            <form id="guestForm" onsubmit="handleSubmit(event)">
-                <div class="row">
-                    <div class="col">
-                        <label for="firstName">שם פרטי *</label>
-                        <input id="firstName" name="firstName" type="text" placeholder="שם פרטי" required maxlength="60" />
+                <form id="guestForm" onsubmit="handleSubmit(event)">
+                    <div class="row">
+                        <div class="col">
+                            <label for="firstName">שם פרטי *</label>
+                            <input id="firstName" name="firstName" type="text" placeholder="שם פרטי" required maxlength="60" />
+                        </div>
+                        <div class="col">
+                            <label for="lastName">שם משפחה *</label>
+                            <input id="lastName" name="lastName" type="text" placeholder="שם משפחה" required maxlength="60" />
+                        </div>
                     </div>
-                    <div class="col">
-                        <label for="lastName">שם משפחה *</label>
-                        <input id="lastName" name="lastName" type="text" placeholder="שם משפחה" required maxlength="60" />
+
+                    <div class="row">
+                        <div class="col">
+                            <label for="email">אימייל</label>
+                            <input id="email" name="email" type="email" placeholder="email@example.com" />
+                        </div>
+                        <div class="col">
+                            <label for="phone">טלפון</label>
+                            <input id="phone" name="phone" type="tel" placeholder="050-1234567" />
+                        </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col">
-                        <label for="email">אימייל</label>
-                        <input id="email" name="email" type="email" placeholder="email@example.com" />
+                    <div class="row">
+                        <div class="col">
+                            <label for="rsvp">סטטוס אישור הגעה *</label>
+                            <select id="rsvp" name="rsvp" required>
+                                <option value="">בחר סטטוס</option>
+                                <option value="attending">מגיע/ה</option>
+                                <option value="not_attending">לא מגיע/ה</option>
+                                <option value="maybe">אולי</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="plusOne">מלווה (Plus-one)</label>
+                            <input id="plusOne" name="plusOne" type="text" placeholder="שם המלווה (אם יש)" />
+                        </div>
                     </div>
-                    <div class="col">
-                        <label for="phone">טלפון</label>
-                        <input id="phone" name="phone" type="tel" placeholder="050-1234567" />
+
+                    <div>
+                        <label for="diet">מידע תזונתי / אלרגיות</label>
+                        <input id="diet" name="diet" type="text" placeholder="למשל: טבעוני, ללא גלוטן, אלרגי לאגוזים" />
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col">
-                        <label for="rsvp">סטטוס אישור הגעה *</label>
-                        <select id="rsvp" name="rsvp" required>
-                            <option value="">בחר סטטוס</option>
-                            <option value="attending">מגיע/ה</option>
-                            <option value="not_attending">לא מגיע/ה</option>
-                            <option value="maybe">אולי</option>
-                        </select>
+                    <div>
+                        <label for="notes">הערות נוספות</label>
+                        <textarea id="notes" name="notes" rows="4" placeholder="הערות מיוחדות או בקשות" style="resize:vertical;"></textarea>
                     </div>
-                    <div class="col">
-                        <label for="plusOne">מלווה (Plus-one)</label>
-                        <input id="plusOne" name="plusOne" type="text" placeholder="שם המלווה (אם יש)" />
+
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-check"></i>&nbsp; הוסף אורח
+                        </button>
+                        <button type="button" class="btn btn-ghost" onclick="document.getElementById('guestForm').reset();">
+                            נקה טופס
+                        </button>
+                        <a href="delete_guest.html" class="btn btn-ghost">
+                            <i class="fas fa-user-minus"></i>&nbsp; מחק אורח
+                        </a>
                     </div>
-                </div>
 
-                <div>
-                    <label for="diet">מידע תזונתי / אלרגיות</label>
-                    <input id="diet" name="diet" type="text" placeholder="למשל: טבעוני, ללא גלוטן, אלרגי לאגוזים" />
-                </div>
-
-                <div>
-                    <label for="notes">הערות נוספות</label>
-                    <textarea id="notes" name="notes" rows="4" placeholder="הערות מיוחדות או בקשות" style="resize:vertical;"></textarea>
-                </div>
-
-                <div class="actions">
-                    <button type="submit" class="btn btn-primary">
-                         <i class="fas fa-user-check"></i>&nbsp; הוסף אורח
-                   </button>
-                     <button type="button" class="btn btn-ghost" onclick="document.getElementById('guestForm').reset();">
-                       נקה טופס
-                     </button>
-                        <!-- כפתור חדש למחיקה -->
-                       <a href="delete_guest.html" class="btn btn-ghost">
-                       <i class="fas fa-user-minus"></i>&nbsp; מחק אורח
-                       </a>
-                </div>
-
-                <p class="small">* שמות ישמרו באנגלית/עברית כפי שהוזנו. זו דוגמה מקומית — חיבור לשרת / API לא בוצע.</p>
-            </form>
-        </section>
-    </main>
+                    <p class="small">* שמות ישמרו באנגלית/עברית כפי שהוזנו. זו דוגמה מקומית — חיבור לשרת / API לא בוצע.</p>
+                </form>
+            </section>
+        </main>
+    </div>
 
     <script>
         function handleSubmit(e) {
@@ -234,7 +237,6 @@
                 return;
             }
 
-            // כאן במקום API: רק הדגמה
             console.log('delete guest:', { fullName, email });
             alert(`האורח ${fullName} נמחק בהצלחה!`);
         }
