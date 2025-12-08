@@ -1,35 +1,37 @@
-// ייבוא מודל המשתמש
+// models/associations.js
+
+// ייבוא המודלים
 const User = require('./User'); 
-// ייבוא מודל המשימה
 const Task = require('./Task'); 
 const Expense = require('./Expense');
+const Guest = require('./Guest'); 
 
-// 1. הגדרת הקשר: לכל משתמש יש משימות רבות (One-to-Many)
-// Sequelize יחפש עמודה בשם 'userId' בטבלת Tasks
+// --- קשרים עבור משימות (Tasks) ---
 User.hasMany(Task, {
-    foreignKey: 'userId', // השם של המפתח הזר בטבלת tasks
-    as: 'tasks',         // כיצד לגשת למשימות מהמשתמש (user.getTasks())
-    onDelete: 'CASCADE'  // אם משתמש נמחק, כל המשימות שלו נמחקות
+    foreignKey: 'userId',
+    as: 'tasks',
+    onDelete: 'CASCADE'
 });
-
-// 2. הגדרת הקשר ההפוך: כל משימה שייכת למשתמש אחד
 Task.belongsTo(User, {
-    foreignKey: 'userId', // השם של המפתח הזר בטבלת tasks
-    as: 'owner'           // כיצד לגשת לבעלים מהמשימה (task.getOwner())
+    foreignKey: 'userId',
+    as: 'owner'
 });
 
-// 3. הגדרת הקשר: לכל משתמש יש הוצאות רבות (One-to-Many)
+// --- קשרים עבור הוצאות (Expenses) ---
 User.hasMany(Expense, {
-    foreignKey: 'UserId', // 💡 שימו לב ל-UserId, כפי שהוגדר במודל
+    foreignKey: 'UserId',
     as: 'expenses',
     onDelete: 'CASCADE' 
 });
-
-// 4. הגדרת הקשר ההפוך: כל הוצאה שייכת למשתמש אחד
 Expense.belongsTo(User, {
     foreignKey: 'UserId',
     as: 'user'
 });
 
-// ייצוא המודלים (אם כי נהוג לייבא אותם ישירות, אבל זה מוודא שהקישור מופעל)
-module.exports = { User, Task };
+// --- קשרים עבור אורחים (Guests) - אופציונלי אך מומלץ ---
+// כרגע בקוד שלך האורחים לא משויכים למשתמש ספציפי, אבל כדי שהמערכת תעבוד מסודר:
+// (אם תרצה בעתיד שכל משתמש יראה רק את האורחים שלו, תצטרך להוסיף userId ל-Guest)
+
+// ייצוא כל המודלים
+// 2. התיקון הקריטי: הוספנו את Guest ו-Expense לרשימת הייצוא
+module.exports = { User, Task, Expense, Guest };
