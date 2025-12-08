@@ -7,8 +7,6 @@
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js"
   },
-
-{
   "dependencies": {
     "@fullcalendar/core": "^6.1.19",
     "@fullcalendar/daygrid": "^6.1.19",
@@ -23,7 +21,4 @@
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.7"
   }
-
-  
 }
-
