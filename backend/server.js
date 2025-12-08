@@ -27,7 +27,7 @@ app.use(express.json());
 // --- 2. עדכון נתיב לקבצים סטטיים ---
 // __dirname = התיקייה הנוכחית (backend)
 // ../public = התיקייה שמעליה (הראשית) ושם public
-app.use(express.static(path.join(__dirname, '../public'))); 
+app.use(express.static(path.join(__dirname, '../frontend'))); 
 
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
@@ -39,7 +39,7 @@ app.use('/api/guests', guestRoutes);
 // השינוי הוא בתוך הסוגריים של ה-get
 // במקום '*' (מחרוזת), נשתמש ב- /(.*)/ (RegExp)
 app.get(/(.*)/, (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
+    res.sendFile(path.join(__dirname, '../frontend/login.html'));
 });
 
 async function startServer() {
