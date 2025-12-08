@@ -16,7 +16,11 @@ app.use(cors({
    origin: [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
+<<<<<<< HEAD
         'http://localhost:5500', 
+=======
+        'http://localhost:5500',
+>>>>>>> 776a45736b0c97d7257846493027f9130a7e5da4
         'http://127.0.0.1:5500'
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -24,6 +28,12 @@ app.use(cors({
 }));
 app.options(/.*/, cors());
 
+<<<<<<< HEAD
+=======
+
+// --- Middlewares ---
+// 2. טיפול ב-JSON
+>>>>>>> 776a45736b0c97d7257846493027f9130a7e5da4
 app.use(express.json()); 
 app.use(express.static(path.join(__dirname, 'public'))); 
 
