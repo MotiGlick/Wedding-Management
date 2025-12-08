@@ -36,7 +36,9 @@ app.use('/api/guests', guestRoutes);
 
 // נתיב Fallback: אם המשתמש נכנס לכתובת לא מוכרת, נחזיר לו את דף הבית
 // זה חשוב מאוד באפליקציות Single Page
-app.get('*', (req, res) => {
+// השינוי הוא בתוך הסוגריים של ה-get
+// במקום '*' (מחרוזת), נשתמש ב- /(.*)/ (RegExp)
+app.get(/(.*)/, (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
