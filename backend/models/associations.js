@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // models/associations.js
 
 // ייבוא המודלים
@@ -24,7 +23,6 @@ User.hasMany(Expense, {
     as: 'expenses',
     onDelete: 'CASCADE' 
 });
-=======
 // backend/models/associations.js (קוד מעודכן ושלם)
 
 // ייבוא מודלים קיימים
@@ -54,13 +52,11 @@ User.hasMany(Expense, {
     onDelete: 'CASCADE' 
 });
 // כל הוצאה שייכת למשתמש אחד
->>>>>>> 776a45736b0c97d7257846493027f9130a7e5da4
 Expense.belongsTo(User, {
     foreignKey: 'UserId',
     as: 'user'
 });
 
-<<<<<<< HEAD
 // --- קשרים עבור אורחים (Guests) - אופציונלי אך מומלץ ---
 // כרגע בקוד שלך האורחים לא משויכים למשתמש ספציפי, אבל כדי שהמערכת תעבוד מסודר:
 // (אם תרצה בעתיד שכל משתמש יראה רק את האורחים שלו, תצטרך להוסיף userId ל-Guest)
@@ -68,7 +64,6 @@ Expense.belongsTo(User, {
 // ייצוא כל המודלים
 // 2. התיקון הקריטי: הוספנו את Guest ו-Expense לרשימת הייצוא
 module.exports = { User, Task, Expense, Guest };
-=======
 // -------------------------------------------------------------------
 // 💡 הקשרים החדשים הנדרשים עבור המודל Message:
 // -------------------------------------------------------------------
@@ -99,4 +94,3 @@ Message.belongsTo(User, {
 
 // ייצוא כל המודלים
 module.exports = { User, Task, Expense, Message };
->>>>>>> 776a45736b0c97d7257846493027f9130a7e5da4
