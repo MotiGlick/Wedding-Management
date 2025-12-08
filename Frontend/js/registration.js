@@ -124,6 +124,8 @@ form.addEventListener('submit', async (e) => {
         });
 
         if (response.ok) { 
+            const data = await response.json();
+            console.log('Server Registration Response:', data);
             if (data.token) {
                 sessionStorage.setItem('authToken', data.token);
             }
