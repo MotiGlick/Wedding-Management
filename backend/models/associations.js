@@ -16,8 +16,9 @@ Task.belongsTo(User, { foreignKey: 'userId', as: 'owner' });
 User.hasMany(Expense, { foreignKey: 'UserId', as: 'expenses', onDelete: 'CASCADE' });
 Expense.belongsTo(User, { foreignKey: 'UserId', as: 'user' });
 
-// (אופציונלי) User <-> Guest
-// אם תרצה בעתיד שהאורחים יהיו משויכים למשתמש, תוסיף כאן קשר
+// User <-> Guest
+User.hasMany(Guest, { foreignKey: 'userId', as: 'guests', onDelete: 'CASCADE' });
+Guest.belongsTo(User, { foreignKey: 'userId', as: 'owner' });
 
 // User <-> Message
 User.hasMany(Message, { foreignKey: 'senderId', as: 'sentMessages', onDelete: 'CASCADE' });
