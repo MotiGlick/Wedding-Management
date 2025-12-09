@@ -76,10 +76,11 @@ cron.schedule('* * * * *', async () => {
                     model: Task,
                     // כאן הקסם: שליפה מקוננת
                     // אנחנו אומרים: "תביא לי את המשימה, ובתוכה תביא את המשתמש של המשימה"
-                    include: [{ 
-                        model: User,
-                        attributes: ['email', 'firstName'] // שולפים רק מה שצריך (יעיל יותר)
-                    }] 
+                  include: [{ 
+                           model: User,
+                           as: 'owner', // <--- הוספנו את השורה הזו
+                           attributes: ['email', 'firstName'] 
+                           }]
                 }
             ]
         });
@@ -91,14 +92,14 @@ cron.schedule('* * * * *', async () => {
                 console.log(`⚠️ משימה נמחקה (ID: ${reminder.taskId})`);
                 continue; 
             }
-            if (!reminder.Task.User) {
+           if (!reminder.Task.owner) {
                 console.log(`⚠️ משתמש לא נמצא עבור המשימה (TaskID: ${reminder.Task.id})`);
                 continue; 
             }
 
             // שליפת המייל האמיתי של המשתמש!
-            const userEmail = reminder.Task.User.email;
-            const userName = reminder.Task.User.firstName || "לקוח יקר";
+            const userEmail = reminder.Task.owner.email;
+            const userName = reminder.Task.owner.firstName || "לקוח יקר";
             
             console.log(`🚀 שולח תזכורת לכתובת: ${userEmail}`);
 
