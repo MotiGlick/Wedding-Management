@@ -19,7 +19,7 @@ const saveBudgetBtn = document.getElementById('saveBudgetBtn');
 const budgetInputArea = document.getElementById('budgetInputArea');
 const newBudgetAmountInput = document.getElementById('newBudgetAmount');
 
-const API_BASE_URL = "http://127.0.0.1:3000/api";
+const API_BASE_URL = "/api";
 
 // משתנים גלובליים לשמירת הנתונים הפיננסיים
 let totalBudget = Number(sessionStorage.getItem('totalBudget')) || 250000;
