@@ -1,70 +1,142 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
+const cron = require('node-cron'); // <--- הוספנו
+const { Op } = require('sequelize'); // <--- הוספנו
 const { connectDB, syncDB } = require('./db');
+
+// --- ייבוא המודלים (חשוב ל-Cron Job) ---
 require('./models/associations.js');
+const Task = require('./models/Task');       // <--- הוספנו
+const Reminder = require('./models/Reminder'); // <--- הוספנו
+
+// --- ייבוא הראוטים ---
 const authRoutes = require('./routes/auth.routes.js');
 const taskRoutes = require('./routes/task.routes.js');
 const expenseRoutes = require('./routes/expenses.routes.js');
-const guestRoutes = require('./routes/guest.routes.js'); 
-const cors = require('cors');
+const guestRoutes = require('./routes/guest.routes.js');
+const reminderRoutes = require('./routes/reminder.routes');
+const { getReminderTemplate } = require('./utils/emailTemplates');
+
+const { sendMail } = require('./utils/emailSender'); 
 
 const app = express();
-// Render נותן פורט משלו, לכן חשוב להשתמש ב-process.env.PORT
 const PORT = process.env.PORT || 3000;
 
-// --- 1. עדכון CORS לייצור ---
+// --- 1. הגדרת CORS ---
 app.use(cors({
-   origin: [
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
-        'http://localhost:5500', 
-        'http://127.0.0.1:5500'
-    ],
-    origin: '*', // מאפשר גישה מכל כתובת (חיוני להתחלה ב-Render)
+    origin: '*', // פתוח לכולם כרגע (נוח לפיתוח)
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
 }));
-app.options(/.*/, cors());
 
 // --- Middlewares ---
-app.use(express.json()); 
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../Frontend')));
 
-// --- 2. עדכון נתיב לקבצים סטטיים ---
-// __dirname = התיקייה הנוכחית (backend)
-// ../public = התיקייה שמעליה (הראשית) ושם public
-app.use(express.static(path.join(__dirname, '../Frontend'))); 
-
+// --- Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/guests', guestRoutes);
+app.use('/api/reminders', reminderRoutes);
 
-// נתיב Fallback: אם המשתמש נכנס לכתובת לא מוכרת, נחזיר לו את דף הבית
-// זה חשוב מאוד באפליקציות Single Page
-// השינוי הוא בתוך הסוגריים של ה-get
-// במקום '*' (מחרוזת), נשתמש ב- /(.*)/ (RegExp)
+// --- Fallback Route ---
 app.get(/(.*)/, (req, res) => {
     res.sendFile(path.join(__dirname, '../Frontend/landing.html'));
 });
+
+// ==========================================
+// 🕒 מנגנון התזכורות (CRON JOB)
+// ==========================================
+// שמנו את זה מחוץ ל-startServer כדי לשמור על סדר, זה ירוץ ברגע שהקובץ נטען
+
+// ==========================================
+// 🕒 מנגנון התזכורות (CRON JOB)
+// ==========================================
+
+cron.schedule('* * * * *', async () => {
+    console.log('⏰ בודק תזכורות...');
+
+    try {
+        const now = new Date();
+
+        // 1. שליפה חכמה: תזכורת -> משימה -> משתמש
+        const reminders = await Reminder.findAll({
+            where: {
+                triggerAt: { [Op.lte]: now },
+                isSent: false
+            },
+            include: [
+                { 
+                    model: Task,
+                    // כאן הקסם: שליפה מקוננת
+                    // אנחנו אומרים: "תביא לי את המשימה, ובתוכה תביא את המשתמש של המשימה"
+                    include: [{ 
+                        model: User,
+                        attributes: ['email', 'firstName'] // שולפים רק מה שצריך (יעיל יותר)
+                    }] 
+                }
+            ]
+        });
+
+        for (const reminder of reminders) {
+            
+            // בדיקות תקינות כפולות
+            if (!reminder.Task) {
+                console.log(`⚠️ משימה נמחקה (ID: ${reminder.taskId})`);
+                continue; 
+            }
+            if (!reminder.Task.User) {
+                console.log(`⚠️ משתמש לא נמצא עבור המשימה (TaskID: ${reminder.Task.id})`);
+                continue; 
+            }
+
+            // שליפת המייל האמיתי של המשתמש!
+            const userEmail = reminder.Task.User.email;
+            const userName = reminder.Task.User.firstName || "לקוח יקר";
+            
+            console.log(`🚀 שולח תזכורת לכתובת: ${userEmail}`);
+
+            // יצירת ה-HTML (אפשר להוסיף את שם המשתמש לתבנית אם רוצים)
+            const emailHtml = getReminderTemplate(reminder.Task.title, reminder.Task.date);
+
+            const mailOptions = {
+                to: userEmail, // <--- הנה התיקון שלך!
+                subject: `🔔 תזכורת: ${reminder.Task.title}`,
+                html: emailHtml
+            };
+
+            try {
+                await sendMail(mailOptions);
+                
+                reminder.isSent = true;
+                await reminder.save();
+                
+                console.log(`✅ מייל נשלח בהצלחה ל-${userEmail}`);
+
+            } catch (emailError) {
+                console.error(`❌ שגיאה בשליחה ל-${userEmail}`, emailError);
+            }
+        }
+    } catch (err) {
+        console.error("❌ Cron Job Error:", err);
+    }
+});
+// ==========================================
+// 🚀 הפעלת השרת
+// ==========================================
 
 async function startServer() {
     try {
         console.log("🚩 [SERVER] Connecting to DB...");
         await connectDB();
-        
+
         console.log("🚩 [SERVER] Syncing DB...");
-        
-        // --- שים לב: force: true ימחק את הטבלה ויבנה אותה מחדש ---
-        // זה יפתור את הבעיה של 'column side missing'
-        await syncDB({ alert: true });
-        // --- 3. סנכרון חכם ---
-        // אם אנחנו בייצור: alter: true (מעדכן טבלאות בלי למחוק מידע)
-        // אם אנחנו בבית: force: false (שומר על המידע)
-        // שנה ל-force: true ידנית רק אם אתה רוצה לאפס את ה-DB המקומי
-        const isProduction = process.env.NODE_ENV === 'production';
-        await syncDB({ alter: true }); 
-        
+        // alter: true מעדכן את הטבלאות בלי למחוק מידע קיים
+        await syncDB({ alter: true });
+
         app.listen(PORT, () => {
             console.log(`✅ [SERVER] Server is running on port ${PORT}`);
         });
