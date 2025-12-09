@@ -2,12 +2,15 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+
 const cron = require('node-cron'); // <--- הוספנו
 const { Op } = require('sequelize'); // <--- הוספנו
 const { connectDB, syncDB } = require('./db');
 
 // --- ייבוא המודלים (חשוב ל-Cron Job) ---
+// בראש הקובץ server.js
 require('./models/associations.js');
+const User = require('./models/User'); // <--- תוסיף את זה!
 const Task = require('./models/Task');       // <--- הוספנו
 const Reminder = require('./models/Reminder'); // <--- הוספנו
 
@@ -135,7 +138,7 @@ async function startServer() {
 
         console.log("🚩 [SERVER] Syncing DB...");
         // alter: true מעדכן את הטבלאות בלי למחוק מידע קיים
-        await syncDB({ alter: true });
+        await syncDB({ force: true });
 
         app.listen(PORT, () => {
             console.log(`✅ [SERVER] Server is running on port ${PORT}`);
