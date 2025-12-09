@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WedManage - תכנון חתונה מושלמת</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/landing.css">
+</head>
+<body>
+
+    <header class="landing-header">
+        <div class="logo">WedManage<span class="dot">.</span></div>
+        <nav>
+            <a href="login.html" class="btn btn-outline">התחברות</a>
+            <a href="registration.html" class="btn btn-primary">הרשמה</a>
+        </nav>
+    </header>
+
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="fade-in">הדרך לחתונה מושלמת מתחילה כאן</h1>
+            <p class="fade-in delay-1">מערכת חכמה לניהול תקציב, אורחים ומשימות – בסטייל ובקלות.</p>
+            
+            <div class="cta-buttons fade-in delay-2">
+                <a href="login.html" class="btn btn-gold">כניסה למערכת</a>
+                <a href="#features" class="btn btn-text">
+                    גלה עוד <i class="fas fa-arrow-down"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="hero-decorations">
+            
+            <i class="fas fa-gem decoration-item floating-diamond"></i>
+
+            <div class="constructed-ring">
+                <div class="ring-band"></div>
+                <i class="fas fa-gem ring-stone"></i>
+            </div>
+            
+        </div>
+    </section>
+
+    <section id="features" class="features-section">
+        <h2>כל מה שצריך לאירוע בלתי נשכח</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="icon-circle"><i class="fas fa-tasks"></i></div>
+                <h3>ניהול משימות</h3>
+                <p>רשימת מטלות מסודרת ומתוזמנת כדי ששום פרט לא יתפספס.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-circle"><i class="fas fa-users"></i></div>
+                <h3>ניהול מוזמנים</h3>
+                <p>אישורי הגעה דיגיטליים וסידורי ישיבה בקליק אחד.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-circle"><i class="fas fa-calculator"></i></div>
+                <h3>בקרת תקציב</h3>
+                <p>מעקב הוצאות מדויק לשמירה על המסגרת הכלכלית.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2025 WedManage. כל הזכויות שמורות.</p>
+    </footer>
+
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if(target) target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
