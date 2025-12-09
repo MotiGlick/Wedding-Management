@@ -1,0 +1,287 @@
+/* --- משתנים (תואם ל-Landing Page) --- */
+:root {
+    --bg-color: #F9F9F9;
+    --card-bg: #FFFFFF;
+    
+    /* צבעים ראשיים */
+    --primary-gold: #C5A059;
+    --primary-gold-hover: #B08D45;
+    --decoration-gold: #B8860B; 
+    
+    /* טקסטים */
+    --text-dark: #2C3E50;
+    --text-soft: #6c757d;
+    --text-light: #95a5a6;
+    
+    /* אלמנטים של טופס */
+    --input-bg: #FFFFFF;
+    --input-border: #E0E0E0;
+    --input-focus-shadow: rgba(197, 160, 89, 0.15);
+    
+    /* צלליות */
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    --header-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    
+    --border-radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: 'Heebo', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    direction: rtl;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    position: relative; /* עבור הדקורציות */
+}
+
+/* --- רקע דקורטיבי (הועתק מ-landing.css והותאם) --- */
+.hero-decorations {
+    position: fixed; /* Fixed כדי שיישאר ברקע גם בגלילה */
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: -1; /* מאחורי הכל */
+}
+
+.floating-diamond {
+    position: absolute;
+    left: -50px; 
+    top: 15%;
+    font-size: 350px;
+    transform: rotate(20deg);
+    color: var(--decoration-gold); 
+    opacity: 0.06; /* מעט שקוף יותר כדי לא להפריע לטופס */
+}
+
+.constructed-ring {
+    position: absolute;
+    right: 5%;
+    bottom: -5%;
+    width: 250px;
+    height: 250px;
+    transform: rotate(-15deg);
+    opacity: 0.1;
+    display: flex;
+    justify-content: center;
+}
+
+.ring-band {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 25px solid var(--decoration-gold);
+    box-shadow: 0 0 20px rgba(184, 134, 11, 0.3);
+}
+
+.ring-stone {
+    position: absolute;
+    top: -45px;
+    font-size: 100px;
+    color: var(--decoration-gold);
+}
+
+/* --- Header --- */
+.header {
+    width: 100%;
+    padding: 15px 40px;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--header-shadow);
+    backdrop-filter: blur(5px);
+}
+
+.logo {
+    font-family: 'Heebo', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: 1px;
+    text-decoration: none;
+}
+
+.dot { color: var(--primary-gold); }
+
+/* --- Layout (מבנה העמוד והגריד) --- */
+.main {
+    width: 100%;
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+    /* במקור היה כאן גריד צדדי, נשמור על המבנה המרכזי לטופס */
+    display: flex;
+    justify-content: center;
+}
+
+.form-card {
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    border-top: 4px solid var(--primary-gold);
+    width: 100%;
+    max-width: 800px; /* רוחב נוח לטופס */
+}
+
+.form-card h1 {
+    font-family: 'Playfair Display', serif;
+    margin: 0 0 10px 0;
+    font-size: 32px;
+    color: var(--text-dark);
+}
+
+.form-card p {
+    margin: 0 0 30px 0;
+    color: var(--text-soft);
+    font-weight: 300;
+    font-size: 16px;
+}
+
+/* --- Form Elements --- */
+form { display: grid; gap: 20px; }
+
+/* שמירה על המבנה המקורי של שורות ועמודות */
+.row { display: flex; gap: 20px; }
+.row .col { flex: 1; }
+
+label { 
+    display: block; 
+    font-size: 14px; 
+    color: var(--text-dark); 
+    margin-bottom: 8px; 
+    font-weight: 500;
+}
+
+input[type="text"], input[type="email"], input[type="tel"], select, textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--input-bg);
+    color: var(--text-dark);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    outline: none;
+    font-size: 15px;
+    font-family: 'Heebo', sans-serif;
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 0 4px var(--input-focus-shadow);
+}
+
+input::placeholder, textarea::placeholder {
+    color: #ccc;
+}
+
+.small { font-size: 13px; color: var(--text-light); margin-top: 10px; }
+
+/* --- Buttons --- */
+.actions { 
+    display: flex; 
+    gap: 15px; 
+    margin-top: 15px; 
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 30px; /* סגנון עגול כמו בנחיתה */
+    cursor: pointer;
+    border: 1px solid transparent;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Heebo', sans-serif;
+    text-decoration: none;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+/* כפתור ראשי (זהב) */
+.btn-primary {
+    background: var(--primary-gold);
+    color: white;
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
+}
+
+.btn-primary:hover {
+    background: var(--primary-gold-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(197, 160, 89, 0.4);
+}
+
+/* כפתור משני (Outline/Ghost) */
+.btn-ghost {
+    background: transparent;
+    border: 1px solid var(--text-soft);
+    color: var(--text-soft);
+}
+
+.btn-ghost:hover {
+    background: var(--text-dark);
+    color: white;
+    border-color: var(--text-dark);
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    .header { padding: 15px 20px; }
+    .row { flex-direction: column; gap: 15px; }
+    .form-card { padding: 25px; }
+    
+    /* התאמת דקורציות למובייל */
+    .floating-diamond {
+        font-size: 150px;
+        left: -20px;
+        top: 5%;
+    }
+    .constructed-ring {
+        width: 120px;
+        height: 120px;
+        bottom: 2%;
+        right: -30px;
+    }
+    .ring-band { border-width: 15px; }
+    .ring-stone { font-size: 50px; top: -25px; }
+}
+
+/* --- כפתורים משניים: מסגרת זהב, טקסט זהב, רקע לבן --- */
+.btn-outline-gold {
+    background: #ffffff;             /* רקע לבן נקי */
+    border: 1px solid var(--primary-gold); /* מסגרת זהב עדינה */
+    color: var(--primary-gold);      /* טקסט בצבע זהב */
+    font-weight: 500;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* צללית קטנה להפרדה מהרקע */
+    transition: all 0.3s ease;
+}
+
+/* במעבר עכבר - הכפתור מתמלא */
+.btn-outline-gold:hover {
+    background: var(--primary-gold);
+    color: #ffffff;
+    border-color: var(--primary-gold);
+    box-shadow: 0 4px 10px rgba(197, 160, 89, 0.3);
+    transform: translateY(-2px);
+}
+
+/* טיפול באייקונים בתוך הכפתור */
+.btn-outline-gold i {
+    color: var(--primary-gold);
+    transition: color 0.3s ease;
+}
+
+.btn-outline-gold:hover i {
+    color: #ffffff;
+}
