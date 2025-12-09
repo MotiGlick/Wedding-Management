@@ -222,10 +222,61 @@ button.toggle-pass:hover {
 
 .terms { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; color: #6e5a42; }
 
-@media (max-width: 720px) { 
-    form { grid-template-columns: 1fr; } 
-    
-    /* הקטנת הקישוטים במובייל */
-    .floating-diamond { font-size: 120px; left: -20px; top: 10%; }
-    .constructed-ring { width: 120px; bottom: 2%; right: -20px; }
+@media (max-width: 600px) {
+
+  .wedding-header h1 {
+    font-size: 2.5rem;
+  }
+
+  .wrap {
+    padding: 1rem;
+  }
+
+  .card {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  form {
+    grid-template-columns: 1fr; /* הופך את כל השדות לשורה אחת */
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    font-size: 1rem;
+    padding: 12px 14px;
+    padding-left: 50px;
+  }
+
+  button[type="submit"] {
+    font-size: 1.1rem;
+    padding: 12px;
+  }
+
+  .floating-diamond {
+    font-size: 180px;
+    right: -80px;
+    opacity: 0.05;
+  }
+
+  .constructed-ring {
+    width: 160px;
+    height: 160px;
+    bottom: 3%;
+    right: 3%;
+  }
+
+  .ring-stone {
+    font-size: 70px;
+    top: -30px;
+  }
+
+  body::before {
+    width: 600px;
+    height: 700px;
+    top: -140px;
+    left: -200px;
+    opacity: 0.15;
+  }
 }
