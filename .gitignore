@@ -1,2 +1,5 @@
 # קבצים המכילים סודות (סביבה)
+
 backend/.env
+node_modules
+>>>>>>> f307b386a0b84ee9ad481e78c37347ca92510e1f

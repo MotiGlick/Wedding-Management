@@ -10,45 +10,54 @@ const guestRoutes = require('./routes/guest.routes.js');
 const cors = require('cors');
 
 const app = express();
+// Render נותן פורט משלו, לכן חשוב להשתמש ב-process.env.PORT
 const PORT = process.env.PORT || 3000;
 
+// --- 1. עדכון CORS לייצור ---
 app.use(cors({
-   origin: [
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
-        'http://localhost:5500', 
-        'http://localhost:5500',
-        'http://127.0.0.1:5500'
-    ],
+    origin: '*', // מאפשר גישה מכל כתובת (חיוני להתחלה ב-Render)
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
 }));
 app.options(/.*/, cors());
 
-
 // --- Middlewares ---
-// 2. טיפול ב-JSON
 app.use(express.json()); 
-app.use(express.static(path.join(__dirname, 'public'))); 
+
+// --- 2. עדכון נתיב לקבצים סטטיים ---
+// __dirname = התיקייה הנוכחית (backend)
+// ../public = התיקייה שמעליה (הראשית) ושם public
+app.use(express.static(path.join(__dirname, '../Frontend'))); 
 
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/guests', guestRoutes);
 
+// נתיב Fallback: אם המשתמש נכנס לכתובת לא מוכרת, נחזיר לו את דף הבית
+// זה חשוב מאוד באפליקציות Single Page
+// השינוי הוא בתוך הסוגריים של ה-get
+// במקום '*' (מחרוזת), נשתמש ב- /(.*)/ (RegExp)
+app.get(/(.*)/, (req, res) => {
+    res.sendFile(path.join(__dirname, '../Frontend/login.html'));
+});
+
 async function startServer() {
     try {
-        console.log("🚩 [SERVER] Calling connectDB()...");
+        console.log("🚩 [SERVER] Connecting to DB...");
         await connectDB();
         
-        console.log("🚩 [SERVER] Calling syncDB()...");
+        console.log("🚩 [SERVER] Syncing DB...");
         
-        // --- שים לב: force: true ימחק את הטבלה ויבנה אותה מחדש ---
-        // זה יפתור את הבעיה של 'column side missing'
-        await syncDB({ force: true });
+        // --- 3. סנכרון חכם ---
+        // אם אנחנו בייצור: alter: true (מעדכן טבלאות בלי למחוק מידע)
+        // אם אנחנו בבית: force: false (שומר על המידע)
+        // שנה ל-force: true ידנית רק אם אתה רוצה לאפס את ה-DB המקומי
+        const isProduction = process.env.NODE_ENV === 'production';
+        await syncDB({ alter: true }); 
         
         app.listen(PORT, () => {
-            console.log(`✅ [SERVER] Server running on http://localhost:${PORT}`);
+            console.log(`✅ [SERVER] Server is running on port ${PORT}`);
         });
     } catch (error) {
         console.error("❌ [SERVER] Failed to start server:", error);

@@ -5,7 +5,7 @@ const User = require('./User');
 const Task = require('./Task'); 
 const Expense = require('./Expense');
 const Guest = require('./Guest');
-const Message = require('./Message'); // אם אתה צריך הודעות
+const Message = require('./message'); // אם אתה צריך הודעות
 
 // --- קשרים ---
 // User <-> Task
