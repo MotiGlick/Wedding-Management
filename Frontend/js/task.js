@@ -1,341 +1,434 @@
 // =======================================================
-//   פונקציות עזר לאימות ו-Token
+//   משתנים גלובליים
+// =======================================================
+let allTasks = []; // משתנה גלובלי כדי שיהיה נגיש גם ל-sendReminder וגם ללוח השנה
+
+// =======================================================
+//   פונקציות עזר לאימות ו-Token
 // =======================================================
 
 function getToken() {
     return sessionStorage.getItem('authToken');
-  //return localStorage.getItem('authToken'); 
 }
 
 function handleUnauthorized() {
-    console.error("401: Unauthorized - נדרש להתחבר מחדש.");
-    
-    // 1. ניקוי הטוקן הפג תוקף
+    console.error("401: Unauthorized - נדרש להתחבר מחדש.");
+    
+    // 1. ניקוי הטוקן הפג תוקף
     sessionStorage.removeItem('authToken');
-    //localStorage.removeItem('authToken'); 
-    
-    // 2. הודעה למשתמש
-    alert("החיבור פג תוקף או אינו מאומת. אנא התחבר מחדש.");
-    
-    // 3. הפניית המשתמש לדף ההתחברות
-    window.location.href = './login.html'; 
+    
+    // 2. הודעה למשתמש
+    alert("החיבור פג תוקף או אינו מאומת. אנא התחבר מחדש.");
+    
+    // 3. הפניית המשתמש לדף ההתחברות
+    window.location.href = './login.html'; 
 }
 
 function getAuthHeaders() {
-    const token = getToken();
-    
-    if (!token) {
-        handleUnauthorized();
-        throw new Error("Missing Auth Token"); 
-    }
-    
-    return {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}` 
-    };
+    const token = getToken();
+    
+    if (!token) {
+        handleUnauthorized();
+        throw new Error("Missing Auth Token"); 
+    }
+    
+    return {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}` 
+    };
 }
 
 // =======================================================
-//   פונקציות API - עם מחיקה ועדכון תיאור
+//   פונקציות API - עם מחיקה ועדכון תיאור
 // =======================================================
 
 async function getTasks() {
-  try {
-    const res = await fetch("http://localhost:3000/api/tasks", { headers: getAuthHeaders() });
-    if (res.status === 401) { handleUnauthorized(); return []; }
-    if (!res.ok) { console.error(`API Error: ${res.status}`); return []; }
-    return res.json(); 
-  } catch (error) {
-    if (error.message && error.message.includes("Missing Auth Token")) return [];
-    console.error("Fetch Error:", error);
-    return [];
-  }
+  try {
+    const res = await fetch("/api/tasks", { headers: getAuthHeaders() });
+    if (res.status === 401) { handleUnauthorized(); return []; }
+    if (!res.ok) { console.error(`API Error: ${res.status}`); return []; }
+    return res.json(); 
+  } catch (error) {
+    if (error.message && error.message.includes("Missing Auth Token")) return [];
+    console.error("Fetch Error:", error);
+    return [];
+  }
 }
 
 async function addTask(title, date, description = null) {
-  try {
-    const res = await fetch("http://localhost:3000/api/tasks", {
-      method: "POST",
-      headers: getAuthHeaders(),
-      // **שליחת התיאור האופציונלי**
-      body: JSON.stringify({ title, date, description }) 
-    });
-    if (res.status === 401) { handleUnauthorized(); return; }
-    location.reload();
-  } catch (error) {
-     if (!error.message.includes("Missing Auth Token")) { console.error("Error adding task:", error); }
-  }
+  try {
+    const res = await fetch("/api/tasks", {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ title, date, description }) 
+    });
+    if (res.status === 401) { handleUnauthorized(); return; }
+    location.reload();
+  } catch (error) {
+     if (!error.message.includes("Missing Auth Token")) { console.error("Error adding task:", error); }
+  }
 }
 
 async function deleteRemoteTask(taskId) {
-  try {
-    const res = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
-      method: "DELETE",
-      headers: getAuthHeaders(),
-    });
-    if (res.status === 401) { handleUnauthorized(); return; }
-    if (!res.ok) throw new Error("Failed to delete task");
-    location.reload(); 
-  } catch (error) {
-     if (!error.message.includes("Missing Auth Token")) { console.error("Error deleting task:", error); }
-  }
+  try {
+    const res = await fetch(`/api/tasks/${taskId}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+    if (res.status === 401) { handleUnauthorized(); return; }
+    if (!res.ok) throw new Error("Failed to delete task");
+    location.reload(); 
+  } catch (error) {
+     if (!error.message.includes("Missing Auth Token")) { console.error("Error deleting task:", error); }
+  }
 }
 
 async function updateTaskDescription(taskId, description) {
-  try {
-    const res = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
-      method: "PUT", // יש להתאים לשיטת ה-Route שהגדרת בשרת
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ description })
-    });
-    if (res.status === 401) { handleUnauthorized(); return; }
-    if (!res.ok) throw new Error("Failed to update description");
+  try {
+    const res = await fetch(`/api/tasks/${taskId}`, {
+      method: "PUT", 
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ description })
+    });
+    if (res.status === 401) { handleUnauthorized(); return; }
+    if (!res.ok) throw new Error("Failed to update description");
 
-    alert("התיאור נשמר בהצלחה!");
-    location.reload(); // רענון הדף כדי לעדכן את נתוני המשימות
-  } catch (error) {
-     if (!error.message.includes("Missing Auth Token")) { console.error("Error updating description:", error); }
-  }
+    alert("התיאור נשמר בהצלחה!");
+    location.reload(); 
+  } catch (error) {
+     if (!error.message.includes("Missing Auth Token")) { console.error("Error updating description:", error); }
+  }
 }
 
 
 // =======================================================
-//   לוגיקת המודאל להוספת משימה (addTaskModal) - **מעודכן**
+//   לוגיקת המודאל להוספת משימה (addTaskModal)
 // =======================================================
 
 function setupModalLogic() {
-    const modal = document.getElementById('addTaskModal');
-    const titleInput = document.getElementById('modal-task-title');
-    // **אלמנט התיאור החדש**
-    const descriptionInput = document.getElementById('modal-task-description-add'); 
+    const modal = document.getElementById('addTaskModal');
+    const titleInput = document.getElementById('modal-task-title');
+    const descriptionInput = document.getElementById('modal-task-description-add'); 
+    const dateInput = document.getElementById('modal-task-date');
+    const saveBtn = document.getElementById('modal-save-btn');
+    const cancelBtn = document.getElementById('modal-cancel-btn');
 
-    const dateInput = document.getElementById('modal-task-date');
-    const saveBtn = document.getElementById('modal-save-btn');
-    const cancelBtn = document.getElementById('modal-cancel-btn');
+    if (!modal) return;
 
-    if (!modal) return;
+    window.openAddTaskModal = (dateStr) => {
+        dateInput.value = dateStr;
+        titleInput.value = ''; 
+        descriptionInput.value = ''; 
+        modal.classList.add('active');
+        titleInput.focus();
+    };
 
-    window.openAddTaskModal = (dateStr) => {
-        dateInput.value = dateStr;
-        titleInput.value = ''; 
-        descriptionInput.value = ''; // ניקוי שדה התיאור
-        modal.classList.add('active');
-        titleInput.focus();
-    };
+    const closeModal = () => {
+        modal.classList.remove('active');
+    };
 
-    const closeModal = () => {
-        modal.classList.remove('active');
-    };
+    saveBtn.onclick = () => {
+        const title = titleInput.value.trim();
+        const date = dateInput.value;
+        const description = descriptionInput.value.trim(); 
 
-    saveBtn.onclick = () => {
-        const title = titleInput.value.trim();
-        const date = dateInput.value;
-        const description = descriptionInput.value.trim(); // איסוף התיאור
+        if (title) {
+            addTask(title, date, description);
+            closeModal();
+        } else {
+            alert("אנא הזן כותרת משימה.");
+        }
+    };
 
-        if (title) {
-            // **שליחת התיאור בבקשה**
-            addTask(title, date, description);
-            closeModal();
-        } else {
-            alert("אנא הזן כותרת משימה.");
-        }
-    };
-
-    cancelBtn.onclick = closeModal;
-    modal.onclick = (event) => {
-        if (event.target === modal) {
-            closeModal();
-        }
-    };
+    cancelBtn.onclick = closeModal;
+    modal.onclick = (event) => {
+        if (event.target === modal) {
+            closeModal();
+        }
+    };
 }
 
 
 // =======================================================
-//   לוגיקת המודאל לצפייה/עריכה (viewTaskModal)
+//   לוגיקת המודאל לצפייה/עריכה (viewTaskModal)
 // =======================================================
 
 function setupViewModalLogic() {
-    const modal = document.getElementById('viewTaskModal');
-    if (!modal) return; 
-    
-    const titleEl = document.getElementById('view-task-title');
-    const dateEl = document.getElementById('view-task-date');
-    const idInput = document.getElementById('view-task-id');
-    const descriptionInput = document.getElementById('view-task-description');
-    const saveBtn = document.getElementById('modal-save-description-btn');
-    const deleteBtn = document.getElementById('modal-delete-btn');
-    const closeBtn = document.getElementById('modal-close-view-btn');
-
-    const closeModal = () => {
-        modal.classList.remove('active');
-    };
-
-    // פותח את המודאל וממלא נתונים
-    window.openViewTaskModal = (event) => {
-        titleEl.textContent = event.title;
-        dateEl.textContent = event.start ? event.start.toLocaleDateString('he-IL') : 'לא ידוע';
-        idInput.value = event.id;
-        
-        // טעינת התיאור משדה extendedProps
-        const currentDescription = event.extendedProps.description || ''; 
-        descriptionInput.value = currentDescription;
-
-        modal.classList.add('active'); // השתמש ב-classList.add
-    };
-
-    // לוגיקת שמירת תיאור
-    saveBtn.onclick = async () => {
-        const taskId = idInput.value;
-        const newDescription = descriptionInput.value;
-        await updateTaskDescription(taskId, newDescription); 
-        closeModal(); 
-    };
-
-    // לוגיקת מחיקת משימה
-    deleteBtn.onclick = async () => {
-        const taskId = idInput.value;
-        if (confirm(`האם אתה בטוח שברצונך למחוק את המשימה "${titleEl.textContent}"?`)) {
-            await deleteRemoteTask(taskId);
-            closeModal();
-        }
-    };
-
-    closeBtn.onclick = closeModal;
-    modal.onclick = (event) => {
-        if (event.target === modal) {
-            closeModal();
-        }
-    };
-}
-
-
-// =======================================================
-//   לוגיקת כרטיסיית התזכורת החדשה
-// =======================================================
-
-function sendReminder() {
-    const reminderType = document.getElementById('reminder-type').value;
-    const nextTask = document.getElementById("next-task").textContent;
-
-    if (reminderType === 'none' || nextTask.includes("אין משימות")) {
-        alert("אנא בחר/י אמצעי תזכורת וודא/י שקיימת משימה קרובה.");
-        return;
-    }
-
-    const taskTitle = nextTask.split('—')[0].trim();
+    const modal = document.getElementById('viewTaskModal');
+    if (!modal) return; 
     
-    if (reminderType === 'phone') {
-        alert(`נשלחת תזכורת SMS עבור המשימה: "${taskTitle}"`);
-        // לוגיקת שליחת SMS אמיתית תבוא כאן...
-    } else if (reminderType === 'email') {
-        alert(`נשלחת תזכורת אימייל עבור המשימה: "${taskTitle}"`);
-        // לוגיקת שליחת אימייל אמיתית תבוא כאן...
+    const titleEl = document.getElementById('view-task-title');
+    const dateEl = document.getElementById('view-task-date');
+    const idInput = document.getElementById('view-task-id');
+    const descriptionInput = document.getElementById('view-task-description');
+    const saveBtn = document.getElementById('modal-save-description-btn');
+    const deleteBtn = document.getElementById('modal-delete-btn');
+    const closeBtn = document.getElementById('modal-close-view-btn');
+
+    const closeModal = () => {
+        modal.classList.remove('active');
+    };
+
+    // פותח את המודאל וממלא נתונים
+    window.openViewTaskModal = (event) => {
+        titleEl.textContent = event.title;
+        dateEl.textContent = event.start ? event.start.toLocaleDateString('he-IL') : 'לא ידוע';
+        idInput.value = event.id;
+        
+        // טעינת התיאור משדה extendedProps
+        const currentDescription = event.extendedProps.description || ''; 
+        descriptionInput.value = currentDescription;
+
+        modal.classList.add('active'); 
+    };
+
+    // לוגיקת שמירת תיאור
+    saveBtn.onclick = async () => {
+        const taskId = idInput.value;
+        const newDescription = descriptionInput.value;
+        await updateTaskDescription(taskId, newDescription); 
+        closeModal(); 
+    };
+
+    // לוגיקת מחיקת משימה
+    deleteBtn.onclick = async () => {
+        const taskId = idInput.value;
+        if (confirm(`האם אתה בטוח שברצונך למחוק את המשימה "${titleEl.textContent}"?`)) {
+            await deleteRemoteTask(taskId);
+            closeModal();
+        }
+    };
+
+    closeBtn.onclick = closeModal;
+    modal.onclick = (event) => {
+        if (event.target === modal) {
+            closeModal();
+        }
+    };
+}
+
+
+// =======================================================
+//   פונקציות עזר לטיפול ב-UI התזכורות החדשות
+// =======================================================
+
+// פונקציה להצגה/הסתרה של שדות הקלט המותנים (זמן יחסי/אבסולוטי)
+function toggleReminderInputs(selectedOption) {
+    const relativeContainer = document.getElementById('custom-relative-container'); // X יחידות לפני
+    const absoluteContainer = document.getElementById('custom-absolute-container'); // תאריך ספציפי
+    
+    if (relativeContainer) relativeContainer.style.display = 'none';
+    if (absoluteContainer) absoluteContainer.style.display = 'none';
+
+    if (selectedOption === 'custom_relative') {
+        if (relativeContainer) relativeContainer.style.display = 'flex';
+    } else if (selectedOption === 'custom_absolute') {
+        if (absoluteContainer) absoluteContainer.style.display = 'block';
+    }
+}
+
+// פונקציה למילוי רשימת המשימות בבלוק התזכורות
+function populateTaskSelect(tasks) {
+    const select = document.getElementById('reminder-task-select');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">בחר משימה...</option>';
+    
+    tasks.forEach(task => {
+        const option = document.createElement('option');
+        option.value = task.id; 
+        option.textContent = `${new Date(task.date).toLocaleDateString('he-IL')} - ${task.title}`;
+        select.appendChild(option);
+    });
+}
+
+
+// =======================================================
+//   לוגיקת כרטיסיית התזכורת - מעודכנת
+// =======================================================
+
+async function sendReminder() {
+    // 1. איסוף הנתונים מהטופס
+    const selectedTaskId = document.getElementById('reminder-task-select').value;
+    const reminderType = document.querySelector('input[name="reminder-type"]:checked')?.value;
+    const reminderSchedule = document.querySelector('input[name="reminder-schedule"]:checked')?.value;
+
+    // בדיקות תקינות בסיסיות
+    if (!selectedTaskId) return alert("אנא בחר משימה לשליחת תזכורת.");
+    if (!reminderType) return alert("אנא בחר סוג תזכורת (אימייל).");
+    if (!reminderSchedule) return alert("אנא בחר מתי לשלוח את התזכורת.");
+
+    // 2. מציאת המשימה המקורית ברשימה (כדי לדעת את התאריך שלה)
+    // הערה: allTasks הוא המשתנה הגלובלי שהוגדר למעלה
+    const task = allTasks.find(t => t.id == selectedTaskId);
+    if (!task) return alert("שגיאה: המשימה לא נמצאה בזיכרון.");
+
+    let triggerAt = new Date();
+
+    // 3. חישוב זמן התזכורת (triggerAt)
+    if (reminderSchedule === 'custom_absolute') {
+        // אפשרות א': המשתמש בחר תאריך ושעה ספציפיים
+        const absoluteInput = document.getElementById('custom-reminder-datetime').value;
+        if (!absoluteInput) return alert("אנא בחר תאריך ושעה לתזכורת.");
+        triggerAt = new Date(absoluteInput);
+    
+    } else if (reminderSchedule === 'custom_relative') {
+        // אפשרות ב': זמן יחסי (למשל: שעתיים לפני)
+        const amount = parseInt(document.getElementById('relative-amount-input').value);
+        const unit = document.getElementById('relative-unit-select').value; // 'minutes', 'hours', 'days'
+
+        if (!amount) return alert("אנא הזן כמות זמן.");
+
+        // לוקחים את תאריך המשימה כנקודת מוצא
+        let taskTime = new Date(task.date); 
+        
+        // הערה: אם המשימה שמורה ללא שעה (רק תאריך), היא נחשבת 00:00 בלילה.
+        // כאן אנחנו מפחיתים את הזמן שבחר המשתמש:
+        switch (unit) {
+            case 'minutes':
+                taskTime.setMinutes(taskTime.getMinutes() - amount);
+                break;
+            case 'hours':
+                taskTime.setHours(taskTime.getHours() - amount);
+                break;
+            case 'days':
+                taskTime.setDate(taskTime.getDate() - amount);
+                break;
+        }
+        triggerAt = taskTime;
+    }
+
+    // בדיקה שלא מנסים לקבוע תזכורת לעבר
+    if (triggerAt < new Date()) {
+        if (!confirm("זמן התזכורת שחושב הוא בעבר. האם לשלוח בכל זאת? (היא תישלח מיד)")) {
+            return;
+        }
+    }
+
+    // 4. שליחת הבקשה לשרת
+    try {
+        const res = await fetch("/api/reminders", {
+            method: "POST",
+            headers: getAuthHeaders(), // שימוש בפונקציית האימות שלך
+            body: JSON.stringify({
+                taskId: selectedTaskId,
+                triggerAt: triggerAt.toISOString(), // המרה לפורמט שהשרת מבין
+                type: reminderType
+            })
+        });
+
+        if (res.ok) {
+            alert(`תזכורת נקבעה בהצלחה ל-${triggerAt.toLocaleString()}`);
+            // אופציונלי: סגירת המודל או איפוס הטופס
+        } else {
+            const data = await res.json();
+            alert("שגיאה בשמירה: " + (data.error || "לא ידועה"));
+        }
+    } catch (error) {
+        console.error(error);
+        alert("שגיאת תקשורת עם השרת");
     }
 }
 
 
 // =======================================================
-//   פונקציה לטיפול בלחיצה על אירוע קיים (EVENT CLICK)
+//   פונקציה לטיפול בלחיצה על אירוע קיים (EVENT CLICK)
 // =======================================================
 
 function handleEventClick(info) {
-    // פותח את מודאל הצפייה/עריכה המעוצב
-    window.openViewTaskModal(info.event);
-    
-    // מונע את פעולת ברירת המחדל של FullCalendar
-    info.jsEvent.preventDefault(); 
+    // פותח את מודאל הצפייה/עריכה המעוצב
+    window.openViewTaskModal(info.event);
+    
+    // מונע את פעולת ברירת המחדל של FullCalendar
+    info.jsEvent.preventDefault(); 
 }
 
 
 // =======================================================
-//   יצירת לוח שנה וטעינת נתונים - **הפונקציה העיקרית**
+//   יצירת לוח שנה וטעינת נתונים - **הפונקציה העיקרית**
 // =======================================================
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-  // 1. לוגיקה לפתיחת סרגל הצד (מעודכן לביטול הזחת body)
-    const hamburgerBtn = document.getElementById('hamburger-btn');
-    const sidebar = document.getElementById('task-sidebar');
-    const body = document.body;
+  // 1. לוגיקה לפתיחת סרגל הצד
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const sidebar = document.getElementById('task-sidebar');
     
-    // **תיקון: הסרנו את body.classList.toggle('sidebar-offset');**
-    // עכשיו רק מחליף את המחלקה 'open' בסרגל (מה שמשנה את הרוחב שלו ב-CSS).
-    hamburgerBtn.addEventListener('click', function() {
-        sidebar.classList.toggle('open'); 
-    });
+    hamburgerBtn.addEventListener('click', function() {
+        sidebar.classList.toggle('open'); 
+    });
 
 
-  // 2. טעינת נתונים ומיון
-  const calendarEl = document.getElementById("calendar");
-  const allTasks = await getTasks();
-  allTasks.sort((a, b) => new Date(a.date) - new Date(b.date));
+  // 2. טעינת נתונים ומיון
+  const calendarEl = document.getElementById("calendar");
+  
+  // עדכון המשתנה הגלובלי (ללא const)
+  allTasks = await getTasks();
+  allTasks.sort((a, b) => new Date(a.date) - new Date(b.date));
 
- // 3. הגדרת לוגיקת המודאל להוספת משימה
- setupModalLogic(); 
-  
- // 4. הגדרת לוגיקת מודאל הצפייה/עריכה
- setupViewModalLogic(); 
+ // 🚩 קריאה לפונקציה החדשה למילוי הדרופדאון של התזכורות
+ populateTaskSelect(allTasks);
 
-  // 5. אתחול לוח השנה
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: "dayGridMonth",
-    initialDate: new Date(),
-    locale: "he",
-    direction: 'rtl', 
-    
-    // הגדרת שמות כפתורים מקצועיים
-    buttonText: {
-        day: 'יום',
-        week: 'שבוע',
-        month: 'חודש',
-        // **3. ביטול כפתור "היום" - לא מופיע כאן**
-    },
+ // 3. הגדרת לוגיקת המודאל להוספת משימה
+ setupModalLogic(); 
+  
+ // 4. הגדרת לוגיקת מודאל הצפייה/עריכה
+ setupViewModalLogic(); 
 
-    headerToolbar: {
-        // **3. ביטול כפתור "היום" - הסרנו את 'today' מכאן**
-        right: 'prev,next', 
-        center: 'title',
-        left: 'dayGridMonth,timeGridWeek,timeGridDay' 
-    },
+  // 5. אתחול לוח השנה
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: "dayGridMonth",
+    initialDate: new Date(),
+    locale: "he",
+    direction: 'rtl', 
+    
+    buttonText: {
+        day: 'יום',
+        week: 'שבוע',
+        month: 'חודש',
+    },
 
-    // קליק על תאריך פותח מודאל הוספה
-    dateClick: function(info) {
-        window.openAddTaskModal(info.dateStr); 
-    },
+    headerToolbar: {
+        right: 'prev,next', 
+        center: 'title',
+        left: 'dayGridMonth,timeGridWeek,timeGridDay' 
+    },
 
-    // קליק על אירוע פותח מודאל צפייה/עריכה
-    eventClick: function(info) {
-        handleEventClick(info);
-    },
+    dateClick: function(info) {
+        window.openAddTaskModal(info.dateStr); 
+    },
 
-    events: function(fetchInfo, successCallback) {
-        successCallback(allTasks.map(t => ({ 
-            id: t.id, 
-            title: t.title, 
-            date: t.date, 
-            start: t.date, 
-            extendedProps: {
-                // העברת התיאור האופציונלי למודאל הצפייה
-                description: t.description 
-            }
-        })));
-    }
-  });
+    eventClick: function(info) {
+        handleEventClick(info);
+    },
 
-  calendar.render();
+    events: function(fetchInfo, successCallback) {
+        successCallback(allTasks.map(t => ({ 
+            id: t.id, 
+            title: t.title, 
+            date: t.date, 
+            start: t.date, 
+            extendedProps: {
+                description: t.description 
+            }
+        })));
+    }
+  });
 
-  // 6. הצגת המשימה הקרובה + רשימת משימות
-  const nextTask = allTasks.find(t => new Date(t.date) >= new Date());
-  const nextTaskDiv = document.getElementById("next-task");
-  nextTaskDiv.textContent = nextTask ? `${nextTask.title} — ${nextTask.date}` : "אין משימות קרובות";
+  calendar.render();
 
-  const list = document.getElementById("task-list");
-  list.innerHTML = ''; 
+  // 6. הצגת המשימה הקרובה + רשימת משימות
+  const nextTask = allTasks.find(t => new Date(t.date) >= new Date());
+  const nextTaskDiv = document.getElementById("next-task");
+  nextTaskDiv.textContent = nextTask ? `${nextTask.date} - ${nextTask.title}` : "אין משימות קרובות";
 
-  allTasks.forEach(t => {
-    const li = document.createElement("li");
-    li.textContent = `${t.title} — ${t.date}`;
-    list.appendChild(li);
-  });
+  const list = document.getElementById("task-list");
+  list.innerHTML = ''; 
+
+  allTasks.forEach(t => {
+    const li = document.createElement("li");
+    li.textContent = `${t.date} - ${t.title}`;
+    list.appendChild(li);
+  });
 
 });

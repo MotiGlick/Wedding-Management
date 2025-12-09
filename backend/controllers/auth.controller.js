@@ -16,7 +16,7 @@ const generateToken = (id) => {
 };
 
 // ----------------------------------------------------
-// [POST] /register
+// [POST] /register - מעודכן עם יצירת טוקן
 // ----------------------------------------------------
 exports.register = async (req, res) => {
     try {
@@ -41,11 +41,23 @@ exports.register = async (req, res) => {
             password: hashedPassword
         });
 
+        // ======================================================
+        // 🚩 התיקון: יצירת טוקן מיד לאחר ההרשמה
+        // ======================================================
+        const token = generateToken(savedUser.id);
+
         res.status(201).json({
             message: 'User registered successfully!',
+            token: token, // <--- הוספנו את הטוקן כאן
+            user: {
+                id: savedUser.id,
+                email: savedUser.email,
+                username: savedUser.username
+            }
         });
 
     } catch (error) {
+        console.error("Registration Error:", error);
         res.status(500).json({ error: 'Server error during registration process.' });
     }
 };
@@ -106,20 +118,20 @@ exports.forgotPassword = async (req, res) => {
         const user = await User.findOne({ where: { email } });
 
         if (!user) {
-            // תגובה כללית למניעת חשיפת מידע על קיום משתמשים
             return res.status(200).json({ 
                 message: 'אם האימייל קיים במערכת, תישלח סיסמה זמנית.' 
             });
         }
 
         // יצירת סיסמה זמנית (8 תווים רנדומליים)
-        const tempPassword = crypto.randomBytes(4).toString('hex'); // תיצור סיסמה כמו: a3f5d2e1
+        const tempPassword = crypto.randomBytes(4).toString('hex');
         
-        // הצפנת הסיסמה הזמנית ושמירה במסד הנתונים
+        // שמירת הסיסמה הזמנית המוצפנת בשדה זמני (לא בשדה password הרגיל!)
         const salt = await bcrypt.genSalt(10);
         const hashedTempPassword = await bcrypt.hash(tempPassword, salt);
         
-        user.password = hashedTempPassword;
+        user.resetPasswordToken = hashedTempPassword; // שומרים את הסיסמה הזמנית כאן
+        user.resetPasswordExpire = new Date(Date.now() + 3600000); // תוקף שעה
         await user.save();
 
         // הכנת תוכן המייל
@@ -137,27 +149,26 @@ exports.forgotPassword = async (req, res) => {
                     
                     <p style="color: #d9534f; font-weight: bold;">⚠️ חשוב:</p>
                     <ul style="color: #666;">
-                        <li>השתמש בסיסמה זו כדי להתחבר למערכת</li>
-                        <li>מומלץ מאוד לשנות את הסיסמה מיד לאחר ההתחברות</li>
+                        <li>השתמש בסיסמה זו כדי לאפס את הסיסמה שלך</li>
+                        <li>הסיסמה הזמנית תקפה לשעה אחת בלבד</li>
                         <li>אל תשתף סיסמה זו עם אף אחד</li>
                     </ul>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="http://127.0.0.1:5500/Wedding-Management/Frontend/login.html" 
+                        <a href="http://127.0.0.1:5500/Wedding-Management/Frontend/resetpassword.html" 
                            style="background-color: #4a90e2; color: white; padding: 12px 30px; 
                                   text-decoration: none; border-radius: 5px; display: inline-block;">
-                            התחבר עכשיו
+                            אפס סיסמה עכשיו
                         </a>
                     </div>
                     
                     <p style="color: #999; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-                        אם לא ביקשת לאפס את הסיסמה, אנא התעלם ממייל זה והסיסמה הקודמת שלך תישאר בתוקף.
+                        אם לא ביקשת לאפס את הסיסמה, אנא התעלם ממייל זה.
                     </p>
                 </div>
             </div>
         `;
 
-        // שליחת המייל
         await sendMail({
             to: user.email,
             subject: '🔐 סיסמה זמנית - WedManage',
@@ -173,6 +184,67 @@ exports.forgotPassword = async (req, res) => {
         console.error("❌ שגיאה ב-forgotPassword:", error);
         res.status(500).json({ 
             message: 'שגיאה פנימית בשליחת הסיסמה הזמנית.' 
+        });
+    }
+};
+
+
+// ----------------------------------------------------
+// 💡 [POST] /resetpassword - איפוס סיסמה עם סיסמה זמנית
+// ----------------------------------------------------
+exports.resetPassword = async (req, res) => {
+    const { email, tempPassword, newPassword } = req.body;
+
+    if (!email || !tempPassword || !newPassword) {
+        return res.status(400).json({ message: 'נא למלא את כל השדות.' });
+    }
+
+    if (newPassword.length < 6) {
+        return res.status(400).json({ message: 'הסיסמה החדשה חייבת להכיל לפחות 6 תווים.' });
+    }
+
+    try {
+        const user = await User.findOne({ where: { email } });
+
+        if (!user) {
+            return res.status(404).json({ message: 'משתמש לא נמצא.' });
+        }
+
+        // בדיקה שיש סיסמה זמנית ושהיא לא פגה
+        if (!user.resetPasswordToken || !user.resetPasswordExpire) {
+            return res.status(400).json({ message: 'לא נמצאה בקשת איפוס סיסמה פעילה.' });
+        }
+
+        if (new Date() > user.resetPasswordExpire) {
+            return res.status(400).json({ message: 'הסיסמה הזמנית פגה תוקף. אנא בקש סיסמה חדשה.' });
+        }
+
+        // בדיקה שהסיסמה הזמנית נכונה
+        const isMatch = await bcrypt.compare(tempPassword, user.resetPasswordToken);
+
+        if (!isMatch) {
+            return res.status(400).json({ message: 'הסיסמה הזמנית שגויה.' });
+        }
+
+        // הצפנת הסיסמה החדשה
+        const salt = await bcrypt.genSalt(10);
+        const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+        // עדכון הסיסמה וניקוי השדות הזמניים
+        user.password = hashedNewPassword;
+        user.resetPasswordToken = null;
+        user.resetPasswordExpire = null;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'הסיסמה עודכנה בהצלחה!'
+        });
+
+    } catch (error) {
+        console.error("❌ שגיאה ב-resetPassword:", error);
+        res.status(500).json({ 
+            message: 'שגיאה פנימית בשינוי הסיסמה.' 
         });
     }
 };

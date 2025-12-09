@@ -67,7 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
             setGlobalMessage('...שולח בקשה לאיפוס סיסמה. אנא המתן...');
 
             try {
-                const response = await fetch('http://localhost:3000/api/auth/forgotpassword', {
+                // ✅ תיקון: נתיב יחסי במקום localhost
+                const response = await fetch('/api/auth/forgotpassword', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: email })
@@ -77,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     // הצלחה: מעבר לדף הבא
-                    // אופציונלי: שמירת הודעה ל-sessionStorage כדי להציג אותה בדף הבא
                     sessionStorage.setItem('resetMessage', 'נשלח מייל לאיפוס סיסמה לכתובתך.');
                     window.location.href = 'email_password.html';
                 } else {
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (error) {
                 console.error('שגיאת רשת ב-forgotpassword:', error);
-                setGlobalMessage('שגיאת רשת. ודא שהשרת פועל על פורט 3000.', true);
+                setGlobalMessage('שגיאת רשת. ודא שהשרת פועל.', true);
             }
         });
     }
@@ -98,7 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setGlobalMessage('...מתחבר לשרת...');
 
         try {
-            const response = await fetch('http://localhost:3000/api/auth/login', {
+            // ✅ תיקון: נתיב יחסי במקום localhost
+            const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -127,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             // שגיאות רשת
             console.error('Network or server error:', error);
-            setGlobalMessage('אירעה שגיאה בחיבור לשרת. ודא שהשרת פועל.', true);
+            setGlobalMessage('אירעה שגיאה בחיבור לשרת.', true);
         }
     }
 

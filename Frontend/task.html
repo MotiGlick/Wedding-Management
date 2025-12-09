@@ -35,29 +35,79 @@
         </div>
         
         <div class="reminder-card">
-            <h3><i class="fas fa-bell"></i> שליחת תזכורות</h3>
-            <p style="color: var(--text-sub); font-size: 0.9em; margin-bottom: 15px;">בחר/י אמצעי לשליחת תזכורת על המשימה הקרובה.</p>
-            
-            <div class="input-group" style="margin-bottom: 10px;">
-                <label for="reminder-type" style="color: var(--gold);">אמצעי תזכורת:</label>
-                <select id="reminder-type" style="
-                    width: 100%; 
-                    padding: 8px; 
-                    border-radius: 8px; 
-                    background: var(--bg-main); 
-                    border: 1px solid #2b3750;
-                    color: var(--text-main);
-                ">
-                    <option value="none">בחר...</option>
-                    <option value="phone">טלפון (SMS)</option>
-                    <option value="email">אימייל</option>
-                </select>
-            </div>
-
-            <button class="btn btn-primary" onclick="sendReminder()" style="width: 100%;">
-                שלח תזכורת
-            </button>
+    <h3><i class="fas fa-bell"></i> שליחת תזכורות</h3>
+    <div class="input-group" style="margin-bottom: 15px;">
+        <label style="color: var(--gold);">בחר משימה לתזכורת:</label>
+        <select id="reminder-task-select" style="
+            width: 100%; 
+            padding: 8px; 
+            border-radius: 8px; 
+            background: var(--bg-main); 
+            border: 1px solid #2b3750;
+            color: var(--text-main);
+            margin-top: 5px;
+        ">
+            <option value="">בחר משימה...</option>
+        </select>
+    </div>
+    
+    <div class="input-group">
+        <label style="color: var(--gold);">אמצעי תזכורת:</label>
+        <div id="reminder-method-options" style="display: flex; gap: 15px; margin-top: 5px; margin-bottom: 15px;">
+            <label>
+                <input type="radio" name="reminder-type" value="email" checked>  אימייל
+            </label>
+            <label>
+                <input type="radio" name="reminder-type" value="phone">  SMS
+            </label>
         </div>
+    </div>
+
+   <div class="input-group">
+    <label style="color: var(--gold);">מתי לשלוח:</label>
+    <div id="reminder-time-options" style="margin-top: 5px;">
+        
+       
+        
+        
+
+
+    <div id="custom-relative-container" style="display: none; margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+        <input type="number" id="relative-amount-input" min="1" value="1" style="width: 50px; padding: 8px; border-radius: 8px; border: 1px solid #2b3750; text-align: center;">
+        
+        <select id="relative-unit-select" style="padding: 8px; border-radius: 8px; border: 1px solid #2b3750; background: var(--bg-main); color: var(--text-main);">
+            <option value="minutes">דקות</option>
+            <option value="hours">שעות</option>
+            <option value="days">ימים</option>
+        </select>
+        <label style="color: var(--text-sub);">לפני המשימה</label>
+    </div>
+
+    <div id="custom-absolute-container" style="display: none; margin-top: 10px;">
+        <input type="datetime-local" id="custom-reminder-datetime" style="width: 100%; padding: 8px; border-radius: 8px; background: var(--bg-main); border: 1px solid #2b3750; color: var(--text-main);">
+    </div>
+</div>
+
+    <div class="input-group" style="margin-top: 15px;">
+        <label style="color: var(--gold);">למי לשלוח:</label>
+        <div id="reminder-recipient-options" style="display: flex; gap: 15px; margin-top: 5px; margin-bottom: 15px;">
+            <label>
+                <input type="radio" name="reminder-recipient" value="me" checked> אני
+            </label>
+            <label>
+                <input type="radio" name="reminder-recipient" value="partner"> בן/בת הזוג
+            </label>
+            <label>
+                <input type="radio" name="reminder-recipient" value="both"> שנינו
+            </label>
+        </div>
+    </div>
+<button  type="button" onclick="sendReminder()" class="btn-primary"   style="width: 100%;">אשר תזכורת</button>
+
+    
+</div>
+
+          
     </aside>
 
     <div class="back-link-container">
@@ -71,6 +121,12 @@
     </section>
 
     <script src="js/task.js"></script>
+
+
+    <div class="tasks-list">
+    <h3>רשימת המשימות</h3>
+    <div id="task-list" class="task-card-container"></div>
+</div>
 
     <div id="addTaskModal" class="modal-overlay">
         <div class="modal-content">
