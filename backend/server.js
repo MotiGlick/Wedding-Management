@@ -15,6 +15,12 @@ const PORT = process.env.PORT || 3000;
 
 // --- 1. עדכון CORS לייצור ---
 app.use(cors({
+   origin: [
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'http://localhost:5500', 
+        'http://127.0.0.1:5500'
+    ],
     origin: '*', // מאפשר גישה מכל כתובת (חיוני להתחלה ב-Render)
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
@@ -49,6 +55,9 @@ async function startServer() {
         
         console.log("🚩 [SERVER] Syncing DB...");
         
+        // --- שים לב: force: true ימחק את הטבלה ויבנה אותה מחדש ---
+        // זה יפתור את הבעיה של 'column side missing'
+        await syncDB({ alert: true });
         // --- 3. סנכרון חכם ---
         // אם אנחנו בייצור: alter: true (מעדכן טבלאות בלי למחוק מידע)
         // אם אנחנו בבית: force: false (שומר על המידע)
