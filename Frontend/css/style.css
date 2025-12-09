@@ -1,7 +1,7 @@
 :root {
-  --bg: #fff5e6;              /* רקע שמנת חם */
-  --accent: #d4af37;          /* זהב חזק */
-  --accent-dark: #b8870f;     /* זהב כהה יותר */
+  --bg: #fff5e6;          /* רקע שמנת חם */
+  --accent: #d4af37;      /* זהב חזק */
+  --accent-dark: #b8870f; /* זהב כהה יותר */
   --muted: #4b4b4b;
   --success: #2e8b57;
   --error: #d9534f;
@@ -10,17 +10,15 @@
 
 /* רקע עם טבעות */
 body {
-  /* שינוי: min-height כדי להבטיח שהרקע מתפרש על כל גובה התוכן */
-  min-height: 100vh;
+  height: 100%;
   margin: 0;
   direction: rtl;
   background: linear-gradient(180deg, #fff5e6 0%, #ffe8c6 100%);
   color: #3b3b3b;
   position: relative;
-  overflow-x: hidden; /* מונע גלילה אופקית */
+  overflow-x: hidden;
 }
 
-/* הקישוט ברקע */
 body::before {
   content: "";
   position: absolute;
@@ -37,17 +35,17 @@ body::before {
 /* כותרת מזל טוב */
 .wedding-header {
   text-align: center;
-  padding: 60px 0 30px;
+  padding: 60px 20px 30px;
   position: relative;
   z-index: 1;
 }
 
 .wedding-header h1 {
-  font-size: 4rem; /* גדול יותר */
+  font-size: clamp(2rem, 8vw, 4rem);
   font-weight: 900;
   margin: 0;
   color: var(--accent);
-  letter-spacing: 3px;
+  letter-spacing: clamp(1px, 0.5vw, 3px);
   text-shadow: 
     0 0 8px var(--accent),
     0 0 16px #f7d17c,
@@ -59,9 +57,8 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* שינוי: מאפשר לתוכן לקבוע את גובה המסך כאשר הוא גולש */
-  min-height: calc(100vh - 80px); 
-  padding: 2rem;
+  min-height: 100vh;
+  padding: 1rem;
   position: relative;
   z-index: 1;
 }
@@ -71,13 +68,13 @@ body::before {
   max-width: 720px;
   background: rgba(255,255,255,0.98);
   border-radius: 20px;
-  padding: 36px;
+  padding: clamp(20px, 5vw, 36px);
   box-shadow: 0 12px 45px rgba(212,175,55,0.35);
   border: 1px solid #d4af37;
 }
 
 h1.card-title {
-  font-size: 1.9rem;
+  font-size: clamp(1.4rem, 4vw, 1.9rem);
   margin-bottom: 14px;
   color: var(--accent-dark);
 }
@@ -86,7 +83,7 @@ p.lead {
   color: #7a5e3c;
   margin-bottom: 26px;
   text-align: center;
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
 }
 
 form {
@@ -165,75 +162,50 @@ button[disabled] { opacity: 0.6; cursor: not-allowed; }
   cursor: pointer;
 }
 
-.terms { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; color: #6e5a42; }
+.terms { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  font-size: 0.95rem; 
+  color: #6e5a42; 
+}
 
-/* ------------------------------------------------ */
-/* התאמות רספונסיביות לנייד             */
-/* ------------------------------------------------ */
-
-/* טאבלטים וניידים גדולים (עד 720px) */
+/* התאמה למובייל */
 @media (max-width: 720px) { 
-  .wrap {
-    padding: 1rem; /* צמצום הפדינג סביב הכרטיס */
-    /* שינוי: מאפשר גלילה חלקה */
-    align-items: flex-start; 
-    padding-top: 50px;
-    padding-bottom: 50px;
+  form { 
+    grid-template-columns: 1fr; 
   }
   
-  form {
-    grid-template-columns: 1fr; /* מעבר לטור אחד בטופס */
-  }
-
-  .card {
-    padding: 25px; /* צמצום הפדינג הפנימי של הכרטיס */
-    margin: 0; /* ביטול מרווחים חיצוניים בכרטיס */
+  .wedding-header {
+    padding: 30px 15px 20px;
   }
   
-  h1.card-title {
-    font-size: 1.6rem;
-  }
-  
-  p.lead {
-    font-size: 1.0rem;
-    margin-bottom: 15px;
-  }
-  
-  /* הקטנה והזזת הקישוט ברקע לטלפונים */
   body::before {
-    width: 650px; /* קטן יותר */
-    height: 750px;
+    width: 600px;
+    height: 700px;
     top: -50px;
     left: -200px;
   }
-}
-
-/* טלפונים קטנים (עד 480px) */
-@media (max-width: 480px) { 
-  .wedding-header {
-    padding: 30px 10px 15px;
+  
+  .wrap {
+    padding: 0.5rem;
   }
   
-  .wedding-header h1 {
-    font-size: 2rem; /* הקטנת הכותרת הראשית משמעותית */
-    letter-spacing: 0.5px;
-    text-shadow: 0 0 4px var(--accent), 0 0 8px #f7d17c; /* צמצום הצללה */
+  input[type="text"], 
+  input[type="email"], 
+  input[type="password"] {
+    font-size: 16px;
+    padding: 12px 14px;
   }
-
-  input[type="text"], input[type="email"], input[type="password"], button {
-    padding: 10px 12px; /* צמצום קל בגובה השדות והכפתור */
-    font-size: 0.95rem;
+  
+  button {
+    padding: 16px;
+    font-size: 1.1rem;
+    touch-action: manipulation;
   }
-
+  
   .toggle-pass {
-    top: 34px; /* התאמת המיקום */
-  }
-
-  /* הקטנת הקישוט עוד יותר */
-  body::before {
-    width: 400px;
-    height: 500px;
-    top: -20px;
-    left: -150px;
+    top: 36px;
+    padding: 8px;
   }
 }
