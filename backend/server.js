@@ -19,7 +19,7 @@ const guestRoutes = require('./routes/guest.routes.js');
 const reminderRoutes = require('./routes/reminder.routes');
 const { getReminderTemplate } = require('./utils/emailTemplates');
 
-const { sendMail } = require('./utils/emailSender'); 
+const { sendMail } = require('./utils/notificationService'); 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
