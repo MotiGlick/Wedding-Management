@@ -6,9 +6,16 @@ const Task = require('./Task');
 const Expense = require('./Expense');
 const Guest = require('./Guest');
 const Message = require('./message');
+const Reminder = require('./Reminder'); // ייבוא המודל החדש
 
 // 2. הגדרת הקשרים (Associations)
 
+
+// קשר יחיד לרבים: למשימה אחת יכולות להיות הרבה תזכורות
+Task.hasMany(Reminder, { foreignKey: 'taskId', onDelete: 'CASCADE' });
+Reminder.belongsTo(Task, { foreignKey: 'taskId' });
+
+// וודא שאתה מייצא את המודלים אם צריך, או שזה נעשה אוטומטית בקובץ שלך
 // --- קשרים: משתמש <=> משימות ---
 User.hasMany(Task, { foreignKey: 'userId', as: 'tasks', onDelete: 'CASCADE' });
 Task.belongsTo(User, { foreignKey: 'userId', as: 'owner' });
