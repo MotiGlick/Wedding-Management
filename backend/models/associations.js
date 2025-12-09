@@ -5,7 +5,7 @@ const User = require('./User');
 const Task = require('./Task');
 const Expense = require('./Expense');
 const Guest = require('./Guest');
-const Message = require('./Message');
+const Message = require('./message');
 
 // 2. הגדרת הקשרים (Associations)
 
