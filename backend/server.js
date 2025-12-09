@@ -39,7 +39,7 @@ app.use('/api/guests', guestRoutes);
 // השינוי הוא בתוך הסוגריים של ה-get
 // במקום '*' (מחרוזת), נשתמש ב- /(.*)/ (RegExp)
 app.get(/(.*)/, (req, res) => {
-    res.sendFile(path.join(__dirname, '../Frontend/login.html'));
+    res.sendFile(path.join(__dirname, '../Frontend/landing.html'));
 });
 
 async function startServer() {
