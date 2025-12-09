@@ -22,6 +22,8 @@ function handleUnauthorized() {
     
     // 3. הפניית המשתמש לדף ההתחברות
     window.location.href = './login.html'; 
+
+
 }
 
 function getAuthHeaders() {
