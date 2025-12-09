@@ -16,7 +16,7 @@ const generateToken = (id) => {
 };
 
 // ----------------------------------------------------
-// [POST] /register
+// [POST] /register - מעודכן עם יצירת טוקן
 // ----------------------------------------------------
 exports.register = async (req, res) => {
     try {
@@ -41,11 +41,23 @@ exports.register = async (req, res) => {
             password: hashedPassword
         });
 
+        // ======================================================
+        // 🚩 התיקון: יצירת טוקן מיד לאחר ההרשמה
+        // ======================================================
+        const token = generateToken(savedUser.id);
+
         res.status(201).json({
             message: 'User registered successfully!',
+            token: token, // <--- הוספנו את הטוקן כאן
+            user: {
+                id: savedUser.id,
+                email: savedUser.email,
+                username: savedUser.username
+            }
         });
 
     } catch (error) {
+        console.error("Registration Error:", error);
         res.status(500).json({ error: 'Server error during registration process.' });
     }
 };
