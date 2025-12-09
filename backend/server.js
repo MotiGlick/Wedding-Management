@@ -2,12 +2,15 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+
 const cron = require('node-cron'); // <--- הוספנו
 const { Op } = require('sequelize'); // <--- הוספנו
 const { connectDB, syncDB } = require('./db');
 
 // --- ייבוא המודלים (חשוב ל-Cron Job) ---
+// בראש הקובץ server.js
 require('./models/associations.js');
+const User = require('./models/User'); // <--- תוסיף את זה!
 const Task = require('./models/Task');       // <--- הוספנו
 const Reminder = require('./models/Reminder'); // <--- הוספנו
 
@@ -73,10 +76,11 @@ cron.schedule('* * * * *', async () => {
                     model: Task,
                     // כאן הקסם: שליפה מקוננת
                     // אנחנו אומרים: "תביא לי את המשימה, ובתוכה תביא את המשתמש של המשימה"
-                    include: [{ 
-                        model: User,
-                        attributes: ['email', 'firstName'] // שולפים רק מה שצריך (יעיל יותר)
-                    }] 
+                  include: [{ 
+                           model: User,
+                           as: 'owner', // <--- הוספנו את השורה הזו
+                           attributes: ['email', 'username'] 
+                           }]
                 }
             ]
         });
@@ -88,14 +92,14 @@ cron.schedule('* * * * *', async () => {
                 console.log(`⚠️ משימה נמחקה (ID: ${reminder.taskId})`);
                 continue; 
             }
-            if (!reminder.Task.User) {
+           if (!reminder.Task.owner) {
                 console.log(`⚠️ משתמש לא נמצא עבור המשימה (TaskID: ${reminder.Task.id})`);
                 continue; 
             }
 
             // שליפת המייל האמיתי של המשתמש!
-            const userEmail = reminder.Task.User.email;
-            const userName = reminder.Task.User.firstName || "לקוח יקר";
+            const userEmail = reminder.Task.owner.email;
+            const userName = reminder.Task.owner.firstName || "לקוח יקר";
             
             console.log(`🚀 שולח תזכורת לכתובת: ${userEmail}`);
 

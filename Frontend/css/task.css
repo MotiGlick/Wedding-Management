@@ -16,7 +16,7 @@
     --radius: 14px;
     --shadow: 0 8px 30px rgba(0,0,0,0.35);
 
-    /* **עדכון: הגדרת רוחב מינימלי ורוחב מלא** */
+    /* *עדכון: הגדרת רוחב מינימלי ורוחב מלא* */
     --sidebar-full-width: 330px; 
     --sidebar-min-width: 85px; /* הרוחב הקטן שיהיה פתוח תמיד */
     --hamburger-size: 30px;
@@ -44,10 +44,10 @@ body.page-wrapper {
     padding-right: 35px !important;
     padding-left: 35px !important;
     transition: none; 
-    overflow-x: hidden; /* **חשוב: ביטול גלילה אופקית** */
+    overflow-x: hidden; /* *חשוב: ביטול גלילה אופקית* */
 }
 
-/* **ביטול כללי הזחה מיותרים** */
+/* *ביטול כללי הזחה מיותרים* */
 body.page-wrapper.sidebar-offset {
     padding-left: 35px; 
     padding-right: 35px; 
@@ -102,7 +102,7 @@ body.page-wrapper.sidebar-offset .back-button {
 }
 
 /* ----------------------------------------------------- */
-/* **כפתור המבורגר – מקובע בתוך הסרגל (Absolute)** */
+/* *כפתור המבורגר – מקובע בתוך הסרגל (Absolute)* */
 /* ----------------------------------------------------- */
 
 .hamburger-menu {
@@ -122,7 +122,7 @@ body.page-wrapper.sidebar-offset .back-button {
     cursor: pointer;
     z-index: 1200;
     transition: all 0.3s ease; 
-    /* **תיקון: מוצג תמיד כהמבורגר** */
+    /* *תיקון: מוצג תמיד כהמבורגר* */
     opacity: 1; 
     pointer-events: auto;
 }
@@ -145,7 +145,7 @@ body.page-wrapper.sidebar-offset .back-button {
 
 
 /* ----------------------------------------------------- */
-/* סרגל צד – רשימת משימות - **ביטול גלילה במצב מינימלי** */
+/* סרגל צד – רשימת משימות - *ביטול גלילה במצב מינימלי* */
 /* ----------------------------------------------------- */
 
 .sidebar {
@@ -158,19 +158,19 @@ body.page-wrapper.sidebar-offset .back-button {
     transform: translateX(0); 
     transition: width 0.35s ease, padding 0.35s ease, box-shadow 0.35s ease;
     box-shadow: -4px 0 25px rgba(0,0,0,0.45);
-    /* **התאמת ריפוד עליון כדי שההמבורגר יהיה נגיש** */
+    /* *התאמת ריפוד עליון כדי שההמבורגר יהיה נגיש* */
     padding: 70px 10px 25px 10px; 
     z-index: 1100;
     overflow-x: hidden; 
-    /* **ביטול חץ גלילה אנכי במצב סגור** */
+    /* *ביטול חץ גלילה אנכי במצב סגור* */
     overflow-y: hidden; 
 }
 
-/* **פתיחת הסרגל לרוחב מלא בלחיצה** */
+/* *פתיחת הסרגל לרוחב מלא בלחיצה* */
 .sidebar.open {
     width: var(--sidebar-full-width); 
     padding: 55px 25px 25px 25px; 
-    /* **הפעלת גלילה רק כשהסרגל פתוח** */
+    /* *הפעלת גלילה רק כשהסרגל פתוח* */
     overflow-y: auto; 
 }
 
@@ -181,11 +181,11 @@ body.page-wrapper.sidebar-offset .back-button {
     color: var(--gold);
     border-bottom: 2px solid var(--gold); 
     padding-bottom: 8px;
-    /* **התאמת המרווח לאחר העברת ההמבורגר** */
+    /* *התאמת המרווח לאחר העברת ההמבורגר* */
     margin-top: 25px; 
 }
 
-/* **הסתרת התוכן כשרוחב הסרגל מינימלי** */
+/* *הסתרת התוכן כשרוחב הסרגל מינימלי* */
 .sidebar-title,
 .top-info,
 .tasks-list,
@@ -196,7 +196,7 @@ body.page-wrapper.sidebar-offset .back-button {
     transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
-/* **הצגת התוכן כשרוחב הסרגל מלא** */
+/* *הצגת התוכן כשרוחב הסרגל מלא* */
 .sidebar.open .sidebar-title,
 .sidebar.open .top-info,
 .sidebar.open .tasks-list,
@@ -289,13 +289,13 @@ body.page-wrapper.sidebar-offset .back-button {
 /* ----------------------------------------------------- */
 
 .fc-event {
-    /* **תיקון: שימוש ב-transparent והוספת important** */
+    /* *תיקון: שימוש ב-transparent והוספת important* */
     background-color: transparent !important; 
     
-    /* **הוספת גבול זהב (כדי להבליט את המשימה)** */
+    /* *הוספת גבול זהב (כדי להבליט את המשימה)* */
     border: 1px solid var(--gold) !important; 
     
-    /* **צבע טקסט זהב** */
+    /* *צבע טקסט זהב* */
     color: var(--gold) !important; 
     
     padding: 3px 6px;
@@ -443,7 +443,7 @@ body.page-wrapper.sidebar-offset .back-button {
 /* רספונסיביות                                         */
 /* ----------------------------------------------------- */
 
-//* ===================================================== */
+/* ===================================================== */
 /* 📱 שמירה על Sidebar גם במובייל                       */
 /* ===================================================== */
 /* ========================================================= */

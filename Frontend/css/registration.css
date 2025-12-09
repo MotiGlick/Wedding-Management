@@ -1,0 +1,221 @@
+:root {
+  --bg: #F9F9F9;          /* רקע נקי ליהלום */
+  --accent: #d4af37;      /* זהב חזק */
+  --accent-dark: #b8870f; /* זהב כהה יותר */
+  --muted: #4b4b4b;
+  --success: #2e8b57;
+  --error: #d9534f;
+  
+  --decoration-gold: #B8860B; /* צבע ליהלום */
+  font-family: "Heebo", "Segoe UI", sans-serif;
+}
+
+/* ============================ */
+/* 1. רקע חדש (יהלום וטבעת)     */
+/* ============================ */
+body {
+  height: 100%;
+  margin: 0;
+  direction: rtl;
+  background-color: var(--bg);
+  color: #3b3b3b;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.background-decorations {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0; overflow: hidden;
+}
+
+.floating-diamond {
+    position: absolute; left: -50px; top: 15%; font-size: 350px;
+    transform: rotate(20deg); color: var(--decoration-gold); opacity: 0.04; 
+    transition: left 0.5s ease-in-out;
+}
+
+.constructed-ring {
+    position: absolute; right: 5%; bottom: 5%; width: 250px; height: 250px;
+    transform: rotate(-15deg); opacity: 0.06; display: flex; justify-content: center;
+}
+
+.ring-band {
+    width: 100%; height: 100%; border-radius: 50%;
+    border: 25px solid var(--decoration-gold);
+}
+
+.ring-stone {
+    position: absolute; top: -45px; font-size: 100px; color: var(--decoration-gold);
+}
+
+/* ============================ */
+/* 2. העיצוב המקורי שלך (ללא שינוי) */
+/* ============================ */
+
+/* כותרת מזל טוב */
+.wedding-header {
+  text-align: center;
+  padding: 60px 0 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.wedding-header h1 {
+  font-size: 4rem; 
+  font-weight: 900;
+  margin: 0;
+  color: var(--accent);
+  letter-spacing: 3px;
+  text-shadow: 
+    0 0 8px var(--accent),
+    0 0 16px #f7d17c,
+    0 0 24px var(--accent-dark);
+}
+
+/* כרטיס וחלקי טופס */
+.wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.card {
+  width: 100%;
+  max-width: 720px;
+  background: rgba(255,255,255,0.98); 
+  border-radius: 20px;
+  padding: 36px;
+  box-shadow: 0 12px 45px rgba(212,175,55,0.35); 
+  border: 1px solid #d4af37;
+}
+
+h1.card-title {
+  font-size: 1.9rem;
+  margin-bottom: 14px;
+  color: var(--accent-dark);
+}
+
+p.lead {
+  color: #7a5e3c;
+  margin-bottom: 26px;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.full { grid-column: 1 / -1; }
+
+label {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+  color: #5b4630;
+}
+
+input[type="text"], input[type="email"], input[type="password"] {
+  width: 100%;
+  padding: 14px 16px;
+  /* הוספתי ריפוד קטן משמאל כדי שהטקסט לא יעלה על כפתור ההצגה */
+  padding-left: 50px; 
+  border-radius: 12px;
+  border: 1px solid #d4af37;
+  background: #fff9f0;
+  color: #3d3d3d;
+  font-size: 1.05rem;
+  box-sizing: border-box;
+}
+
+input:focus {
+  border-color: var(--accent-dark);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(212,175,55,0.4);
+}
+
+/* ============================ */
+/* 3. כפתור ראשי (הירשם)        */
+/* ============================ */
+/* משתמשים בסלקטור ספציפי כדי לא להשפיע על כפתור "הצג" */
+button[type="submit"] {
+  grid-column: 1 / -1;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1.15rem;
+  letter-spacing: 0.5px;
+  transition: 0.25s;
+}
+
+button[type="submit"]:hover { filter: brightness(1.15); }
+button[type="submit"][disabled] { opacity: 0.6; cursor: not-allowed; }
+
+/* ============================ */
+/* 4. תיקון כפתור "הצג" (ללא רקע) */
+/* ============================ */
+.pw-row { position: relative; }
+
+button.toggle-pass {
+  position: absolute;
+  left: 10px; /* בצד שמאל של השדה */
+  top: 50%;
+  transform: translateY(-50%);
+  
+  /* איפוס העיצוב של הכפתור הרגיל */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+  
+  /* עיצוב הטקסט בלבד */
+  color: #9c8e7a;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  z-index: 5;
+}
+
+button.toggle-pass:hover {
+  text-decoration: underline;
+  filter: none !important;
+}
+
+/* שאר האלמנטים המקוריים */
+.msg { font-size: 0.95rem; margin-top: 6px; }
+.error { color: var(--error); }
+.ok { color: var(--success); }
+
+.pw-require {
+  background: #fff5e6;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: #9c8e7a;
+  border: 1px solid #d4af37;
+}
+
+.pw-require li { list-style: none; margin: 4px 0; }
+.pw-require li.ok { color: var(--success); }
+
+.terms { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; color: #6e5a42; }
+
+@media (max-width: 720px) { 
+    form { grid-template-columns: 1fr; } 
+    
+    /* הקטנת הקישוטים במובייל */
+    .floating-diamond { font-size: 120px; left: -20px; top: 10%; }
+    .constructed-ring { width: 120px; bottom: 2%; right: -20px; }
+}
