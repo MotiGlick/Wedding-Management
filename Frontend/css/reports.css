@@ -145,24 +145,92 @@ h1 i { color: var(--accent-color); margin-left: 10px; }
     border-bottom: 1px solid #eee; padding-bottom: 15px;
 }
 
-/* עיצוב גרף עמודות (Bar Chart) */
-.bar-row {
-    display: flex; align-items: center; margin-bottom: 20px;
-}
-.bar-row .label {
-    width: 120px; font-size: 14px; color: var(--text-color); font-weight: 500;
-}
-.bar-track {
-    flex-grow: 1; height: 12px; background: var(--chart-bar-bg);
-    border-radius: 10px; overflow: hidden; margin-right: 15px;
-}
-.bar-fill {
-    height: 100%; background: linear-gradient(90deg, var(--accent-color), #e3c886);
-    border-radius: 10px; color: #fff; font-size: 10px; line-height: 12px;
-    text-align: center; padding-right: 5px;
+/* --- עיצוב גרף עגול (Pie/Doughnut Chart) - הוסף לכאן --- */
+.pie-chart-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 30px;
 }
 
-/* עיצוב מעגלי RSVP */
+/* העיגול עצמו */
+.pie-chart {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    /* צבע רקע התחלתי לפני שהנתונים נטענים */
+    background: var(--chart-bar-bg); 
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* יצירת החור באמצע (אפקט דונאט) באמצעות מסיכה */
+    -webkit-mask: radial-gradient(transparent 55%, black 56%);
+    mask: radial-gradient(transparent 55%, black 56%);
+    box-shadow: 0 0 20px rgba(0,0,0,0.05);
+}
+
+/* טקסט במרכז */
+.pie-center-info {
+    position: absolute;
+    text-align: center;
+    z-index: 2; /* מעל המסיכה */
+}
+.pie-center-info span:first-child {
+    display: block; font-size: 14px; color: var(--text-light);
+}
+.pie-center-info #pieTotalAmount {
+    font-size: 20px; font-weight: 700; color: var(--text-color);
+}
+
+/* מקרא (Legend) בצד */
+.pie-legend {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.legend-label-container {
+    display: flex;
+    align-items: center;
+}
+
+.legend-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-left: 10px;
+    /* צבע ייקבע דינמית ב-JS */
+}
+
+.legend-name {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.legend-value {
+    font-weight: 600;
+    color: var(--text-color);
+}
+.legend-percent {
+    color: var(--text-light);
+    font-size: 12px;
+    margin-right: 5px;
+}
+
+/* --- עיצוב מעגלי RSVP --- */
 .rsvp-stats {
     display: flex; justify-content: space-around; margin-bottom: 30px;
 }
@@ -194,8 +262,16 @@ h1 i { color: var(--accent-color); margin-left: 10px; }
     .header { padding: 15px 20px; }
     .kpi-grid { grid-template-columns: 1fr; }
     .charts-container { grid-template-columns: 1fr; }
-    .bar-row { flex-direction: column; align-items: flex-start; }
-    .bar-track { width: 100%; margin-right: 0; margin-top: 5px; }
+    
+    /* עדכון לגרף עגול במובייל */
+    .pie-chart-container {
+        flex-direction: column;
+        text-align: center;
+    }
+    .pie-legend {
+        width: 100%;
+    }
+
     .rsvp-stats { gap: 10px; }
     .rsvp-circle { width: 80px; height: 80px; }
     .rsvp-circle .number { font-size: 18px; }

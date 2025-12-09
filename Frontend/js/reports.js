@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. בדיקת אבטחה (כמו בדף הבית)
+    // 1. בדיקת אבטחה
     const token = sessionStorage.getItem('authToken');
     if (!token) {
         window.location.href = 'landing.html';
@@ -12,32 +12,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadDashboardData(token) {
     try {
-        // הגדרת כותרות לבקשות (כולל הטוקן)
         const headers = { 
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         };
 
-        // 2. ביצוע כל קריאות השרת במקביל לביצועים מהירים
+        // 2. ביצוע כל קריאות השרת במקביל
         const [guestsRes, tasksRes, expensesRes] = await Promise.all([
-            fetch('/api/guests', { headers }),  // שים לב: בראוט שלך אין כרגע protect, אבל כדאי לשלוח
+            fetch('/api/guests', { headers }),
             fetch('/api/tasks', { headers }),
             fetch('/api/expenses', { headers })
         ]);
 
-        // המרת התשובות ל-JSON
         const guests = await guestsRes.json();
         const tasks = await tasksRes.json();
         const expenses = await expensesRes.json();
 
-        // 3. חישוב ועדכון הממשק
+        // 3. עדכון הממשק
         updateGuestStats(guests);
         updateTaskStats(tasks);
-        updateBudgetStats(expenses);
+        updateBudgetStats(expenses); // הפונקציה המעודכנת לגרף עגול
 
     } catch (error) {
         console.error('Error loading report data:', error);
-        alert('שגיאה בטעינת הנתונים. נא לנסות שוב מאוחר יותר.');
+        // אופציונלי: להציג הודעה למשתמש, או להשאיר את המצב הריק
     }
 }
 
@@ -45,30 +43,29 @@ async function loadDashboardData(token) {
 function updateGuestStats(guests) {
     if (!Array.isArray(guests)) return;
 
-    // חישובים
     const totalInvited = guests.length;
     const confirmed = guests.filter(g => g.rsvp === 'yes').length;
     const declined = guests.filter(g => g.rsvp === 'no').length;
-    // כל מה שהוא לא 'yes' ולא 'no' נחשב 'אולי' או 'טרם ענו'
     const pending = totalInvited - confirmed - declined;
 
-    // עדכון כרטיס עליון (KPI)
+    // עדכון כרטיס KPI
     const kpiConfirmed = document.querySelector('.kpi-card .fa-check-circle').closest('.kpi-card').querySelector('.value');
     if (kpiConfirmed) kpiConfirmed.textContent = confirmed;
 
     // עדכון העיגולים הצבעוניים
-    document.querySelector('.rsvp-circle.confirmed .number').textContent = confirmed;
-    document.querySelector('.rsvp-circle.pending .number').textContent = pending;
-    document.querySelector('.rsvp-circle.declined .number').textContent = declined;
+    updateElementText('.rsvp-circle.confirmed .number', confirmed);
+    updateElementText('.rsvp-circle.pending .number', pending);
+    updateElementText('.rsvp-circle.declined .number', declined);
 
-    // עדכון פס התקדמות (אחוז תפוסה)
+    // עדכון פס התקדמות
     const container = document.querySelector('.progress-bar-container');
     if (container && totalInvited > 0) {
         const percent = Math.round((confirmed / totalInvited) * 100);
         const fillBar = container.querySelector('.progress-fill');
-        
-        fillBar.style.width = `${percent}%`;
-        fillBar.textContent = `${percent}%`;
+        if (fillBar) {
+            fillBar.style.width = `${percent}%`;
+            fillBar.textContent = `${percent}%`;
+        }
     }
 }
 
@@ -76,38 +73,41 @@ function updateGuestStats(guests) {
 function updateTaskStats(tasks) {
     if (!Array.isArray(tasks)) return;
 
-    // ספירת משימות שאינן מושלמות
     const openTasksCount = tasks.filter(t => !t.completed).length;
 
-    // עדכון כרטיס KPI
     const kpiTasks = document.querySelector('.kpi-card .fa-tasks').closest('.kpi-card').querySelector('.value');
     if (kpiTasks) kpiTasks.textContent = openTasksCount;
 }
 
-// --- לוגיקה: תקציב והוצאות ---
+// --- לוגיקה מעודכנת: תקציב והוצאות (גרף עגול) ---
 function updateBudgetStats(expenses) {
-    if (!Array.isArray(expenses)) return;
-
-    // הגדרת תקציב ידני (כי אין כרגע ב-DB שדה לתקציב כולל)
-    // אם תרצה בעתיד לשמור את זה בשרת, תצטרך להוסיף שדה ב-User או טבלה נפרדת
-    const TOTAL_BUDGET = 120000; 
+    if (!Array.isArray(expenses)) expenses = [];
 
     // סכימת ההוצאות
-    // הנחה: לכל הוצאה יש שדה 'amount' ושדה 'category'
     const totalSpent = expenses.reduce((sum, exp) => sum + Number(exp.amount || 0), 0);
     
-    // עדכון KPI תקציב (מראה כמה נשאר או כמה בוזבז - לבחירתך)
-    // כאן נציג את הסכום הכולל שתוכנן, או את היתרה
+    // עדכון KPI עליון
     const kpiBudget = document.querySelector('.kpi-card .fa-wallet').closest('.kpi-card').querySelector('.value');
-    if (kpiBudget) {
-        // מציג סה"כ הוצאות
-        kpiBudget.textContent = formatCurrency(totalSpent);
-        // או אם תרצה להציג יתרה: formatCurrency(TOTAL_BUDGET - totalSpent)
+    if (kpiBudget) kpiBudget.textContent = formatCurrency(totalSpent);
+
+    // עדכון הסכום במרכז הגרף העגול
+    const pieTotalEl = document.getElementById('pieTotalAmount');
+    if (pieTotalEl) pieTotalEl.textContent = formatCurrency(totalSpent);
+
+    // --- בניית הגרף העגול ---
+    const pieChartEl = document.getElementById('categoryPieChart');
+    const legendEl = document.getElementById('categoryLegend');
+    
+    if (!pieChartEl || !legendEl) return;
+
+    // 1. טיפול במצב ריק (אין הוצאות)
+    if (totalSpent === 0 || expenses.length === 0) {
+        pieChartEl.style.background = '#f1f3f5'; 
+        legendEl.innerHTML = '<p style="text-align:center; color:#999; margin-top:10px;">לא נמצאו נתונים להצגה</p>';
+        return;
     }
 
-    // --- בניית גרף הקטגוריות דינמית ---
-    
-    // 1. קיבוץ הוצאות לפי קטגוריה
+    // 2. קיבוץ הוצאות לפי קטגוריה
     const categoryMap = {};
     expenses.forEach(exp => {
         const cat = exp.category || 'כללי';
@@ -115,38 +115,69 @@ function updateBudgetStats(expenses) {
         categoryMap[cat] += Number(exp.amount || 0);
     });
 
-    // 2. מציאת אלמנט הגרף ב-DOM
-    const barChartContainer = document.querySelector('.bar-chart');
-    if (barChartContainer) {
-        barChartContainer.innerHTML = ''; // ניקוי הנתונים הסטטיים (הדוגמה)
+    // 3. הגדרת פלטת צבעים יוקרתית
+    const elegantColors = [
+        '#C5A059', // זהב ראשי
+        '#2C3E50', // כחול כהה
+        '#B08D45', // זהב כהה
+        '#4F6D8F', // כחול בינוני
+        '#D4AF37', // זהב בהיר
+        '#1A2C46', // נייבי עמוק
+        '#E3C886', // שמפניה
+        '#6c757d'  // אפור
+    ];
 
-        // 3. יצירת שורות הגרף
-        for (const [category, amount] of Object.entries(categoryMap)) {
-            // חישוב אחוז מסך ההוצאות (ולא מהתקציב הכללי, כדי שהגרף יראה יחסי הוצאות)
-            // או: אחוז מהתקציב הכללי. נלך על אחוז מסך ההוצאות:
-            let percent = 0;
-            if (totalSpent > 0) {
-                percent = Math.round((amount / totalSpent) * 100);
-            }
+    // 4. הכנת הנתונים לגרף
+    // מיון מהגדול לקטן למראה אסתטי
+    const sortedCategories = Object.entries(categoryMap).sort((a, b) => b[1] - a[1]);
 
-            // יצירת ה-HTML
-            const row = document.createElement('div');
-            row.className = 'bar-row';
-            row.innerHTML = `
-                <span class="label">${category}</span>
-                <div class="bar-track">
-                    <div class="bar-fill" style="width: ${percent}%;">${percent}%</div>
-                </div>
-                <span style="font-size:12px; margin-right:10px;">${formatCurrency(amount)}</span>
-            `;
-            barChartContainer.appendChild(row);
-        }
+    let gradientString = 'conic-gradient(';
+    let currentPercentage = 0;
+    let legendHTML = '';
+    let colorIndex = 0;
+
+    sortedCategories.forEach(([category, amount]) => {
+        // חישוב אחוזים
+        const percent = (amount / totalSpent) * 100;
+        const endPercentage = currentPercentage + percent;
         
-        // אם אין הוצאות בכלל
-        if (expenses.length === 0) {
-            barChartContainer.innerHTML = '<p style="text-align:center; color:#999;">עדיין לא הוזנו הוצאות</p>';
-        }
-    }
+        // בחירת צבע
+        const color = elegantColors[colorIndex % elegantColors.length];
+        
+        // הוספה למחרוזת הגרדיאנט (בניית פרוסת העוגה ב-CSS)
+        gradientString += `${color} ${currentPercentage}% ${endPercentage}%, `;
+        
+        // בניית השורה במקרא
+        legendHTML += `
+            <div class="legend-item">
+                <div class="legend-label-container">
+                    <div class="legend-color-dot" style="background-color: ${color};"></div>
+                    <span class="legend-name">${category}</span>
+                </div>
+                <div>
+                    <span class="legend-percent">${Math.round(percent)}%</span>
+                    <span class="legend-value">${formatCurrency(amount)}</span>
+                </div>
+            </div>
+        `;
+
+        // הכנה לאיטרציה הבאה
+        currentPercentage = endPercentage;
+        colorIndex++;
+    });
+
+    // הסרת הפסיק האחרון וסגירת הסוגריים
+    gradientString = gradientString.slice(0, -2) + ')';
+
+    // 5. החלת השינויים על ה-DOM
+    pieChartEl.style.background = gradientString;
+    legendEl.innerHTML = legendHTML;
+}
+
+// פונקציית עזר לעדכון טקסט באלמנט בטוח
+function updateElementText(selector, text) {
+    const el = document.querySelector(selector);
+    if (el) el.textContent = text;
 }
 
 // פונקציית עזר לפרמוט כסף
