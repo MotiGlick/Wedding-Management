@@ -1,6 +1,5 @@
 // backend/models/associations.js
 
-<<<<<<< HEAD
 // ייבוא כל המודלים רק פעם אחת
 const User = require('./User');
 const Task = require('./Task');
@@ -28,13 +27,12 @@ Message.belongsTo(User, { foreignKey: 'recipientId', as: 'recipient' });
 // Guest.belongsTo(User, { foreignKey: 'userId', as: 'owner' });
 
 // ייצוא כל המודלים
-=======
 // ייבוא כל המודלים
 const User = require('./User'); 
 const Task = require('./Task'); 
 const Expense = require('./Expense');
 const Guest = require('./Guest');
-const Message = require('./message'); // אם אתה צריך הודעות
+//const Message = require('./message'); // אם אתה צריך הודעות
 
 // --- קשרים ---
 // User <-> Task
@@ -56,5 +54,4 @@ User.hasMany(Message, { foreignKey: 'recipientId', as: 'receivedMessages', onDel
 Message.belongsTo(User, { foreignKey: 'recipientId', as: 'recipient' });
 
 // ייצוא כל המודלים בפעם אחת
->>>>>>> 6ea40c9c30b273b574140107581140a4467a6033
 module.exports = { User, Task, Expense, Guest, Message };
