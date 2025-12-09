@@ -5,238 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💎 לוח בקרה יוקרתי | WedManage</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-    <style>
-        :root {
-            --primary-color: #0A1121;
-            --secondary-color: #16243D;
-            --accent-color: #B8860B;
-            --accent-light: #5c5f4d;
-            --text-color: #EAECEF;
-            --text-light: #A3B1C6;
-            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-            --hover-card: #1D3150;
-            --border-radius: 12px;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Heebo', sans-serif;
-            background: var(--primary-color);
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            line-height: 1.6;
-            direction: rtl;
-        }
-
-        .header {
-            width: 100%;
-            padding: 25px 50px;
-            background: var(--secondary-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
-        }
-
-        .logo {
-            font-size: 30px;
-            font-weight: 800;
-            color: var(--accent-light);
-            text-decoration: none;
-            letter-spacing: 2px;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-        }
-
-        .logout-btn {
-            padding: 12px 22px;
-            background: transparent;
-            border: 2px solid var(--accent-color);
-            border-radius: var(--border-radius);
-            color: var(--accent-color);
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            font-size: 16px;
-        }
-
-        .logout-btn:hover {
-            background: var(--accent-color);
-            color: var(--primary-color);
-            box-shadow: 0 0 15px var(--accent-color);
-            transform: scale(1.05);
-        }
-
-        .main-content {
-            flex-grow: 1;
-            padding: 60px 20px 80px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .welcome-card {
-            background: linear-gradient(135deg, var(--secondary-color) 0%, #101E35 100%);
-            border-radius: var(--border-radius);
-            padding: 60px 50px;
-            text-align: center;
-            box-shadow: var(--card-shadow);
-            max-width: 1000px;
-            width: 100%;
-            margin-bottom: 60px;
-            transition: all 0.4s ease-in-out;
-            border-top: 3px solid var(--accent-color);
-        }
-
-        .welcome-card:hover {
-            transform: translateY(-8px);
-            background: linear-gradient(135deg, var(--hover-card) 0%, #16243D 100%);
-            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.85);
-        }
-
-        .welcome-card h1 {
-            font-size: 44px;
-            margin-bottom: 15px;
-            color: var(--accent-light);
-            font-weight: 800;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-        }
-
-        .welcome-card p {
-            font-size: 20px;
-            color: var(--text-light);
-            max-width: 700px;
-            margin: 0 auto 30px auto;
-            font-weight: 300;
-        }
-
-        .welcome-card img {
-            width: 100%;
-            max-width: 800px;
-            margin-top: 40px;
-            border-radius: var(--border-radius);
-            border: 5px solid var(--hover-card);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
-        }
-
-        h2 {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--accent-color);
-            text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--secondary-color);
-            width: fit-content;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
-            width: 100%;
-            max-width: 1100px;
-        }
-
-        .dash-item-link {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-
-        .dash-item {
-            background: var(--secondary-color);
-            border-radius: var(--border-radius);
-            padding: 35px 30px;
-            box-shadow: var(--card-shadow);
-            position: relative;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            overflow: hidden;
-            border: 1px solid rgba(184, 134, 11, 0.3);
-        }
-
-        .dash-item::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 5px;
-            background-color: var(--accent-color);
-            transition: all 0.4s;
-        }
-
-        .dash-item:hover::before {
-            width: 100%;
-            opacity: 0.1;
-        }
-
-        .dash-item:hover {
-            transform: scale(1.03);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
-            background: var(--hover-card);
-        }
-
-        .dash-item h3 {
-            color: var(--text-color);
-            font-size: 24px;
-            margin: 0 0 10px 0;
-            font-weight: 700;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 10px;
-        }
-
-        .dash-item p {
-            color: var(--text-light);
-            font-size: 16px;
-            line-height: 1.6;
-        }
-
-        .icon {
-            float: left;
-            font-size: 45px;
-            color: var(--accent-color);
-            margin-inline-start: 15px;
-            margin-bottom: 15px;
-            transition: all 0.4s ease;
-        }
-
-        .dash-item:hover .icon {
-            color: var(--accent-light);
-            transform: scale(1.1) rotate(5deg);
-        }
-
-        @media (max-width: 768px) {
-            .header { padding: 20px 20px; }
-            .logo { font-size: 24px; }
-            .logout-btn { padding: 8px 15px; font-size: 14px; }
-            .main-content { padding: 40px 15px; }
-            .welcome-card { padding: 40px 20px; margin-bottom: 40px; }
-            .welcome-card h1 { font-size: 34px; }
-            .welcome-card p { font-size: 16px; }
-            h2 { font-size: 26px; margin-bottom: 30px; }
-            .dashboard-grid { grid-template-columns: 1fr; gap: 25px; }
-            .icon { float: none; display: block; margin-inline-start: 0; margin-bottom: 10px; }
-        }
-    </style>
+    <link rel="stylesheet" href="css/homePage.css">
 </head>
 
 <body>
 
+    <div class="background-decorations">
+        <i class="fas fa-gem decoration-item floating-diamond"></i>
+        <div class="constructed-ring">
+            <div class="ring-band"></div>
+            <i class="fas fa-gem ring-stone"></i>
+        </div>
+    </div>
+
     <header class="header">
-        <a href="#" class="logo">WedManage</a>
+        <a href="#" class="logo">WedManage<span class="dot">.</span></a>
+        
         <button class="logout-btn" onclick="alert('ביישום אמיתי, יתבצע כאן ניקוי טוקן ויציאה.');">
             <i class="fas fa-sign-out-alt"></i> התנתקות
         </button>
@@ -246,7 +33,7 @@
         <div class="welcome-card">
             <h1>ברוכים הבאים למרכז הניהול</h1>
             <p>לוח הבקרה המרכזי והאלגנטי שלך לניהול אירועים מורכבים ברמה הגבוהה ביותר. התחל בניהול האירוע הבא שלך בקליק.</p>
-            <img src="placeholder-dashboard.jpg" alt="תמונת Dashboard יוקרתי ומעוצב">
+
         </div>
 
         <h2><i class="fas fa-gem"></i> מודולים מרכזיים</h2>

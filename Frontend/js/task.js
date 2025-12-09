@@ -39,7 +39,7 @@ function getAuthHeaders() {
 
 async function getTasks() {
   try {
-    const res = await fetch("http://localhost:3000/api/tasks", { headers: getAuthHeaders() });
+    const res = await fetch("/api/tasks", { headers: getAuthHeaders() });
     if (res.status === 401) { handleUnauthorized(); return []; }
     if (!res.ok) { console.error(`API Error: ${res.status}`); return []; }
     return res.json(); 
@@ -52,7 +52,7 @@ async function getTasks() {
 
 async function addTask(title, date, description = null) {
   try {
-    const res = await fetch("http://localhost:3000/api/tasks", {
+    const res = await fetch("/api/tasks", {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify({ title, date, description }) 
@@ -66,7 +66,7 @@ async function addTask(title, date, description = null) {
 
 async function deleteRemoteTask(taskId) {
   try {
-    const res = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
+    const res = await fetch(`/api/tasks/${taskId}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
@@ -80,7 +80,7 @@ async function deleteRemoteTask(taskId) {
 
 async function updateTaskDescription(taskId, description) {
   try {
-    const res = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
+    const res = await fetch(`/api/tasks/${taskId}`, {
       method: "PUT", 
       headers: getAuthHeaders(),
       body: JSON.stringify({ description })
