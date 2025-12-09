@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../db'); // וודא שזה הנתיב לקובץ החיבור ל-DB שלך
+const { sequelize } = require('../db'); 
 
 const Reminder = sequelize.define('Reminder', {
     id: {
@@ -8,16 +8,16 @@ const Reminder = sequelize.define('Reminder', {
         autoIncrement: true
     },
     triggerAt: {
-        type: DataTypes.DATE, // התאריך והשעה המדויקים למשלוח
+        type: DataTypes.DATE,
         allowNull: false
     },
     type: {
         type: DataTypes.STRING, 
-        defaultValue: 'email' // סוג התזכורת
+        defaultValue: 'email'
     },
     isSent: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false // האם נשלח כבר?
+        defaultValue: false
     }
 });
 
