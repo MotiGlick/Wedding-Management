@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <link rel="stylesheet" href="css/homePage.css">
+    <script src="js/homePage.js"></script>
 </head>
 
 <body>
@@ -24,7 +25,7 @@
     <header class="header">
         <a href="#" class="logo">WedManage<span class="dot">.</span></a>
         
-        <button class="logout-btn" onclick="alert('ביישום אמיתי, יתבצע כאן ניקוי טוקן ויציאה.');">
+        <button class="logout-btn" onclick="window.location.href='landing.html';">
             <i class="fas fa-sign-out-alt"></i> התנתקות
         </button>
     </header>
@@ -36,7 +37,7 @@
 
         </div>
 
-        <h2><i class="fas fa-gem"></i> מודולים מרכזיים</h2>
+        <h2><i class="fas fa-gem"></i> מה תרצו לנהל כעת? </h2>
 
         <div class="dashboard-grid">
 
@@ -68,12 +69,13 @@
         <h3>העלאת / שליחת הזמנות</h3>
         <p>העלה הזמנות חדשות ושלח אותן לאורחים עם אפשרות לאישור הגעה .</p>
     </div>
-</a>
-            <div class="dash-item" onclick="alert('מעבר לדוחות וסטטיסטיקה');">
-                <i class="fas fa-chart-line icon"></i>
-                <h3>דוחות וסטטיסטיקה</h3>
-                <p>קבל תובנות עמוקות מכלל נתוני האירוע באמצעות דוחות גרפיים מפורטים וסטטיסטיקות מתקדמות.</p>
-            </div>
+            </a><a href="reports.html" class="dash-item-link">
+                <div class="dash-item">
+                    <i class="fas fa-chart-line icon"></i>
+                    <h3>דוחות וסטטיסטיקה</h3>
+                    <p>קבל תובנות עמוקות מכלל נתוני האירוע באמצעות דוחות גרפיים מפורטים וסטטיסטיקות מתקדמות.</p>
+                </div>
+            </a>
 
         </div>
     </div>

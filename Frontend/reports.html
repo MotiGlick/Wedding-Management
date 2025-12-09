@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 דוחות וסטטיסטיקה | WedManage</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/reports.css">
+</head>
+
+<body>
+
+    <div class="background-decorations">
+        <i class="fas fa-gem decoration-item floating-diamond"></i>
+        <div class="constructed-ring">
+            <div class="ring-band"></div>
+            <i class="fas fa-gem ring-stone"></i>
+        </div>
+    </div>
+
+    <header class="header">
+        <a href="homePage.html" class="logo">WedManage<span class="dot">.</span></a>
+        <button class="back-btn" onclick="window.location.href='homePage.html'">
+            <i class="fas fa-arrow-right"></i> חזרה ללוח הבקרה
+        </button>
+    </header>
+
+    <div class="main-content">
+        <h1><i class="fas fa-chart-line"></i> דוחות וסטטיסטיקה</h1>
+        <p class="subtitle">סקירה מקיפה של נתוני האירוע, התקציב והמוזמנים בזמן אמת.</p>
+
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="icon-circle"><i class="fas fa-wallet"></i></div>
+                <div class="kpi-info">
+                    <span>תקציב כולל</span>
+                    <span class="value">₪ 120,000</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="icon-circle"><i class="fas fa-check-circle"></i></div>
+                <div class="kpi-info">
+                    <span>אורחים שאישרו</span>
+                    <span class="value">240</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="icon-circle"><i class="fas fa-tasks"></i></div>
+                <div class="kpi-info">
+                    <span>משימות פתוחות</span>
+                    <span class="value">12</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="icon-circle"><i class="fas fa-hourglass-half"></i></div>
+                <div class="kpi-info">
+                    <span>ימים לאירוע</span>
+                    <span class="value">45</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            
+            <div class="chart-card">
+                <h3><i class="fas fa-pie-chart"></i> התפלגות הוצאות לפי קטגוריה</h3>
+                <div class="bar-chart">
+                    <div class="bar-row">
+                        <span class="label">אולם וקייטרינג</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: 55%;">55%</div>
+                        </div>
+                    </div>
+                    <div class="bar-row">
+                        <span class="label">צילום ומדיה</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: 15%;">15%</div>
+                        </div>
+                    </div>
+                    <div class="bar-row">
+                        <span class="label">מוזיקה והגברה</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: 10%;">10%</div>
+                        </div>
+                    </div>
+                    <div class="bar-row">
+                        <span class="label">עיצוב ופרחים</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: 12%;">12%</div>
+                        </div>
+                    </div>
+                    <div class="bar-row">
+                        <span class="label">שונות</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: 8%;">8%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3><i class="fas fa-users"></i> סטטוס אישורי הגעה (RSVP)</h3>
+                
+                <div class="rsvp-stats">
+                    <div class="rsvp-circle confirmed">
+                        <span class="number">240</span>
+                        <span class="text">מגיעים</span>
+                    </div>
+                    <div class="rsvp-circle pending">
+                        <span class="number">45</span>
+                        <span class="text">טרם ענו</span>
+                    </div>
+                    <div class="rsvp-circle declined">
+                        <span class="number">15</span>
+                        <span class="text">לא מגיעים</span>
+                    </div>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-label">אחוז תפוסה מהמוזמנים:</div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: 80%;">80%</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+<script src="js/reports.js"></script>
+</body>
+</html>
