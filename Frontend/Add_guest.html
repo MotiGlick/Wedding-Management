@@ -135,7 +135,7 @@
 <body>
 
 <header class="header">
-    <a class="logo">WedManage</a>
+    <a class="logo" href="index.html">WedManage</a>
     <div style="display:flex;gap:10px;align-items:center;">
         <button class="btn btn-ghost" onclick="history.back();"><i class="fas fa-arrow-right"></i>&nbsp; חזור</button>
         <button class="btn btn-ghost" onclick="alert('ביישום אמיתי: שמירת טיוטה');"><i class="fas fa-save"></i>&nbsp; שמור טיוטה</button>
@@ -192,7 +192,11 @@
 
                 <div class="col">
                     <label for="plusOne">מלווה (Plus-one)</label>
-                    <input id="plusOne" name="plusOne" type="text" placeholder="שם המלווה" />
+                    <input id="plusOne" name="plusOne" type="text" placeholder="שם המלווה (אם יש)" />
+                </div>
+                <div class="col">
+                     <label for="diet">מידע תזונתי / אלרגיות</label>
+                     <input id="diet" name="diet" type="text" placeholder="למשל: טבעוני, ללא גלוטן" />
                 </div>
             </div>
 
