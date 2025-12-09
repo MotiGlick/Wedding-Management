@@ -452,46 +452,120 @@ h1 i {
 /* ======================= */
 /* MEDIA QUERIES          */
 /* ======================= */
+/* ======================= */
+/* MEDIA QUERIES (Mobile Fixes) */
+/* ======================= */
 @media (max-width: 768px) {
-    .main-content { padding: 30px 15px; }
-    .header { padding: 15px 20px; }
+    /* 1. התאמת הגוף והרקע */
+    body {
+        overflow-x: hidden; /* מניעת גלילה לצדדים */
+    }
+
+    .main-content { 
+        padding: 30px 15px; /* פחות ריווח בצדדים */
+    }
+
+    /* 2. כותרות בגודל תואם ל-Landing */
+    h1 {
+        font-size: 28px; /* קטן יותר כדי להיכנס במסך */
+        line-height: 1.3;
+        margin-bottom: 30px;
+    }
     
+    h2 {
+        font-size: 24px;
+        border-bottom: 1px solid #eee; /* קו עדין יותר */
+    }
+
+    /* 3. סידור הטופס - תיקון הבעיה של "התכווצות" */
     .expense-form {
-        grid-template-columns: 1fr;
-        padding: 25px;
+        display: flex; /* שינוי מגריד לפלקס */
+        flex-direction: column; /* מסדר את השדות בטור */
+        gap: 15px; /* רווח אחיד בין שדות */
+        padding: 20px; /* ריווח פנימי נוח */
     }
 
-    .form-group.full-width {
-        grid-column: span 1 !important;
+    .form-group {
+        width: 100%; /* כל שדה תופס את כל הרוחב */
     }
 
+    /* מוודא שהשדות עצמם לא חורגים מהמסגרת */
+    .expense-form input,
+    .expense-form select,
+    .expense-form textarea {
+        width: 100%; 
+        font-size: 16px; /* מונע זום אוטומטי באייפון */
+        padding: 12px;
+    }
+
+    /* כפתור הוספה - רחב ובולט */
+    .add-expense-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    /* 4. כרטיסי סיכום (קוביות למעלה) */
     .summary-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* טור אחד */
+        gap: 15px;
+    }
+
+    .summary-card {
+        padding: 20px; /* קצת פחות "נפח" */
+        display: flex;
+        align-items: center;
+        justify-content: space-between; /* כותרת בצד אחד, מספר בצד שני */
     }
     
+    .summary-card h3 {
+        margin: 0;
+        font-size: 15px;
+        border: none; /* הורדת הקו התחתון בכרטיס לניקיון */
+    }
+    
+    .summary-card .value {
+        font-size: 24px; /* מספר קצת יותר קטן */
+    }
+
+    /* 5. טבלה - גלילה אופקית */
     .expenses-table {
         display: block;
-        overflow-x: auto;
+        overflow-x: auto; /* מאפשר לגלול את הטבלה שמאלה-ימינה */
+        white-space: nowrap; /* מונע שבירת שורות בתוך הטבלה */
     }
     
     .expenses-table th, .expenses-table td {
-        white-space: nowrap;
+        padding: 12px 10px;
+        font-size: 14px;
     }
 
-    /* התאמת רקע למובייל */
+    /* 6. רקע (יהלום וטבעת) - הקטנה משמעותית למובייל */
     .floating-diamond {
-        font-size: 150px;
+        font-size: 100px; /* הרבה יותר קטן */
         left: -20px;
-        top: 10%;
+        top: 5%;
+        opacity: 0.03; /* עוד יותר שקוף כדי לא להפריע */
     }
     .constructed-ring {
-        width: 150px;
-        height: 150px;
+        width: 120px;
+        height: 120px;
         bottom: 2%;
         right: -30px;
+        opacity: 0.05;
     }
-    .ring-band { border-width: 15px; }
-    .ring-stone { font-size: 60px; top: -30px; }
+    .ring-band { border-width: 12px; }
+    .ring-stone { font-size: 40px; top: -20px; }
+    
+    /* 7. Header - התאמה */
+    .header {
+        padding: 15px 20px;
+        flex-direction: row; /* שומרים על שורה אחת */
+    }
+    .header .logo { font-size: 20px; }
+    .back-btn { 
+        padding: 6px 15px; 
+        font-size: 13px; /* כפתור קומפקטי יותר */
+    }
 }
 
 /* ======================= */
