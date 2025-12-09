@@ -17,7 +17,6 @@ app.use(cors({
         'http://localhost:3000',
         'http://127.0.0.1:3000',
         'http://localhost:5500', 
-        'http://localhost:5500',
         'http://127.0.0.1:5500'
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -45,7 +44,7 @@ async function startServer() {
         
         // --- שים לב: force: true ימחק את הטבלה ויבנה אותה מחדש ---
         // זה יפתור את הבעיה של 'column side missing'
-        await syncDB({ force: true });
+        await syncDB({ alert: true });
         
         app.listen(PORT, () => {
             console.log(`✅ [SERVER] Server running on http://localhost:${PORT}`);
