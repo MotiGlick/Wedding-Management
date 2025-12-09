@@ -79,7 +79,7 @@ cron.schedule('* * * * *', async () => {
                   include: [{ 
                            model: User,
                            as: 'owner', // <--- הוספנו את השורה הזו
-                           attributes: ['email', 'firstName'] 
+                           attributes: ['email', 'username'] 
                            }]
                 }
             ]
@@ -139,7 +139,7 @@ async function startServer() {
 
         console.log("🚩 [SERVER] Syncing DB...");
         // alter: true מעדכן את הטבלאות בלי למחוק מידע קיים
-        await syncDB({ force: true });
+        await syncDB({ alter: true });
 
         app.listen(PORT, () => {
             console.log(`✅ [SERVER] Server is running on port ${PORT}`);
