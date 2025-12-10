@@ -85,43 +85,45 @@ cron.schedule('* * * * *', async () => {
             ]
         });
 
-        for (const reminder of reminders) {
+       for (const reminder of reminders) {
             
-            // בדיקות תקינות כפולות
+            // בדיקות תקינות כפולות (נשארות כרגיל)
             if (!reminder.Task) {
                 console.log(`⚠️ משימה נמחקה (ID: ${reminder.taskId})`);
                 continue; 
             }
-           if (!reminder.Task.owner) {
+            if (!reminder.Task.owner) {
                 console.log(`⚠️ משתמש לא נמצא עבור המשימה (TaskID: ${reminder.Task.id})`);
                 continue; 
             }
 
-            // שליפת המייל האמיתי של המשתמש!
             const userEmail = reminder.Task.owner.email;
-            const userName = reminder.Task.owner.firstName || "לקוח יקר";
-            
-            console.log(`🚀 שולח תזכורת לכתובת: ${userEmail}`);
-
-            // יצירת ה-HTML (אפשר להוסיף את שם המשתמש לתבנית אם רוצים)
             const emailHtml = getReminderTemplate(reminder.Task.title, reminder.Task.date);
 
             const mailOptions = {
-                to: userEmail, // <--- הנה התיקון שלך!
+                to: userEmail,
                 subject: `🔔 תזכורת: ${reminder.Task.title}`,
                 html: emailHtml
             };
 
+            // --- מבנה try/catch מתוקן! ---
             try {
+                // 1. נסה לשלוח
+                console.log(`🚀 שולח תזכורת לכתובת: ${userEmail}`);
                 await sendMail(mailOptions);
                 
+                // 2. אם ההגעה לכאן, המייל נשלח בהצלחה
                 reminder.isSent = true;
                 await reminder.save();
                 
                 console.log(`✅ מייל נשלח בהצלחה ל-${userEmail}`);
 
             } catch (emailError) {
-                console.error(`❌ שגיאה בשליחה ל-${userEmail}`, emailError);
+                // 3. אם יש שגיאה (כמו ETIMEDOUT או Forbidden), תדפיס אותה ואל תעדכן את ה-DB
+                console.error(`❌ שגיאה בשליחה ל-${userEmail}: המייל נכשל. ה-DB לא עודכן.`, emailError.message || emailError);
+                
+                // ה-Cron Job ימשיך למשימה הבאה. 
+                // הוא ינסה לשלוח את המייל הזה שוב בדקה הבאה.
             }
         }
     } catch (err) {

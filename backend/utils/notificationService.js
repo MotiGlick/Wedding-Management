@@ -6,11 +6,14 @@ const sendgridApiKey = process.env.SENDGRID_API_KEY;
 // 2. הגדרת ה-Transporter עבור SendGrid
 const transporter = nodemailer.createTransport({
     host: 'smtp.sendgrid.net',
-    port: 465,               // פורט 465 (SSL) הוא הטוב ביותר לעקוף חסימות ב-Render
-    secure: true,            // חובה בפורט 465
+    port: 2525,              // <--- השינוי: פורט 2525 (פורט הגיבוי של SendGrid)
+    secure: false,           // <--- חובה לשנות ל-FALSE בפורט הזה
     auth: {
-        user: 'apikey',      // *** חשוב! ב-SendGrid המשתמש הוא תמיד המילה 'apikey' ***
-        pass: sendgridApiKey // המפתח הארוך (מתחיל ב-SG...)
+        user: 'apikey',
+        pass: sendgridApiKey
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
