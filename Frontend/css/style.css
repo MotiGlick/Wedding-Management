@@ -1,40 +1,55 @@
 :root {
-  --bg: #fff5e6;              /* רקע שמנת חם */
-  --accent: #d4af37;          /* זהב חזק */
-  --accent-dark: #b8870f;     /* זהב כהה יותר */
+  --bg: #F9F9F9;          /* רקע נקי ליהלום */
+  --accent: #d4af37;      /* זהב חזק */
+  --accent-dark: #b8870f; /* זהב כהה יותר */
   --muted: #4b4b4b;
   --success: #2e8b57;
   --error: #d9534f;
+  
+  --decoration-gold: #B8860B; /* צבע ליהלום */
   font-family: "Heebo", "Segoe UI", sans-serif;
 }
 
-/* רקע עם טבעות */
+/* ============================ */
+/* 1. רקע חדש (יהלום וטבעת)     */
+/* ============================ */
+
 body {
   height: 100%;
-  margin: 0;
+  width: 1200px;        /* רוחב כמו במחשב */
+  margin: 0 auto;       /* מרכז את כל האתר */
   direction: rtl;
-  /* שימוש ב-min-height כדי להבטיח שהרקע מתפרש על כל גובה התוכן */
-  min-height: 100vh; 
-  background: linear-gradient(180deg, #fff5e6 0%, #ffe8c6 100%);
+  background-color: var(--bg);
   color: #3b3b3b;
   position: relative;
-  overflow-x: hidden; /* מונע גלילה אופקית לא רצויה */
+  overflow-x: hidden;
 }
 
-/* התאמת גודל התמונה הקישוטית לרספונסיביות */
-body::before {
-  content: "";
-  position: absolute;
-  /* שמירה על יחס הגודל, נשתמש ב-Media Query כדי להתאים את הגודל לניידים */
-  width: 1030px; 
-  height: 1200px;
-  background: url('data:image/jpeg;base64,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') no-repeat center;
-  background-size: contain;
-  opacity: 0.2; 
-  top: -100px;
-  left: -300px;
-  z-index: 0;
+.background-decorations {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0; overflow: hidden;
 }
+
+.floating-diamond {
+    position: absolute; right: -50px; top: 15%; font-size: 350px;
+    transform: rotate(20deg); color: var(--decoration-gold); opacity: 0.04; 
+    transition: left 0.5s ease-in-out;
+}
+
+.constructed-ring {
+    position: absolute; right: 5%; bottom: 5%; width: 250px; height: 250px;
+    transform: rotate(-15deg); opacity: 0.06; display: flex; justify-content: center;
+}
+
+.ring-band {
+    width: 100%; height: 100%; border-radius: 50%;
+    border: 25px solid var(--decoration-gold);
+}
+
+.ring-stone {
+    position: absolute; top: -45px; font-size: 100px; color: var(--decoration-gold);
+}
+
 
 /* כותרת מזל טוב */
 .wedding-header {
@@ -45,7 +60,7 @@ body::before {
 }
 
 .wedding-header h1 {
-  font-size: 4rem; /* גדול יותר */
+  font-size: 4rem; 
   font-weight: 900;
   margin: 0;
   color: var(--accent);
@@ -61,20 +76,34 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* שינוי: min-height מותאם לרספונסיביות */
-  min-height: calc(100vh - 100px); /* מפחית מהגובה כדי לאפשר גלילה קלה */
+  min-height: 100vh;
   padding: 2rem;
   position: relative;
   z-index: 1;
 }
 
+
+body::before { 
+  content: ""; 
+  position: absolute;
+   width: 1030px; 
+   height: 1200px; 
+   background: url('data:image/jpeg;base64,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nkxUvJf3ssskoJqo8scltJPt89W8s33vJrcR4hbEem7wxgpyXmVXNt2spzlO0V7C1521en5b3sddhqX4vh/kj4PDWSj73yLBHcGPUbkyW34AAaVQAAAAA57x3jfJwU+s2oL6v5I+YbBbq14R73L7/lfamerDDRelNXlb80rO3uVviQP+OsC5VnUa3Ujx+pv354rHppxxqr6ns+HyVicaMJC0b9dTeerjjVYUWncgAJogAAAAAAAAAAAAAAABD2vifKozneztZer0RMOe8UVm50aMeLfmclycY8fVleW2qy7WNyo6Oz4VLqScZKOaM1JxqQ4XlFcGk3FO6cbtXurpTvCtOU4efJNOq/Ms7Kysow0Wiulm/UVW08LaEIU3VX2jcqKnUqJfeK7lfPu5U5+z0el7HYYClaMVa1/kunwM16+YrHpbWfEysKMbL1NgBsiNRpTIADoAAAaMbilSpzqy4QTl624L1fD3m853xViM0fJjw4y/ZFeS/bXaVY3OnzDFUp160qk9ZTk5P1bufRvCuzVSpJJav+P+djn8HgL1Ekudl6/+XfuO+2dQUYrotEeb02Ld9r7zqExI9APWZgAAAAAAAAAAAAAAAAAADkNsyU8RWTjKaUY07Ryq6W81dvrf3XOvOIqVvNryjql51Vq0rNOMnTzJ++K/UVZOax/aVfbTgcPN4vLOLy04tpuTau5zg2o5tE8s2rq+p2mFWrfTQ53YuEyVa0m1JuejUpS3YwiorVK3F6I6XCrS/V/6/YpxRu8yst+LcADWpAAAAPJOyuwMa08quc9j6fFvVsuJzzO7Knacc8lSjz1lL8senqzDnv3cL6Rpq2Jhczc+ukfTnL+dO500I2ViPgcOoRWltLW6LkiSaMGPtr5V3tuQAFyAAAAAAAAAAAAAAAAAAABw2Bf39eDUlavXs1mypZouTduGjir8efJp9ycdtTCPD4udb/prcXlv5UrayeukZNWdlrp0KsniYlKqZ4fham1pfNUV0muFSa589Ne50GF9le/6s5vwxUUqN001nqx0urWqz0abeq4PujosHLdt0bX7/uVYOU78N4ANSoAMZzUVduyAybKnGY9N2XBfPuRtp7SzXitI/OXqUNTFucssder1sun+lzMWbqP41XUp7lfPHaWWsnol1/0TNm4O289Xxb/M+pVYeHlNRe9WlZ24uEe/T+ervqNeySsSw49+bF7a8QlAwjUTMzWpAAAAAAAAAAAAAAAAAAAAAAg7Vhu57XUfaXG8efw/yTgcmNxoUOz6cIpqCSTeay4apJ2+CLHDTtKz4S+v8+hDxWAlSl5lJOVP8VNcV1y9V2/i3LLON1vRkuPJoyzHZZdE90LMwq1YwV5SUV1k0l8yhr4ecVuuTXZtMo8bh5t8JN9/8k7Z9cQjFHVVdsw4U999eEV/n3EevXcldu/0XoU2BozVt1t9Ipy+fBfEsJ4Wbi5VZxoUlq3Jxcrd291fMzXvfJ4WxWKq3EQdWShG7b1tHWTXXsu709eBKo4byPu6UYzxHFy1dPD35yfGUre99lZEzCQzLLh4unTfGtNPzaneN9f1P3LgyywmBUFZaLj3b5t9X3LcXTxH3WQvk3whbO2coXk25TespyteTJ6p9myVGCXIyNelKKkbqcuRprreMovmBIAQOgAAAAAAAAAAAAAAAAAAAAAGieGV21o3q1yb6269zeDkxE8m0WVBogYnaVGn7Um30UZN/Qtqz0KWts6MneWvYq+lVPvlX1fEFWq8mFw/rVru0Y/oi9fijdgtkSqSVTEVJV5rVOVlCL/ogtI+vEssLhVwSSiuhZUqeVWJVrEOTLylSsbACxEAAEavLUxgzXN3ZtpLQ46kw4I9CB1wAAAAAAAAAAAAAAAAAAAAADxs9NNV30A1zldmDhfQzUTfCFjgU4WRmAdAAADXXlaProbCPWd2BoSJNOJhTiSInIHoAOgAAAAAAAAAAAAAAAAAAAAA8kzVlNwsBhCJmAAAAAAAeSZqyG4AYRiZgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/9k=') no-repeat center;
+   background-size: contain; 
+   opacity: 0.2;
+    top: -100px;
+     left: -300px;
+      z-index: 0;
+    }
+
+
 .card {
   width: 100%;
   max-width: 720px;
-  background: rgba(255,255,255,0.98);
+  background: rgba(255,255,255,0.98); 
   border-radius: 20px;
   padding: 36px;
-  box-shadow: 0 12px 45px rgba(212,175,55,0.35);
+  box-shadow: 0 12px 45px rgba(212,175,55,0.35); 
   border: 1px solid #d4af37;
 }
 
@@ -109,6 +138,8 @@ label {
 input[type="text"], input[type="email"], input[type="password"] {
   width: 100%;
   padding: 14px 16px;
+  /* הוספתי ריפוד קטן משמאל כדי שהטקסט לא יעלה על כפתור ההצגה */
+  padding-left: 50px; 
   border-radius: 12px;
   border: 1px solid #d4af37;
   background: #fff9f0;
@@ -123,7 +154,11 @@ input:focus {
   box-shadow: 0 0 0 3px rgba(212,175,55,0.4);
 }
 
-button {
+/* ============================ */
+/* 3. כפתור ראשי (הירשם)        */
+/* ============================ */
+/* משתמשים בסלקטור ספציפי כדי לא להשפיע על כפתור "הצג" */
+button[type="submit"] {
   grid-column: 1 / -1;
   padding: 14px 16px;
   border-radius: 14px;
@@ -137,9 +172,42 @@ button {
   transition: 0.25s;
 }
 
-button:hover { filter: brightness(1.15); }
-button[disabled] { opacity: 0.6; cursor: not-allowed; }
+button[type="submit"]:hover { filter: brightness(1.15); }
+button[type="submit"][disabled] { opacity: 0.6; cursor: not-allowed; }
 
+/* ============================ */
+/* 4. תיקון כפתור "הצג" (ללא רקע) */
+/* ============================ */
+.pw-row { position: relative; }
+
+button.toggle-pass {
+  position: absolute;
+  left: 10px; /* בצד שמאל של השדה */
+  top: 50%;
+  transform: translateY(-50%);
+  
+  /* איפוס העיצוב של הכפתור הרגיל */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+  
+  /* עיצוב הטקסט בלבד */
+  color: #9c8e7a;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  z-index: 5;
+}
+
+button.toggle-pass:hover {
+  text-decoration: underline;
+  filter: none !important;
+}
+
+/* שאר האלמנטים המקוריים */
 .msg { font-size: 0.95rem; margin-top: 6px; }
 .error { color: var(--error); }
 .ok { color: var(--success); }
@@ -156,81 +224,63 @@ button[disabled] { opacity: 0.6; cursor: not-allowed; }
 .pw-require li { list-style: none; margin: 4px 0; }
 .pw-require li.ok { color: var(--success); }
 
-.pw-row { position: relative; }
-.toggle-pass {
-  position: absolute;
-  right: 10px;
-  top: 38px;
-  background: none;
-  border: none;
-  color: #9c8e7a;
-  cursor: pointer;
-}
-
 .terms { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; color: #6e5a42; }
 
-/* ------------------------------------------------ */
-/* התאמות רספונסיביות לנייד             */
-/* ------------------------------------------------ */
+@media (max-width: 600px) {
 
-/* טאבלטים וניידים גדולים (עד 720px) */
-@media (max-width: 720px) { 
-  form {
-    grid-template-columns: 1fr; /* מעבר לטור אחד בטופס */
+  .wedding-header h1 {
+    font-size: 2.5rem;
   }
 
   .wrap {
-    padding: 1rem; /* צמצום הפדינג סביב הכרטיס */
-    min-height: auto; /* מאפשר לתוכן לקבוע את הגובה, עוזר בגלילה */
+    padding: 1rem;
   }
 
   .card {
-    padding: 25px; /* צמצום הפדינג הפנימי של הכרטיס */
-    margin: 15px 5px; /* הוספת מרווח חיצוני קטן בצדדים */
+    padding: 20px;
+    border-radius: 16px;
   }
-  
-  h1.card-title {
-    font-size: 1.7rem;
+
+  form {
+    grid-template-columns: 1fr; /* הופך את כל השדות לשורה אחת */
   }
-  
-  p.lead {
-    font-size: 1.0rem;
-    margin-bottom: 20px;
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    font-size: 1rem;
+    padding: 12px 14px;
+    padding-left: 50px;
   }
-  
-  /* הקטנת הקישוט ברקע */
+
+  button[type="submit"] {
+    font-size: 1.1rem;
+    padding: 12px;
+  }
+
+  .floating-diamond {
+    font-size: 180px;
+    right: -80px;
+    opacity: 0.05;
+  }
+
+  .constructed-ring {
+    width: 160px;
+    height: 160px;
+    bottom: 3%;
+    right: 3%;
+  }
+
+  .ring-stone {
+    font-size: 70px;
+    top: -30px;
+  }
+
   body::before {
-    width: 800px;
-    height: 900px;
-    top: -50px;
+    width: 600px;
+    height: 700px;
+    top: -140px;
     left: -200px;
-  }
-}
-
-/* טלפונים (עד 600px) */
-@media (max-width: 600px) { 
-  .wedding-header {
-    padding: 40px 10px 20px;
-  }
-  
-  .wedding-header h1 {
-    font-size: 2.5rem; /* הקטנת הכותרת הראשית */
-    letter-spacing: 1px;
-    /* צמצום הצללה כדי שלא תהיה מוגזמת */
-    text-shadow: 0 0 5px var(--accent), 0 0 10px #f7d17c, 0 0 15px var(--accent-dark); 
-  }
-
-  input[type="text"], input[type="email"], input[type="password"], button {
-    padding: 12px 14px; /* צמצום קל בגובה השדות והכפתור */
-    font-size: 1.0rem;
-  }
-
-  .toggle-pass {
-    top: 36px; /* עדכון המיקום של כפתור הצגת הסיסמה לאחר הקטנת פדינג השדה */
-  }
-
-  .pw-require {
-      padding: 10px;
-      font-size: 0.85rem;
+    opacity: 0.15;
   }
 }
