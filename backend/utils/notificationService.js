@@ -1,86 +1,67 @@
 const nodemailer = require('nodemailer');
 
-// טוען משתני סביבה של המייל
 const emailUser = process.env.EMAIL_USER;
 const emailPass = process.env.EMAIL_PASS;
 
 // ============================================================
-// 🔧 הגדרת ה-Transporter החדשה (פותרת את בעיית ה-Timeout)
+// 🔧 הגדרת Gmail מותאמת ל-Render (Fix Timeout)
 // ============================================================
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',  // הגדרה מפורשת של השרת
-    port: 587,               // שימוש בפורט 587 (STARTTLS) שעובד מעולה ב-Render
-    secure: false,           // בפורט 587 חובה שזה יהיה false
+    service: 'gmail', // שימוש בשירות המובנה
     auth: {
         user: emailUser,
         pass: emailPass
     },
+    // ⚠️ החלק הקריטי לתיקון הבעיה ב-Render:
     tls: {
-        ciphers: 'SSLv3',
-        rejectUnauthorized: false // מונע שגיאות אבטחה בשרתי ענן
-    }
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+    },
+    // הגדרות רשת מתקדמות למניעת Timeout
+    pool: true,              // שימוש ב-Connection Pooling
+    maxConnections: 1,       // הגבלה לחיבור אחד (ג'ימייל אוהב את זה)
+    rateLimit: 1,            // הגבלת קצב שליחה
+    socketTimeout: 30000,    // זמן המתנה ארוך יותר (30 שניות)
+    connectionTimeout: 30000,
+    
+    // 🔥 הטריק הכי חשוב: שימוש ב-IPv4 בלבד
+    family: 4 
 });
 
-// בדיקה ראשונית לראות שהחיבור תקין (אופציונלי, עוזר לדיבוג בלוגים)
+// בדיקת חיבור בטעינה
 transporter.verify((error, success) => {
     if (error) {
-        console.error("❌ שגיאה בחיבור לשרת המיילים:", error);
+        console.error("❌ Gmail Error:", error.message);
     } else {
-        console.log("✅ השרת מוכן לשליחת מיילים (מחובר ל-Gmail בפורט 587)");
+        console.log("✅ מחובר ל-Gmail בהצלחה (IPv4 Forced)");
     }
 });
 
 /**
- * 💡 פונקציה גנרית לשליחת מיילים (חובה עבור איפוס סיסמה ותזכורות)
+ * שליחת מייל
  */
 const sendMail = async (options) => {
-    if (!emailUser || !emailPass) {
-        console.error("❌ שגיאה: פרטי EMAIL_USER או EMAIL_PASS חסרים בקובץ .env");
-        throw new Error("Missing email credentials in .env");
-    }
-
     const mailOptions = {
         from: `"WedManage" <${emailUser}>`,
         to: options.to,
         subject: options.subject,
         html: options.html,
-        text: options.text || (options.html ? options.html.replace(/<[^>]*>?/gm, '') : '') // המרה לטקסט פשוט
+        text: options.text || (options.html ? options.html.replace(/<[^>]*>?/gm, '') : '') 
     };
 
     try {
+        console.log(`⏳ שולח ל-${options.to} (ניסיון דרך Gmail)...`);
         const info = await transporter.sendMail(mailOptions);
-        console.log(`✅ [MAIL] הודעה נשלחה בהצלחה: ${info.messageId} לכתובת: ${options.to}`);
+        console.log(`✅ המייל נשלח! ID: ${info.messageId}`);
         return info;
     } catch (error) {
-        console.error("❌ שגיאה בשליחת המייל (Nodemailer):", error);
-        throw error; // זורק את השגיאה כדי שהקונטרולר יתפוס אותה
+        console.error("❌ שגיאה בשליחה:", error.message);
+        throw error;
     }
 };
 
-/**
- * פונקציה להתראות מערכת (עוטפת את sendMail עבור התראות במייל)
- */
 const sendNotification = async (recipientId, messageContent, channel) => {
-    try {
-        console.log(`[Notification] מנסה לשלוח התראה לנמען: ${recipientId} דרך ערוץ: ${channel}`);
-
-        switch (channel) {
-            case 'email':
-                console.log(`[EMAIL] אנא השתמש ב-sendMail ישירות לשליחת מיילים.`);
-                break;
-            case 'in-app':
-            default:
-                console.log(`[IN-APP] נשמרה התראה פנימית עבור ${recipientId}: ${messageContent}`);
-                break;
-        }
-
-    } catch (error) {
-        console.error("❌ שגיאה בשליחת התראה:", error);
-    }
+    console.log(`[Notification] ${recipientId}: ${messageContent}`);
 };
 
-// ייצוא הפונקציות בצורה מסודרת
-module.exports = { 
-    sendMail, 
-    sendNotification 
-};
+module.exports = { sendMail, sendNotification };
