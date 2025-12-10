@@ -6,7 +6,6 @@
     <title>ניהול משימות חתונה</title>
 
     <link rel="stylesheet" href="css/task.css">
-
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -31,10 +30,12 @@
 
         <div class="tasks-list">
             <h3>רשימת המשימות</h3>
-            <ul id="task-list-sidebar"></ul> </div>
+            <ul id="task-list-sidebar"></ul> 
+        </div>
         
         <div class="reminder-card">
             <h3><i class="fas fa-bell"></i> שליחת תזכורות</h3>
+            
             <div class="input-group" style="margin-bottom: 15px;">
                 <label style="color: var(--gold);">בחר משימה לתזכורת:</label>
                 <select id="reminder-task-select" style="width: 100%; padding: 8px; border-radius: 8px; background: var(--bg-main); border: 1px solid #2b3750; color: var(--text-main); margin-top: 5px;">
@@ -45,29 +46,35 @@
             <div class="input-group">
                 <label style="color: var(--gold);">אמצעי תזכורת:</label>
                 <div id="reminder-method-options" style="display: flex; gap: 15px; margin-top: 5px; margin-bottom: 15px;">
-                    <label><input type="radio" name="reminder-type" value="email" checked>  אימייל</label>
-                    <label><input type="radio" name="reminder-type" value="phone">  SMS</label>
+                    <label><input type="radio" name="reminder-type" value="email" checked> אימייל</label>
+                    <label><input type="radio" name="reminder-type" value="phone"> SMS</label>
                 </div>
             </div>
 
-           <div class="input-group">
-            <label style="color: var(--gold);">מתי לשלוח:</label>
-            <div id="reminder-time-options" style="margin-top: 5px;">
-                <div id="custom-relative-container" style="display: none; margin-top: 10px; display: flex; align-items: center; gap: 10px;">
-                    <input type="number" id="relative-amount-input" min="1" value="1" style="width: 50px; padding: 8px; border-radius: 8px; border: 1px solid #2b3750; text-align: center;">
-                    <select id="relative-unit-select" style="padding: 8px; border-radius: 8px; border: 1px solid #2b3750; background: var(--bg-main); color: var(--text-main);">
-                        <option value="minutes">דקות</option>
-                        <option value="hours">שעות</option>
-                        <option value="days">ימים</option>
-                    </select>
-                    <label style="color: var(--text-sub);">לפני המשימה</label>
-                </div>
+            <div class="input-group">
+                <label style="color: var(--gold);">מתי לשלוח:</label>
+                <select id="reminder-schedule-select" onchange="toggleReminderInputs(this.value)" style="width: 100%; padding: 8px; border-radius: 8px; background: var(--bg-main); border: 1px solid #2b3750; color: var(--text-main); margin-top: 5px;">
+                    <option value="">בחר מועד...</option>
+                    <option value="custom_relative">זמן לפני המשימה</option>
+                    <option value="custom_absolute">תאריך ושעה מדויקים</option>
+                </select>
 
-                <div id="custom-absolute-container" style="display: none; margin-top: 10px;">
-                    <input type="datetime-local" id="custom-reminder-datetime" style="width: 100%; padding: 8px; border-radius: 8px; background: var(--bg-main); border: 1px solid #2b3750; color: var(--text-main);">
+                <div id="reminder-time-options" style="margin-top: 10px;">
+                    <div id="custom-relative-container" style="display: none; align-items: center; gap: 10px;">
+                        <input type="number" id="relative-amount-input" min="1" value="1" style="width: 50px; padding: 8px; border-radius: 8px; border: 1px solid #2b3750; text-align: center;">
+                        <select id="relative-unit-select" style="padding: 8px; border-radius: 8px; border: 1px solid #2b3750; background: var(--bg-main); color: var(--text-main);">
+                            <option value="minutes">דקות</option>
+                            <option value="hours">שעות</option>
+                            <option value="days">ימים</option>
+                        </select>
+                        <label style="color: var(--text-sub);">לפני</label>
+                    </div>
+
+                    <div id="custom-absolute-container" style="display: none;">
+                        <input type="datetime-local" id="custom-reminder-datetime" style="width: 100%; padding: 8px; border-radius: 8px; background: var(--bg-main); border: 1px solid #2b3750; color: var(--text-main);">
+                    </div>
                 </div>
             </div>
-        </div>
 
             <div class="input-group" style="margin-top: 15px;">
                 <label style="color: var(--gold);">למי לשלוח:</label>
@@ -77,7 +84,8 @@
                     <label><input type="radio" name="reminder-recipient" value="both"> שנינו</label>
                 </div>
             </div>
-            <button  type="button" onclick="sendReminder()" class="btn-primary"   style="width: 100%;">אשר תזכורת</button>
+            
+            <button type="button" onclick="sendReminder()" class="btn-primary" style="width: 100%;">אשר תזכורת</button>
         </div>
     </aside>
 
@@ -105,9 +113,16 @@
                 <textarea id="modal-task-description-add" rows="3"></textarea>
             </div>
 
-            <div class="input-group">
-                <label>תאריך</label>
-                <input type="text" id="modal-task-date" readonly>
+            <div style="display: flex; gap: 15px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>תאריך</label>
+                    <input type="text" id="modal-task-date" readonly>
+                </div>
+                
+                <div class="input-group" style="flex: 1;">
+                    <label>שעה (אופציונלי)</label>
+                    <input type="time" id="modal-task-time">
+                </div>
             </div>
 
             <div class="modal-actions">
@@ -120,10 +135,8 @@
     <div id="viewTaskModal" class="modal-overlay">
         <div class="modal-content">
             <h3 class="modal-title" id="view-task-title"></h3>
-
             <input type="hidden" id="view-task-id">
-
-            <p><strong>תאריך:</strong> <span id="view-task-date"></span></p>
+            <p><strong>זמן:</strong> <span id="view-task-date"></span></p>
 
             <div class="input-group">
                 <label>תיאור</label>
