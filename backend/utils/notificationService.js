@@ -6,11 +6,11 @@ const sendgridApiKey = process.env.SENDGRID_API_KEY;
 // 2. הגדרת ה-Transporter עבור SendGrid
 const transporter = nodemailer.createTransport({
     host: 'smtp.sendgrid.net',
-    port: 2525,              // <--- השינוי: פורט 2525 (פורט הגיבוי של SendGrid)
+    port: 2525,              // <--- פורט 2525 (פורט הגיבוי של SendGrid)
     secure: false,           // <--- חובה לשנות ל-FALSE בפורט הזה
     auth: {
         user: 'apikey',
-        pass: sendgridApiKey
+        pass: sendgridApiKey // שימוש במפתח ה-API
     },
     tls: {
         rejectUnauthorized: false
@@ -20,22 +20,23 @@ const transporter = nodemailer.createTransport({
 // פונקציה לבדיקת חיבור (אופציונלי)
 transporter.verify((error, success) => {
     if (error) {
+        //
         console.error("❌ שגיאה בחיבור ל-SendGrid:", error.message);
     } else {
+        //
         console.log("✅ מחובר ל-SendGrid בהצלחה (Port 465)");
     }
 });
 
 const sendMail = async (options) => {
     if (!sendgridApiKey) {
+        //
         console.error("❌ שגיאה: חסר SENDGRID_API_KEY בהגדרות הסביבה (.env)");
         return;
     }
 
     const mailOptions = {
-        // *** חשוב מאוד ***
-        // הכתובת הזו חייבת להיות תואמת לכתובת שאימתת ב-SendGrid (Single Sender Verification)
-        // אחרת תקבל שגיאת "Forbidden"
+        // הכתובת הזו חייבת להיות תואמת לכתובת שאימתת ב-SendGrid
         from: 'wedmanageweb@gmail.com', 
         
         to: options.to,
@@ -49,11 +50,20 @@ const sendMail = async (options) => {
         console.log(`✅ [MAIL] נשלח בהצלחה! ID: ${info.messageId}`);
         return info;
     } catch (error) {
+        // --- שינוי 1: הדפסת השגיאה המלאה ל-Debugging ---
         console.error("❌ שגיאה בשליחת המייל (SendGrid):", error);
-        // טיפול בשגיאות נפוצות של SendGrid
+        
+        //
+        // טיפול בשגיאות נפוצות של SendGrid (אם יש response object)
         if (error.response && error.response.body && error.response.body.errors) {
              console.error("פרטי השגיאה מ-SendGrid:", error.response.body.errors);
+        } else {
+             // --- שינוי 2: לכידת שגיאות רשת או שגיאות אחרות (כמו ETIMEDOUT) ---
+             console.error("שגיאה נוספת/רשת:", error.message);
         }
+        // *הערה חשובה:* מכיוון שאנו נמצאים בפונקציה sendMail, כדי שה-Cron Job ידע שהמייל נכשל,
+        // הפונקציה צריכה לזרוק את השגיאה הלאה.
+        throw error; // זורק את השגיאה כדי שה-Cron Job (server.js) ילכוד אותה וימנע עדכון DB
     }
 };
 

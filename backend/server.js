@@ -3,16 +3,15 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 
-const cron = require('node-cron'); // <--- הוספנו
-const { Op } = require('sequelize'); // <--- הוספנו
+const cron = require('node-cron'); 
+const { Op } = require('sequelize'); 
 const { connectDB, syncDB } = require('./db');
 
 // --- ייבוא המודלים (חשוב ל-Cron Job) ---
-// בראש הקובץ server.js
 require('./models/associations.js');
-const User = require('./models/User'); // <--- תוסיף את זה!
-const Task = require('./models/Task');       // <--- הוספנו
-const Reminder = require('./models/Reminder'); // <--- הוספנו
+const User = require('./models/User'); 
+const Task = require('./models/Task');       
+const Reminder = require('./models/Reminder'); 
 
 // --- ייבוא הראוטים ---
 const authRoutes = require('./routes/auth.routes.js');
@@ -29,7 +28,7 @@ const PORT = process.env.PORT || 3000;
 
 // --- 1. הגדרת CORS ---
 app.use(cors({
-    origin: '*', // פתוח לכולם כרגע (נוח לפיתוח)
+    origin: '*', 
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
 }));
@@ -51,12 +50,7 @@ app.get(/(.*)/, (req, res) => {
 });
 
 // ==========================================
-// 🕒 מנגנון התזכורות (CRON JOB)
-// ==========================================
-// שמנו את זה מחוץ ל-startServer כדי לשמור על סדר, זה ירוץ ברגע שהקובץ נטען
-
-// ==========================================
-// 🕒 מנגנון התזכורות (CRON JOB)
+// 🕒 מנגנון התזכורות (CRON JOB) - מעודכן
 // ==========================================
 
 cron.schedule('* * * * *', async () => {
@@ -68,26 +62,32 @@ cron.schedule('* * * * *', async () => {
         // 1. שליפה חכמה: תזכורת -> משימה -> משתמש
         const reminders = await Reminder.findAll({
             where: {
-                triggerAt: { [Op.lte]: now },
-                isSent: false
+                triggerAt: { [Op.lte]: now }, //
+                isSent: false                 //
             },
             include: [
                 { 
                     model: Task,
-                    // כאן הקסם: שליפה מקוננת
-                    // אנחנו אומרים: "תביא לי את המשימה, ובתוכה תביא את המשתמש של המשימה"
-                  include: [{ 
+                    include: [{ 
                            model: User,
-                           as: 'owner', // <--- הוספנו את השורה הזו
+                           as: 'owner', 
                            attributes: ['email', 'username'] 
                            }]
                 }
             ]
         });
+        
+        // --- בדיקה 1: כמות רשומות ---
+        if (reminders.length > 0) {
+            console.log(`✅ [CRON] נמצאו ${reminders.length} תזכורות לשליחה.`);
+        } else {
+            console.log(`⚠️ [CRON] לא נמצאו תזכורות לשליחה.`);
+        }
+        // ---------------------------
+
 
        for (const reminder of reminders) {
             
-            // בדיקות תקינות כפולות (נשארות כרגיל)
             if (!reminder.Task) {
                 console.log(`⚠️ משימה נמחקה (ID: ${reminder.taskId})`);
                 continue; 
@@ -100,16 +100,23 @@ cron.schedule('* * * * *', async () => {
             const userEmail = reminder.Task.owner.email;
             const emailHtml = getReminderTemplate(reminder.Task.title, reminder.Task.date);
 
+            // --- בדיקה 2: אימות מייל ושם משימה ---
+            if (!userEmail) {
+                console.error(`❌ [CRON] שגיאה: כתובת מייל חסרה עבור משימה ${reminder.Task.title}`);
+                continue;
+            }
+            console.log(`➡️ [CRON] מנסה לשלוח תזכורת: ${reminder.Task.title} ל: ${userEmail}`);
+            // ------------------------------------
+
             const mailOptions = {
                 to: userEmail,
                 subject: `🔔 תזכורת: ${reminder.Task.title}`,
                 html: emailHtml
             };
 
-            // --- מבנה try/catch מתוקן! ---
             try {
                 // 1. נסה לשלוח
-                console.log(`🚀 שולח תזכורת לכתובת: ${userEmail}`);
+                console.log(`🚀 שולח מייל דרך SendGrid ל-${userEmail}...`);
                 await sendMail(mailOptions);
                 
                 // 2. אם ההגעה לכאן, המייל נשלח בהצלחה
@@ -119,11 +126,9 @@ cron.schedule('* * * * *', async () => {
                 console.log(`✅ מייל נשלח בהצלחה ל-${userEmail}`);
 
             } catch (emailError) {
-                // 3. אם יש שגיאה (כמו ETIMEDOUT או Forbidden), תדפיס אותה ואל תעדכן את ה-DB
-                console.error(`❌ שגיאה בשליחה ל-${userEmail}: המייל נכשל. ה-DB לא עודכן.`, emailError.message || emailError);
-                
-                // ה-Cron Job ימשיך למשימה הבאה. 
-                // הוא ינסה לשלוח את המייל הזה שוב בדקה הבאה.
+                // 3. אם יש שגיאה, אל תעדכן את ה-DB
+                console.error(`❌ שגיאה בשליחה ל-${userEmail}: המייל נכשל. ה-DB לא עודכן.`);
+                console.error("פרטי השגיאה:", emailError.message || emailError); // הדפסת השגיאה המלאה
             }
         }
     } catch (err) {
@@ -140,7 +145,6 @@ async function startServer() {
         await connectDB();
 
         console.log("🚩 [SERVER] Syncing DB...");
-        // alter: true מעדכן את הטבלאות בלי למחוק מידע קיים
         await syncDB({ alter: true });
 
         app.listen(PORT, () => {

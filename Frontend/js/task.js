@@ -227,11 +227,13 @@ function populateTaskSelect(tasks) {
 // =======================================================
 //   שליחת תזכורת (Send Reminder) - מתוקן
 // =======================================================
+// =======================================================
+//   שליחת תזכורת (Send Reminder) - מתוקן ל-UTC
+// =======================================================
 
 async function sendReminder() {
     const selectedTaskId = document.getElementById('reminder-task-select').value;
     const reminderType = document.querySelector('input[name="reminder-type"]:checked')?.value;
-    // כאן התיקון: קריאה מתוך ה-Select החדש במקום Radio שלא היה קיים
     const reminderSchedule = document.getElementById('reminder-schedule-select').value;
 
     if (!selectedTaskId) return alert("אנא בחר משימה לשליחת תזכורת.");
@@ -243,9 +245,11 @@ async function sendReminder() {
     let triggerAt = new Date();
 
     if (reminderSchedule === 'custom_absolute') {
-        const absoluteInput = document.getElementById('custom-reminder-datetime').value;
+        const absoluteInput = document.getElementById('custom-reminder-datetime').value; // YYYY-MM-DDTHH:MM
         if (!absoluteInput) return alert("אנא בחר תאריך ושעה לתזכורת.");
-        triggerAt = new Date(absoluteInput);
+        
+        // תיקון 1: הוספת 'Z' (Zero Offset) כדי ש-new Date תתייחס לזה כזמן UTC
+        triggerAt = new Date(absoluteInput + ':00.000Z');
     
     } else if (reminderSchedule === 'custom_relative') {
         const amount = parseInt(document.getElementById('relative-amount-input').value);
@@ -253,11 +257,14 @@ async function sendReminder() {
 
         if (!amount) return alert("אנא הזן כמות זמן.");
 
+        // task.date הוא ISO string (כנראה UTC). אנו מעבדים אותו באמצעות שיטות UTC.
         let taskTime = new Date(task.date); 
+        
+        // תיקון 2: שימוש בשיטות setUTC/getUTC כדי למנוע הטיית Timezone מקומית.
         switch (unit) {
-            case 'minutes': taskTime.setMinutes(taskTime.getMinutes() - amount); break;
-            case 'hours': taskTime.setHours(taskTime.getHours() - amount); break;
-            case 'days': taskTime.setDate(taskTime.getDate() - amount); break;
+            case 'minutes': taskTime.setUTCMinutes(taskTime.getUTCMinutes() - amount); break;
+            case 'hours': taskTime.setUTCHours(taskTime.getUTCHours() - amount); break;
+            case 'days': taskTime.setUTCDate(taskTime.getUTCDate() - amount); break;
         }
         triggerAt = taskTime;
     }
@@ -272,7 +279,8 @@ async function sendReminder() {
             headers: getAuthHeaders(),
             body: JSON.stringify({
                 taskId: selectedTaskId,
-                triggerAt: triggerAt.toISOString(),
+                // triggerAt.toISOString() שולח את הזמן כ-UTC, לאחר החישובים הנכונים
+                triggerAt: triggerAt.toISOString(), 
                 type: reminderType
             })
         });
@@ -280,9 +288,8 @@ async function sendReminder() {
         if (res.ok) {
             alert(`תזכורת נקבעה בהצלחה ל-${triggerAt.toLocaleString()}`);
             
-            // עדכון ויזואלי מקומי (פעמון) עד לריענון הבא
-            // הערה: כדי שזה ישמר קבוע, השרת צריך לתמוך בזה
-            const calendarApi = document.querySelector('#calendar')._fullCalendarApi; // גישה לא רשמית ל-API
+            // ... (שאר קוד עדכון ה-UI הוויזואלי) ...
+            const calendarApi = document.querySelector('#calendar')._fullCalendarApi;
             const event = calendarApi.getEventById(selectedTaskId);
             if(event) {
                 event.setExtendedProp('hasReminder', true);
@@ -290,14 +297,15 @@ async function sendReminder() {
 
         } else {
             const data = await res.json();
+            // שיפור: הדפסת השגיאה לקונסול כדי שנוכל לראות מה ה-Backend החזיר
+            console.error("Error from API:", data.error || data); 
             alert("שגיאה: " + (data.error || "לא ידועה"));
         }
     } catch (error) {
-        console.error(error);
+        console.error("Fetch Error during sendReminder:", error);
         alert("שגיאת תקשורת");
     }
 }
-
 // =======================================================
 //   אתחול לוח השנה (כולל הצגת פעמון)
 // =======================================================
