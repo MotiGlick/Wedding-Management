@@ -4,20 +4,36 @@ const nodemailer = require('nodemailer');
 const emailUser = process.env.EMAIL_USER;
 const emailPass = process.env.EMAIL_PASS;
 
-// הגדרת ה-Transporter של Nodemailer (שימוש ב-Gmail)
-// וודא ש-EMAIL_USER ו-EMAIL_PASS מוגדרים בקובץ .env!
+// ============================================================
+// 🔧 הגדרת ה-Transporter החדשה (פותרת את בעיית ה-Timeout)
+// ============================================================
 const transporter = nodemailer.createTransport({
-    service: 'gmail', 
+    host: 'smtp.gmail.com',  // הגדרה מפורשת של השרת
+    port: 587,               // שימוש בפורט 587 (STARTTLS) שעובד מעולה ב-Render
+    secure: false,           // בפורט 587 חובה שזה יהיה false
     auth: {
         user: emailUser,
         pass: emailPass
+    },
+    tls: {
+        ciphers: 'SSLv3',
+        rejectUnauthorized: false // מונע שגיאות אבטחה בשרתי ענן
+    }
+});
+
+// בדיקה ראשונית לראות שהחיבור תקין (אופציונלי, עוזר לדיבוג בלוגים)
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("❌ שגיאה בחיבור לשרת המיילים:", error);
+    } else {
+        console.log("✅ השרת מוכן לשליחת מיילים (מחובר ל-Gmail בפורט 587)");
     }
 });
 
 /**
- * 💡 פונקציה גנרית לשליחת מיילים (חובה עבור איפוס סיסמה)
+ * 💡 פונקציה גנרית לשליחת מיילים (חובה עבור איפוס סיסמה ותזכורות)
  */
-exports.sendMail = async (options) => {
+const sendMail = async (options) => {
     if (!emailUser || !emailPass) {
         console.error("❌ שגיאה: פרטי EMAIL_USER או EMAIL_PASS חסרים בקובץ .env");
         throw new Error("Missing email credentials in .env");
@@ -28,7 +44,7 @@ exports.sendMail = async (options) => {
         to: options.to,
         subject: options.subject,
         html: options.html,
-        text: options.text || options.html.replace(/<[^>]*>?/gm, '') // המרה לטקסט פשוט
+        text: options.text || (options.html ? options.html.replace(/<[^>]*>?/gm, '') : '') // המרה לטקסט פשוט
     };
 
     try {
@@ -44,17 +60,12 @@ exports.sendMail = async (options) => {
 /**
  * פונקציה להתראות מערכת (עוטפת את sendMail עבור התראות במייל)
  */
-exports.sendNotification = async (recipientId, messageContent, channel) => {
+const sendNotification = async (recipientId, messageContent, channel) => {
     try {
         console.log(`[Notification] מנסה לשלוח התראה לנמען: ${recipientId} דרך ערוץ: ${channel}`);
 
-        // כאן היית אמור לשלוף את האימייל של המשתמש לפי ה-ID
-        // לצורך הפשטות כרגע, נניח שהפונקציה מקבלת אימייל ישירות או מטפלת בזה בנפרד
-        
         switch (channel) {
             case 'email':
-                // במקרה הזה הפונקציה הזו תצטרך לקבל אימייל, לא ID. 
-                // אם אתה משתמש בה ב-message.controller, וודא שאתה מעביר את האימייל.
                 console.log(`[EMAIL] אנא השתמש ב-sendMail ישירות לשליחת מיילים.`);
                 break;
             case 'in-app':
@@ -68,8 +79,8 @@ exports.sendNotification = async (recipientId, messageContent, channel) => {
     }
 };
 
-// ייצוא שתי הפונקציות
+// ייצוא הפונקציות בצורה מסודרת
 module.exports = { 
-    sendMail: exports.sendMail, 
-    sendNotification: exports.sendNotification 
+    sendMail, 
+    sendNotification 
 };
