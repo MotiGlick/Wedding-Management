@@ -9,6 +9,106 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <link rel="stylesheet" href="css/upload_invitation.css">
+
+    <style>
+        /* תוספות CSS עבור החלק החדש */
+        .guest-selection-container {
+            display: none; /* מוסתר כברירת מחדל */
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .selection-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #d4af37;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            font-family: 'Heebo', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .option-btn:hover, .option-btn.active {
+            background: #d4af37;
+            color: white;
+        }
+
+        /* עיצוב רשימת האורחים והחיפוש */
+        .manual-selection-area {
+            display: none; /* מוסתר עד שבוחרים ידנית */
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-family: 'Heebo', sans-serif;
+        }
+
+        .guest-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .guest-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+
+        .guest-item:hover {
+            background-color: #ffffef;
+        }
+
+        .guest-item input[type="checkbox"] {
+            margin-left: 10px;
+            width: 18px;
+            height: 18px;
+            accent-color: #d4af37;
+            cursor: pointer;
+        }
+
+        .final-send-btn {
+            margin-top: 15px;
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .final-send-btn:hover {
+            background: #555;
+        }
+    </style>
 </head>
 
 <body>
@@ -46,6 +146,29 @@
                 <button class="action-btn save-btn" id="saveBtn">שמור הזמנה</button>
                 <button class="action-btn send-btn" id="sendBtn">שלח הזמנה</button>
             </div>
+
+            <div class="guest-selection-container" id="guestSelectionContainer">
+                <h3>איך תרצה לשלוח?</h3>
+                
+                <div class="selection-options">
+                    <button class="option-btn" id="sendAllBtn">
+                        <i class="fas fa-users"></i> שלח לכולם
+                    </button>
+                    <button class="option-btn" id="selectManuallyBtn">
+                        <i class="fas fa-list-check"></i> בחירה ידנית
+                    </button>
+                </div>
+
+                <div class="manual-selection-area" id="manualSelectionArea">
+                    <input type="text" id="guestSearch" class="search-bar" placeholder="חפש אורח לפי שם...">
+                    
+                    <div class="guest-list" id="guestListContainer">
+                        </div>
+
+                    <button class="final-send-btn" id="executeSendBtn">שלח למסומנים</button>
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -55,6 +178,16 @@
         const fileInput = document.getElementById("fileInput");
         const preview = document.getElementById("preview");
         let currentFile = null;
+
+        // --- Mock Data: נתונים פיקטיביים שמדמים שליפה מה-DB ---
+        const guestsDB = [
+            { id: 1, name: "ישראל ישראלי", email: "israel@gmail.com" },
+            { id: 2, name: "משה כהן", email: "moshe@gmail.com" },
+            { id: 3, name: "דני דין", email: "dani@gmail.com" },
+            { id: 4, name: "שרה לוי", email: "sara@gmail.com" },
+            { id: 5, name: "יוסי בניון", email: "yossi@gmail.com" },
+            { id: 6, name: "רוני רון", email: "roni@gmail.com" }
+        ];
 
         // Click to open file picker
         uploadBox.addEventListener("click", () => fileInput.click());
@@ -83,10 +216,102 @@
             alert("הזמנה נשמרה (פיקטיבי כרגע)");
         });
 
-        document.getElementById("sendBtn").addEventListener("click", () => {
-            if (!currentFile) { alert("לא נבחרה תמונה לשליחה"); return; }
-            alert("מעבר לדף שליחת ההזמנות");
+        // --- לוגיקה חדשה לשליחת הזמנה ---
+
+        const sendBtn = document.getElementById("sendBtn");
+        const guestSelectionContainer = document.getElementById("guestSelectionContainer");
+        const manualSelectionArea = document.getElementById("manualSelectionArea");
+        const guestListContainer = document.getElementById("guestListContainer");
+        const guestSearch = document.getElementById("guestSearch");
+
+        // 1. לחיצה על "שלח הזמנה" חושפת את האזור למטה
+        sendBtn.addEventListener("click", () => {
+            if (!currentFile) { alert("קודם כל תעלה תמונה!"); return; }
+            
+            // הצגת האזור
+            guestSelectionContainer.style.display = "block";
+            // גלילה עדינה למטה כדי שהמשתמש יראה שנפתח משהו
+            guestSelectionContainer.scrollIntoView({ behavior: 'smooth' });
         });
+
+        // 2. לחיצה על "שלח לכולם"
+        document.getElementById("sendAllBtn").addEventListener("click", () => {
+            manualSelectionArea.style.display = "none"; // הסתרת הרשימה הידנית אם הייתה פתוחה
+            if(confirm("האם אתה בטוח שברצונך לשלוח את ההזמנה לכל " + guestsDB.length + " האורחים?")) {
+                alert("נשלח לכולם בהצלחה!");
+                // כאן תהיה קריאה לשרת לשליחת מייל לכולם
+            }
+        });
+
+        // 3. לחיצה על "בחירה ידנית"
+        document.getElementById("selectManuallyBtn").addEventListener("click", () => {
+            manualSelectionArea.style.display = "block"; // הצגת הרשימה והחיפוש
+            renderGuests(guestsDB); // טעינת האורחים
+        });
+
+        // פונקציה לציור רשימת האורחים ב-HTML
+        function renderGuests(guestsToRender) {
+            guestListContainer.innerHTML = ""; // ניקוי רשימה קיימת
+            
+            if (guestsToRender.length === 0) {
+                guestListContainer.innerHTML = "<p style='padding:10px; text-align:center'>לא נמצאו תוצאות</p>";
+                return;
+            }
+
+            guestsToRender.forEach(guest => {
+                const itemDiv = document.createElement("div");
+                itemDiv.className = "guest-item";
+                
+                // יצירת צ'קבוקס
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.value = guest.id;
+                checkbox.id = `guest-${guest.id}`;
+
+                // יצירת תווית (שם האורח)
+                const label = document.createElement("label");
+                label.htmlFor = `guest-${guest.id}`;
+                label.innerText = guest.name;
+                label.style.flexGrow = "1";
+                label.style.cursor = "pointer";
+
+                itemDiv.appendChild(checkbox);
+                itemDiv.appendChild(label);
+                
+                guestListContainer.appendChild(itemDiv);
+            });
+        }
+
+        // 4. מנגנון חיפוש
+        guestSearch.addEventListener("input", (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredGuests = guestsDB.filter(guest => 
+                guest.name.toLowerCase().includes(searchTerm)
+            );
+            renderGuests(filteredGuests);
+        });
+
+        // 5. כפתור שליחה סופי (עבור המסומנים בלבד)
+        document.getElementById("executeSendBtn").addEventListener("click", () => {
+            // איסוף כל הצ'קבוקסים המסומנים
+            const checkedBoxes = document.querySelectorAll('.guest-item input[type="checkbox"]:checked');
+            const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+            if (selectedIds.length === 0) {
+                alert("לא בחרת אף אורח!");
+                return;
+            }
+
+            // מציאת השמות שנבחרו (רק לצורך ההדגמה)
+            const selectedNames = guestsDB
+                .filter(g => selectedIds.includes(g.id.toString()))
+                .map(g => g.name)
+                .join(", ");
+
+            alert(`שולח הזמנה ל: ${selectedNames}`);
+            // כאן תהיה קריאה לשרת עם רשימת ה-IDs: selectedIds
+        });
+
     </script>
 
 </body>
