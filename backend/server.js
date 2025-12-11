@@ -40,7 +40,7 @@ app.use(express.static(path.join(__dirname, '../Frontend')));
 
 // --- Routes ---
 app.use('/api/invitations', invitationRoutes);
-
+app.use('/uploads', express.static(path.join(__dirname, 'backend/uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/expenses', expenseRoutes);

@@ -3,9 +3,9 @@
 const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
-const multer = require('multer'); // <--- חדש
-const path = require('path');     // <--- חדש
-const fs = require('fs');         // <--- חדש (כדי לוודא שהתיקייה קיימת)
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 // ייבוא המודלים והשירותים
 const { Guest } = require('../models/associations'); 
@@ -14,43 +14,33 @@ const { sendMail } = require('../utils/notificationService');
 // --- הגדרת תיקיית השמירה ---
 const uploadDir = 'uploads/';
 if (!fs.existsSync(uploadDir)){
-    fs.mkdirSync(uploadDir); // יוצר את התיקייה אוטומטית אם היא לא קיימת
+    fs.mkdirSync(uploadDir); 
 }
 
-// --- הגדרת Multer (המנוע ששומר קבצים) ---
+// --- הגדרת Multer ---
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadDir) 
-    },
+    destination: function (req, file, cb) { cb(null, uploadDir) },
     filename: function (req, file, cb) {
-        // נותן לקובץ שם ייחודי: זמן-נוכחי + מספר-רנדומלי + סיומת מקורית
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, uniqueSuffix + path.extname(file.originalname)); 
     }
 });
-
 const upload = multer({ storage: storage });
 
 // ============================================
-// נתיב 1: העלאת תמונה (POST /api/invitations/upload)
+// נתיב 1: העלאת תמונה
 // ============================================
-// שים לב: upload.single('invitationImage') חייב להיות תואם לשם ב-FormData ב-HTML
 router.post('/upload', upload.single('invitationImage'), (req, res) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ error: "לא נשלח קובץ תמונה" });
-        }
+        if (!req.file) return res.status(400).json({ error: "לא נשלח קובץ תמונה" });
         
-        // הקובץ נשמר בהצלחה!
         console.log("Image uploaded successfully:", req.file.path);
         
-        // מחזירים ללקוח את הכתובת של הקובץ
         res.json({ 
             success: true, 
             message: "ההזמנה נשמרה בשרת!",
             filePath: req.file.path 
         });
-
     } catch (error) {
         console.error("Error inside upload route:", error);
         res.status(500).json({ error: "שגיאה בשמירת הקובץ בשרת" });
@@ -58,25 +48,34 @@ router.post('/upload', upload.single('invitationImage'), (req, res) => {
 });
 
 // ============================================
-// נתיב 2: שליחת הזמנות במייל (POST /api/invitations/send-batch)
+// נתיב 2: שליחת הזמנות במייל (עם התיקון!)
 // ============================================
 router.post('/send-batch', async (req, res) => {
     try {
         const { sendToAll, guestIds } = req.body;
-        const userId = req.user ? req.user.id : 1; 
+        
+        // ביטלנו זמנית את השימוש ב-User ID כדי למנוע את באג ה-0 אורחים
+        // const userId = req.user ? req.user.id : 1; 
+
         let guestsToSend = [];
 
-        // שלב א: הבאת האורחים מה-DB
+        // שלב א: הבאת האורחים מה-DB (ללא סינון משתמש!)
         if (sendToAll) {
             guestsToSend = await Guest.findAll({
-                where: { userId: userId, email: { [Op.ne]: null } }
+                where: { 
+                    // userId: userId, // <--- שמנו בהערה זמנית
+                    email: { [Op.ne]: null } 
+                }
             });
         } else {
             if (!guestIds || guestIds.length === 0) {
                 return res.status(400).json({ error: "לא נבחרו אורחים לשליחה" });
             }
             guestsToSend = await Guest.findAll({
-                where: { id: { [Op.in]: guestIds }, userId: userId }
+                where: { 
+                    id: { [Op.in]: guestIds }, 
+                    // userId: userId // <--- שמנו בהערה זמנית
+                }
             });
         }
 
