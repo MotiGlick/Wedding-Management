@@ -212,11 +212,10 @@
 
         try {
             // וודא שיש לך נתיב כזה בשרת, או שנה אותו בהתאם
-            const response = await fetch('/api/upload-invitation', { 
-                method: 'POST',
-                body: formData
-            });
-
+           const response = await fetch('/api/invitations/upload', { 
+    method: 'POST',
+    body: formData
+       });
             if(response.ok) {
                 alert("ההזמנה נשמרה בהצלחה!");
             } else {
