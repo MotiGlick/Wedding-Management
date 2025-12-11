@@ -13,40 +13,51 @@ const getReminderTemplate = (title, date) => {
         month: 'long',
         year: 'numeric'
     });
+    
+    // אם התאריך כולל שעה, נציג גם אותה
+    const dateObj = new Date(date);
+    const timePart = dateObj.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+    const formattedTime = timePart !== '00:00' ? ` בשעה: ${timePart}` : '';
 
     return `
-    <div style="font-family: Arial, sans-serif; direction: rtl; text-align: right; background-color: #f4f4f4; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
+    <div style="font-family: Arial, sans-serif; direction: rtl; text-align: right; background-color: #f8f8f8; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden;">
             
-            <div style="background-color: #4CAF50; color: white; padding: 15px; text-align: center;">
-                <h2 style="margin: 0;">🔔 תזכורת ממערכת WedManage</h2>
+            <div style="background-color: #f7f7f7; color: #333; padding: 15px; border-bottom: 2px solid #ffcc00; text-align: right;">
+                <h2 style="margin: 0; font-size: 20px;"><span style="color: #ffcc00; font-size: 1.2em;">⭐</span> תזכורת ממערכת WedManage</h2>
             </div>
 
-            <div style="padding: 20px;">
-                <h3 style="color: #333;">שלום רב,</h3>
-                <p style="font-size: 16px; color: #555;">
-                    זוהי תזכורת אוטומטית לגבי המשימה שלך:
+            <div style="padding: 25px;">
+                <h3 style="color: #333; margin-top: 0;">היי,</h3>
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">
+                    זמן לבדוק את אחת המשימות החשובות שלך לקראת האירוע הגדול! 
+                    <br>
+                    זוהי תזכורת אוטומטית לגבי המשימה הבאה:
                 </p>
                 
-                <div style="background-color: #e8f5e9; border-right: 4px solid #4CAF50; padding: 15px; margin: 15px 0;">
-                    <strong style="font-size: 18px; color: #2e7d32;">${title}</strong>
+                <div style="background-color: #fffde7; border-right: 4px solid #ffcc00; padding: 18px; margin: 20px 0; border-radius: 4px;">
+                    <strong style="font-size: 18px; color: #333;">כותרת המשימה: ${title}</strong>
                     <br>
-                    <span style="color: #666; font-size: 14px;">תאריך יעד: ${formattedDate}</span>
+                    <span style="color: #777; font-size: 14px; margin-top: 5px; display: inline-block;">
+                        תאריך יעד: ${formattedDate}${formattedTime}
+                    </span>
                 </div>
 
                 <p style="font-size: 14px; color: #777;">
-                    אנא הכנס למערכת כדי לעדכן סטטוס או לבצע שינויים.
+                    אנא הכנס למערכת כדי לעדכן סטטוס, להוסיף הערות או לבצע שינויים.
                 </p>
                 
-                <div style="text-align: center; margin-top: 25px;">
-                    <a href="https://your-project-url.onrender.com" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                        כנס למערכת
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://your-project-url.onrender.com" style="background-color: #ffcc00; color: #333; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; display: inline-block;">
+                        מעבר לניהול משימות
                     </a>
                 </div>
             </div>
 
-            <div style="background-color: #333; color: #aaa; padding: 10px; text-align: center; font-size: 12px;">
+            <div style="background-color: #f7f7f7; color: #999; padding: 10px; text-align: center; font-size: 11px; border-top: 1px solid #eee;">
                 &copy; 2025 WedManage System. כל הזכויות שמורות.
+                <br>
+                מייל זה נשלח כשירות עבורך.
             </div>
         </div>
     </div>
