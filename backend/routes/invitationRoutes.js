@@ -3,64 +3,93 @@
 const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
+const multer = require('multer'); // <--- חדש
+const path = require('path');     // <--- חדש
+const fs = require('fs');         // <--- חדש (כדי לוודא שהתיקייה קיימת)
 
-// 1. ייבוא המודלים שלך
+// ייבוא המודלים והשירותים
 const { Guest } = require('../models/associations'); 
-
-// 2. ייבוא שירות השליחה שכבר קיים אצלך!
 const { sendMail } = require('../utils/notificationService');
 
-// נתיב לשליחת הזמנות (מחובר למה שכתבנו ב-HTML)
-// הכתובת המלאה תהיה: POST /api/invitations/send-batch
+// --- הגדרת תיקיית השמירה ---
+const uploadDir = 'uploads/';
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir); // יוצר את התיקייה אוטומטית אם היא לא קיימת
+}
+
+// --- הגדרת Multer (המנוע ששומר קבצים) ---
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadDir) 
+    },
+    filename: function (req, file, cb) {
+        // נותן לקובץ שם ייחודי: זמן-נוכחי + מספר-רנדומלי + סיומת מקורית
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname)); 
+    }
+});
+
+const upload = multer({ storage: storage });
+
+// ============================================
+// נתיב 1: העלאת תמונה (POST /api/invitations/upload)
+// ============================================
+// שים לב: upload.single('invitationImage') חייב להיות תואם לשם ב-FormData ב-HTML
+router.post('/upload', upload.single('invitationImage'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "לא נשלח קובץ תמונה" });
+        }
+        
+        // הקובץ נשמר בהצלחה!
+        console.log("Image uploaded successfully:", req.file.path);
+        
+        // מחזירים ללקוח את הכתובת של הקובץ
+        res.json({ 
+            success: true, 
+            message: "ההזמנה נשמרה בשרת!",
+            filePath: req.file.path 
+        });
+
+    } catch (error) {
+        console.error("Error inside upload route:", error);
+        res.status(500).json({ error: "שגיאה בשמירת הקובץ בשרת" });
+    }
+});
+
+// ============================================
+// נתיב 2: שליחת הזמנות במייל (POST /api/invitations/send-batch)
+// ============================================
 router.post('/send-batch', async (req, res) => {
     try {
-        // שליפת הנתונים שהגיעו מה-HTML
         const { sendToAll, guestIds } = req.body;
-        
-        // כאן נניח שאתה משתמש ב-req.user.id (אם יש לך אימות משתמשים)
-        // אם אין עדיין אימות, נשתמש זמנית ב-1, אבל חשוב לסדר את זה!
         const userId = req.user ? req.user.id : 1; 
-
         let guestsToSend = [];
 
-        // --- שלב א: הבאת האורחים מה-DB ---
-        
+        // שלב א: הבאת האורחים מה-DB
         if (sendToAll) {
-            // אם המשתמש בחר "שלח לכולם" - מביאים את כל האורחים של המשתמש שיש להם אימייל
             guestsToSend = await Guest.findAll({
-                where: { 
-                    userId: userId,
-                    email: { [Op.ne]: null } // רק מי שיש לו אימייל
-                }
+                where: { userId: userId, email: { [Op.ne]: null } }
             });
         } else {
-            // אם המשתמש בחר ידנית - מביאים רק את מי שברשימה
             if (!guestIds || guestIds.length === 0) {
                 return res.status(400).json({ error: "לא נבחרו אורחים לשליחה" });
             }
             guestsToSend = await Guest.findAll({
-                where: {
-                    id: { [Op.in]: guestIds },
-                    userId: userId
-                }
+                where: { id: { [Op.in]: guestIds }, userId: userId }
             });
         }
 
-        console.log(`מתחיל שליחה ל-${guestsToSend.length} אורחים...`);
+        console.log(`Starting to send emails to ${guestsToSend.length} guests...`);
 
-        // --- שלב ב: שליחת המיילים בפועל ---
-
-        // אנחנו עוברים אורח-אורח ושולחים לו מייל
+        // שלב ב: שליחת המיילים
         const results = [];
-        
         for (const guest of guestsToSend) {
             if (guest.email) {
                 try {
-                    // שימוש בשירות ה-SendGrid שלך
                     await sendMail({
                         to: guest.email,
                         subject: `הזמנה לחתונה של ${guest.firstName}!`, 
-                        // כאן אתה יכול להכניס HTML מעוצב או להשתמש ב-template
                         html: `
                             <div dir="rtl" style="text-align: right; font-family: Arial;">
                                 <h2>היי ${guest.firstName},</h2>
@@ -72,15 +101,13 @@ router.post('/send-batch', async (req, res) => {
                         `
                     });
                     results.push({ email: guest.email, status: 'success' });
-                    
                 } catch (err) {
-                    console.error(`נכשל בשליחה ל-${guest.email}`);
+                    console.error(`Failed to send to ${guest.email}`);
                     results.push({ email: guest.email, status: 'failed' });
                 }
             }
         }
 
-        // החזרת תשובה ללקוח (ל-HTML) שהכל עבר בשלום
         res.json({ 
             success: true, 
             message: `תהליך השליחה הסתיים. נשלח ל-${results.filter(r => r.status === 'success').length} אורחים.` 
