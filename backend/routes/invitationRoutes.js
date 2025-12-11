@@ -7,8 +7,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// ייבוא המודלים והשירותים
-const { Guest } = require('../models/associations'); 
+// ייבוא המודלים (שים לב: חייב לייבא גם את User!)
+const { Guest, User } = require('../models/associations'); 
 const { sendMail } = require('../utils/notificationService');
 
 // --- הגדרת תיקיית השמירה ---
@@ -28,74 +28,100 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // ============================================
-// נתיב 1: העלאת תמונה
+// נתיב 1: העלאת תמונה + שמירה ב-DB (כדי שתישאר!)
 // ============================================
-router.post('/upload', upload.single('invitationImage'), (req, res) => {
+router.post('/upload', upload.single('invitationImage'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: "לא נשלח קובץ תמונה" });
+
+        // מנקים את הנתיב שיתאים לדפדפן (מחליפים \ ב /)
+        const relativePath = req.file.path.replace(/\\/g, '/');
+
+        // --- שמירת הנתיב ב-DB למשתמש ---
+        // כרגע אנחנו מניחים שהמשתמש הוא 1 (או מה שבא מהטוקן אם יש)
+        const userId = req.user ? req.user.id : 1;
         
-        console.log("Image uploaded successfully:", req.file.path);
+        // כאן אנחנו מעדכנים את המשתמש
+        // הערה: אם זה נכשל, וודא שיש לך עמודת invitationImage בטבלת Users!
+        await User.update(
+            { invitationImage: relativePath },
+            { where: { id: userId } }
+        );
         
+        console.log("Image saved to DB for user:", userId);
+
         res.json({ 
             success: true, 
-            message: "ההזמנה נשמרה בשרת!",
-            filePath: req.file.path 
+            message: "ההזמנה נשמרה בשרת ובמסד הנתונים!",
+            filePath: relativePath 
         });
+
     } catch (error) {
         console.error("Error inside upload route:", error);
-        res.status(500).json({ error: "שגיאה בשמירת הקובץ בשרת" });
+        res.status(500).json({ error: "שגיאה בשמירת הקובץ" });
     }
 });
 
 // ============================================
-// נתיב 2: שליחת הזמנות במייל (עם התיקון!)
+// נתיב 2: בדיקה איזו תמונה קיימת (עבור טעינת הדף)
+// ============================================
+router.get('/current', async (req, res) => {
+    try {
+        const userId = req.user ? req.user.id : 1;
+        
+        // שליפת המשתמש והתמונה שלו
+        const user = await User.findByPk(userId, { 
+            attributes: ['invitationImage'] 
+        });
+        
+        if (user && user.invitationImage) {
+            res.json({ hasImage: true, imageUrl: user.invitationImage });
+        } else {
+            res.json({ hasImage: false });
+        }
+    } catch (error) {
+        console.error("Error fetching current image:", error);
+        res.status(500).json({ error: "שגיאה בטעינת תמונה" });
+    }
+});
+
+// ============================================
+// נתיב 3: שליחת הזמנות במייל (ללא סינון UserId)
 // ============================================
 router.post('/send-batch', async (req, res) => {
     try {
         const { sendToAll, guestIds } = req.body;
-        
-        // ביטלנו זמנית את השימוש ב-User ID כדי למנוע את באג ה-0 אורחים
-        // const userId = req.user ? req.user.id : 1; 
-
         let guestsToSend = [];
 
-        // שלב א: הבאת האורחים מה-DB (ללא סינון משתמש!)
+        // שליפה ללא סינון userId כדי למנוע את באג ה-0 אורחים
         if (sendToAll) {
             guestsToSend = await Guest.findAll({
-                where: { 
-                    // userId: userId, // <--- שמנו בהערה זמנית
-                    email: { [Op.ne]: null } 
-                }
+                where: { email: { [Op.ne]: null } }
             });
         } else {
             if (!guestIds || guestIds.length === 0) {
-                return res.status(400).json({ error: "לא נבחרו אורחים לשליחה" });
+                return res.status(400).json({ error: "לא נבחרו אורחים" });
             }
             guestsToSend = await Guest.findAll({
-                where: { 
-                    id: { [Op.in]: guestIds }, 
-                    // userId: userId // <--- שמנו בהערה זמנית
-                }
+                where: { id: { [Op.in]: guestIds } }
             });
         }
 
-        console.log(`Starting to send emails to ${guestsToSend.length} guests...`);
+        console.log(`Sending emails to ${guestsToSend.length} guests...`);
 
-        // שלב ב: שליחת המיילים
         const results = [];
         for (const guest of guestsToSend) {
             if (guest.email) {
                 try {
                     await sendMail({
                         to: guest.email,
-                        subject: `הזמנה לחתונה של ${guest.firstName}!`, 
+                        subject: `הזמנה לחתונה שלנו!`, 
                         html: `
                             <div dir="rtl" style="text-align: right; font-family: Arial;">
                                 <h2>היי ${guest.firstName},</h2>
                                 <p>שמחים להזמינך לחתונה שלנו!</p>
-                                <p>כנס למערכת לאישור הגעה.</p>
-                                <br>
-                                <p>באהבה!</p>
+                                <p>לצפייה בהזמנה ואישור הגעה, היכנסו למערכת.</p>
+                                <br><p>באהבה!</p>
                             </div>
                         `
                     });
@@ -109,12 +135,12 @@ router.post('/send-batch', async (req, res) => {
 
         res.json({ 
             success: true, 
-            message: `תהליך השליחה הסתיים. נשלח ל-${results.filter(r => r.status === 'success').length} אורחים.` 
+            message: `נשלח ל-${results.filter(r => r.status === 'success').length} אורחים.` 
         });
 
     } catch (error) {
         console.error("Error in send-batch route:", error);
-        res.status(500).json({ error: "שגיאה כללית בשרת בעת שליחת ההזמנות" });
+        res.status(500).json({ error: "שגיאה כללית" });
     }
 });
 
