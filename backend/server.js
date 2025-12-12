@@ -54,16 +54,17 @@ app.get(/(.*)/, (req, res) => {
 // ==========================================
 
 cron.schedule('* * * * *', async () => {
-    console.log('⏰ בודק תזכורות...');
+    cron.schedule('* * * * *', async () => {
+    // הדפסה שתראה לך מה השעה בשרת כרגע (ב-UTC)
+    console.log(`⏰ בודק תזכורות... זמן שרת (UTC): ${new Date().toISOString()}`);
 
     try {
         const now = new Date();
 
-        // 1. שליפה חכמה: תזכורת -> משימה -> משתמש
         const reminders = await Reminder.findAll({
             where: {
-                triggerAt: { [Op.lte]: now }, //
-                isSent: false                 //
+                triggerAt: { [Op.lte]: now }, 
+                isSent: false                 
             },
             include: [
                 { 
@@ -77,14 +78,13 @@ cron.schedule('* * * * *', async () => {
             ]
         });
         
-        // --- בדיקה 1: כמות רשומות ---
         if (reminders.length > 0) {
             console.log(`✅ [CRON] נמצאו ${reminders.length} תזכורות לשליחה.`);
         } else {
-            console.log(`⚠️ [CRON] לא נמצאו תזכורות לשליחה.`);
+            // זה יעזור לך להבין אם יש תזכורות עתידיות שמחכות
+            const pendingReminders = await Reminder.count({ where: { isSent: false } });
+            console.log(`⚠️ [CRON] לא נמצאו תזכורות לביצוע כרגע. (סה"כ ממתינות ב-DB לעתיד: ${pendingReminders})`);
         }
-        // ---------------------------
-
 
        for (const reminder of reminders) {
             
