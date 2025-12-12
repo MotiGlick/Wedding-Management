@@ -1,3 +1,4 @@
+// backend/server.js
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
@@ -14,7 +15,6 @@ const Task = require('./models/Task');
 const Reminder = require('./models/Reminder'); 
 
 // --- ייבוא הראוטים ---
-const invitationRoutes = require('./routes/invitationRoutes');
 const authRoutes = require('./routes/auth.routes.js');
 const taskRoutes = require('./routes/task.routes.js');
 const expenseRoutes = require('./routes/expenses.routes.js');
@@ -39,8 +39,6 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../Frontend')));
 
 // --- Routes ---
-app.use('/api/invitations', invitationRoutes);
-app.use('/uploads', express.static(path.join(__dirname, 'backend/uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/expenses', expenseRoutes);
@@ -57,17 +55,17 @@ app.get(/(.*)/, (req, res) => {
 // ==========================================
 
 cron.schedule('* * * * *', async () => {
-    cron.schedule('* * * * *', async () => {
-    // הדפסה שתראה לך מה השעה בשרת כרגע (ב-UTC)
+    // הדפסה שתראה לנו את זמן השרת האמיתי ב-UTC
     console.log(`⏰ בודק תזכורות... זמן שרת (UTC): ${new Date().toISOString()}`);
 
     try {
         const now = new Date();
 
+        // 1. שליפה חכמה: תזכורת -> משימה -> משתמש
         const reminders = await Reminder.findAll({
             where: {
-                triggerAt: { [Op.lte]: now }, 
-                isSent: false                 
+                triggerAt: { [Op.lte]: now }, // האם זמן התזכורת הגיע או עבר?
+                isSent: false                 // וגם: התזכורת עדיין לא נשלחה
             },
             include: [
                 { 
@@ -81,13 +79,15 @@ cron.schedule('* * * * *', async () => {
             ]
         });
         
+        // --- בדיקה 1: כמות רשומות ---
         if (reminders.length > 0) {
             console.log(`✅ [CRON] נמצאו ${reminders.length} תזכורות לשליחה.`);
         } else {
-            // זה יעזור לך להבין אם יש תזכורות עתידיות שמחכות
+            // זה יעזור לך להבין אם השרת בכלל רואה תזכורות עתידיות ב-DB
             const pendingReminders = await Reminder.count({ where: { isSent: false } });
             console.log(`⚠️ [CRON] לא נמצאו תזכורות לביצוע כרגע. (סה"כ ממתינות ב-DB לעתיד: ${pendingReminders})`);
         }
+        // ---------------------------
 
        for (const reminder of reminders) {
             
@@ -131,13 +131,14 @@ cron.schedule('* * * * *', async () => {
             } catch (emailError) {
                 // 3. אם יש שגיאה, אל תעדכן את ה-DB
                 console.error(`❌ שגיאה בשליחה ל-${userEmail}: המייל נכשל. ה-DB לא עודכן.`);
-                console.error("פרטי השגיאה:", emailError.message || emailError); // הדפסת השגיאה המלאה
+                console.error("פרטי השגיאה:", emailError.message || emailError); 
             }
         }
     } catch (err) {
         console.error("❌ Cron Job Error:", err);
     }
 });
+
 // ==========================================
 // 🚀 הפעלת השרת
 // ==========================================
