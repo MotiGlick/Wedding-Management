@@ -37,7 +37,13 @@ router.post('/delete', async (req, res) => {
 // ----- קבלת כל האורחים -----
 router.get('/', async (req, res) => {
     try {
-        const guests = await Guest.findAll({ order: [['createdAt','DESC']] });
+        const userId = req.user ? req.user.id : 1;
+
+        const guests = await Guest.findAll({ 
+            where: { userId: userId }, // <--- 
+            order: [['createdAt','DESC']] 
+        });
+
         res.json(guests);
     } catch (err) {
         console.error(err);

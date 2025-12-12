@@ -123,12 +123,21 @@ router.post('/send-batch', async (req, res) => {
                         subject: `הזמנה לחתונה שלנו!`, 
                         html: `
                             <div dir="rtl" style="text-align: right; font-family: Arial;">
-                                <h2>היי ${guest.firstName},</h2>
-                                <p>שמחים להזמינך לחתונה שלנו!</p>
-                                <p>לצפייה בהזמנה ואישור הגעה, היכנסו למערכת.</p>
-                                <br><p>באהבה!</p>
-                            </div>
-                        `
+                            <h2>היי ${guest.firstName},</h2>
+                            <p>שמחים להזמינך לחתונה שלנו!</p>
+                            <p>לצפייה בהזמנה ואישור הגעה, היכנס/י לקישור:</p>
+
+                            <a href="https://your-domain.com/invitation/" 
+                            style="font-size:18px; color:#1a73e8;">
+                            לחץ כאן לפתיחת ההזמנה 🎉
+                            </a>
+
+                            <br><br>
+                        <p>באהבה!</p>
+                                </div>
+                                `
+
+                        
                     });
                     results.push({ email: guest.email, status: 'success' });
                 } catch (err) {
