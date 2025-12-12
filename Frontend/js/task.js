@@ -249,7 +249,7 @@ async function sendReminder() {
         if (!absoluteInput) return alert("אנא בחר תאריך ושעה לתזכורת.");
         
         // תיקון 1: הוספת 'Z' (Zero Offset) כדי ש-new Date תתייחס לזה כזמן UTC
-        triggerAt = new Date(absoluteInput + ':00.000Z');
+        triggerAt = new Date(absoluteInput);
     
     } else if (reminderSchedule === 'custom_relative') {
         const amount = parseInt(document.getElementById('relative-amount-input').value);

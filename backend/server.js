@@ -1,3 +1,4 @@
+// backend/server.js
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
@@ -14,7 +15,6 @@ const Task = require('./models/Task');
 const Reminder = require('./models/Reminder'); 
 
 // --- ייבוא הראוטים ---
-const invitationRoutes = require('./routes/invitationRoutes');
 const authRoutes = require('./routes/auth.routes.js');
 const taskRoutes = require('./routes/task.routes.js');
 const expenseRoutes = require('./routes/expenses.routes.js');
@@ -58,7 +58,8 @@ app.get(/(.*)/, (req, res) => {
 // ==========================================
 
 cron.schedule('* * * * *', async () => {
-    console.log('⏰ בודק תזכורות...');
+    // הדפסה שתראה לנו את זמן השרת האמיתי ב-UTC
+    console.log(`⏰ בודק תזכורות... זמן שרת (UTC): ${new Date().toISOString()}`);
 
     try {
         const now = new Date();
@@ -66,8 +67,8 @@ cron.schedule('* * * * *', async () => {
         // 1. שליפה חכמה: תזכורת -> משימה -> משתמש
         const reminders = await Reminder.findAll({
             where: {
-                triggerAt: { [Op.lte]: now }, //
-                isSent: false                 //
+                triggerAt: { [Op.lte]: now }, // האם זמן התזכורת הגיע או עבר?
+                isSent: false                 // וגם: התזכורת עדיין לא נשלחה
             },
             include: [
                 { 
@@ -85,10 +86,11 @@ cron.schedule('* * * * *', async () => {
         if (reminders.length > 0) {
             console.log(`✅ [CRON] נמצאו ${reminders.length} תזכורות לשליחה.`);
         } else {
-            console.log(`⚠️ [CRON] לא נמצאו תזכורות לשליחה.`);
+            // זה יעזור לך להבין אם השרת בכלל רואה תזכורות עתידיות ב-DB
+            const pendingReminders = await Reminder.count({ where: { isSent: false } });
+            console.log(`⚠️ [CRON] לא נמצאו תזכורות לביצוע כרגע. (סה"כ ממתינות ב-DB לעתיד: ${pendingReminders})`);
         }
         // ---------------------------
-
 
        for (const reminder of reminders) {
             
@@ -132,13 +134,14 @@ cron.schedule('* * * * *', async () => {
             } catch (emailError) {
                 // 3. אם יש שגיאה, אל תעדכן את ה-DB
                 console.error(`❌ שגיאה בשליחה ל-${userEmail}: המייל נכשל. ה-DB לא עודכן.`);
-                console.error("פרטי השגיאה:", emailError.message || emailError); // הדפסת השגיאה המלאה
+                console.error("פרטי השגיאה:", emailError.message || emailError); 
             }
         }
     } catch (err) {
         console.error("❌ Cron Job Error:", err);
     }
 });
+
 // ==========================================
 // 🚀 הפעלת השרת
 // ==========================================
