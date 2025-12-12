@@ -12,8 +12,8 @@
     --text-sub: #6c757d; 
     --radius: 14px;
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.08); 
-    --sidebar-full-width: 330px; 
-    --sidebar-min-width: 85px; 
+    --sidebar-full-width: 280px; 
+    --sidebar-min-width: 0px; /* מוחבא כברירת מחדל עד לפתיחה */
     --hamburger-size: 30px;
 }
 
@@ -25,73 +25,119 @@ body.page-wrapper {
     background: var(--bg-main);
     min-height: 100vh;
     color: var(--text-main);
-    display: grid;
-    grid-template-columns: 1fr minmax(600px, 900px) 1fr;
-    padding: 35px;
     direction: rtl;
-    padding-right: 35px !important;
-    padding-left: 35px !important;
-    transition: none; 
-    overflow-x: hidden; 
+    padding: 20px;
+    /* במקום Grid גלובלי, נשתמש במבנה גמיש יותר */
 }
 
-body.page-wrapper.sidebar-offset { padding-left: 35px; padding-right: 35px; }
-
-/* כפתור חזרה */
-.back-button { position: fixed; left: 25px; top: 25px; width: auto; padding: 10px 20px; z-index: 1500; transition: right 0.35s ease; }
-body.page-wrapper.sidebar-offset .back-button { right: auto; }
-.back-link-container { display: block; }
+/* 1. כפתור חזרה - Z-Index תוקן כדי לא לעלות על סרגל */
+.back-button { 
+    position: absolute; left: 25px; top: 25px; width: auto; 
+    z-index: 900; /* נמוך מהסרגל (שהוא 1100) */
+    transition: right 0.35s ease; 
+}
 .back-button-style { 
-    padding: 12px 22px; background: transparent; border: 2px solid var(--gold); border-radius: var(--radius); 
-    color: var(--gold); font-weight: 700; cursor: pointer; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    font-size: 16px; text-decoration: none; display: inline-block; 
+    padding: 10px 20px; background: transparent; border: 2px solid var(--gold); border-radius: var(--radius); 
+    color: var(--gold); font-weight: 700; cursor: pointer; transition: all 0.3s;
+    font-size: 16px; text-decoration: none; display: inline-block; background: rgba(255,255,255,0.8);
 }
-.back-button-style:hover { background: var(--gold); color: var(--bg-main); box-shadow: 0 0 15px var(--gold); transform: scale(1.05); }
+.back-button-style:hover { background: var(--gold); color: var(--bg-main); }
 
 /* כפתור המבורגר */
 .hamburger-menu {
-    position: absolute; top: 25px; right: 25px; width: var(--hamburger-size); height: var(--hamburger-size); 
+    position: fixed; top: 25px; right: 25px; width: var(--hamburger-size); height: var(--hamburger-size); 
     border-radius: 50%; background: var(--bg-card); border: 1px solid var(--gold); display: flex; flex-direction: column; 
-    justify-content: center; align-items: center; cursor: pointer; z-index: 1200; transition: all 0.3s ease; 
+    justify-content: center; align-items: center; cursor: pointer; z-index: 1200; 
 }
-.hamburger-menu:hover { background: var(--gold-light); border: 1px solid var(--gold-light); box-shadow: 0 0 10px var(--gold); }
-.hamburger-menu .bar { width: 18px; height: 2px; margin: 2px 0; background: var(--gold); transition: 0.3s; }
+.hamburger-menu .bar { width: 18px; height: 2px; margin: 2px 0; background: var(--gold); }
 
-/* סרגל צד */
+/* סרגל צד - ניווט */
 .sidebar {
-    position: fixed; top: 0; right: 0; width: var(--sidebar-min-width); height: 100%; background: var(--bg-card);
-    transform: translateX(0); transition: width 0.35s ease, padding 0.35s ease, box-shadow 0.35s ease;
-    box-shadow: -4px 0 25px rgba(0,0,0,0.1); padding: 70px 10px 25px 10px; z-index: 1100; overflow: hidden; 
+    position: fixed; top: 0; right: 0; width: var(--sidebar-full-width); height: 100%; background: var(--bg-card);
+    transform: translateX(100%); /* מוסתר כברירת מחדל */
+    transition: transform 0.35s ease;
+    box-shadow: -4px 0 25px rgba(0,0,0,0.1); padding: 80px 20px; z-index: 1100; 
 }
-.sidebar.open { width: var(--sidebar-full-width); padding: 55px 25px 25px 25px; overflow-y: auto; }
-.sidebar h2, .sidebar h3 { margin-bottom: 12px; color: var(--gold); border-bottom: 2px solid var(--gold); padding-bottom: 8px; margin-top: 25px; }
-.sidebar-title, .top-info, .tasks-list { opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease; }
-.sidebar.open .sidebar-title, .sidebar.open .top-info, .sidebar.open .tasks-list { opacity: 1; visibility: visible; transition-delay: 0.1s; }
-.top-info, .tasks-list { 
-    background: var(--bg-hover); padding: 18px; border-radius: var(--radius);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; border-right: 4px solid var(--gold); 
+.sidebar.open { transform: translateX(0); }
+.sidebar-title { color: var(--gold); margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+
+.sidebar-nav ul { list-style: none; padding: 0; }
+.sidebar-nav li { margin-bottom: 15px; }
+.sidebar-nav a { 
+    text-decoration: none; color: var(--text-main); font-size: 1.1rem; display: flex; align-items: center; gap: 10px; 
+    padding: 10px; border-radius: 8px; transition: 0.2s;
 }
-#task-list { list-style: none; padding: 0; }
-#task-list li { padding: 8px 0; border-bottom: 1px dashed #d5d5d5; color: var(--text-sub); font-size: 0.95rem; }
-#task-list li:hover { color: var(--gold-light); }
-#task-list li:last-child { border-bottom: none; }
+.sidebar-nav a:hover { background: var(--bg-hover); color: var(--gold); }
+.sidebar-nav i { width: 25px; text-align: center; color: var(--gold); }
+
+/* ----------------------------------------------------- */
+/* 4. עיצוב ה-Main Layout (לוח שנה + פאנל מידע) */
+/* ----------------------------------------------------- */
+
 
 /* לוח שנה */
-.calendar-container { grid-column: 2/3; margin-top: 50px; }
-.fc { max-width:750px; margin: 0 auto; background: var(--bg-card); padding: 25px; border-radius: var(--radius); box-shadow: var(--shadow); }
-.fc-toolbar-title { font-size: 26px; color: var(--gold); }
-.fc-button { background: var(--bg-hover); border: 1px solid #e0e0e0; color: var(--text-main); border-radius: 8px; }
-.fc-button-primary { background: var(--gold); color: var(--bg-card); border: none; }
+.calendar-container { 
+    background: var(--bg-card); 
+    padding: 25px; 
+    border-radius: var(--radius); 
+    box-shadow: var(--shadow); 
+}
+
+/* פאנל מידע בצד שמאל */
+/* שנה את החלק הזה (שורות 65-75 בערך בקובץ המקורי) */
+.main-layout {
+    display: flex;             /* שינוי מ-grid ל-flex */
+    flex-direction: column;    /* סידור האלמנטים אחד מתחת לשני */
+    gap: 30px;
+    max-width: 900px;         /* רוחב מקסימלי כדי שייראה טוב במסך מלא */
+    margin: 60px auto 40px auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* עדכון לפאנל המידע כדי שיראה טוב מתחת ללוח */
+.info-panel {
+    display: flex;
+    flex-direction: column;       /* במחשב: כרטיסיות אחת ליד השנייה */
+    gap: 25px;
+    width: 100%;
+}
+
+.info-card {
+    flex: 1;                   /* כל כרטיסייה לוקחת חצי רוחב */
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border-top: 4px solid var(--gold);
+}
+
+.info-card h3 {
+    font-size: 1.1rem; color: var(--gold); margin-bottom: 15px; 
+    display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed #eee; padding-bottom: 10px;
+}
+
+/* רשימות בפאנל */
+#task-list-display { list-style: none; padding: 0; max-height: 400px; overflow-y: auto; }
+#task-list-display li { 
+    padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: var(--text-sub); font-size: 0.9rem; 
+    display: flex; justify-content: space-between;
+}
+#task-list-display li:last-child { border-bottom: none; }
+#next-task { font-weight: bold; color: var(--text-main); font-size: 1rem; }
+
+/* FullCalendar Customization */
+.fc { height: auto; min-height: 600px; }
+.fc-toolbar-title { font-size: 1.5rem; color: var(--gold); }
+.fc-button { background: var(--bg-hover) !important; border: 1px solid #e0e0e0 !important; color: var(--text-main) !important; }
+.fc-button-active { background: var(--gold) !important; color: white !important; border-color: var(--gold) !important; }
 .fc-event {
     background-color: transparent !important; border: 1px solid var(--gold) !important; color: var(--gold) !important; 
-    padding: 3px 6px; border-radius: 4px; font-weight: 600; font-size: 0.8rem; cursor: pointer; 
-    margin-bottom: 1px; transition: all 0.2s;
+    padding: 3px 6px; border-radius: 4px; font-weight: 700; cursor: pointer; 
 }
-.fc-event:hover { background-color: var(--gold); color: var(--bg-card) !important; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
-.fc-event, .fc-event-main, .fc-event-title, .fc-event-time { color: #2C3E50 !important; font-weight: 700 !important; text-shadow: none !important; }
-.fc-daygrid-event { background-color: transparent !important; }
+.fc-event:hover { background-color: var(--gold) !important; color: white !important; }
 
-/* מודאלים ראשיים */
+/* מודאלים */
 .modal-overlay {
     position: fixed; left: 0; top: 0; right: 0; bottom: 0; display: none; justify-content:center; align-items: center;
     background: rgba(0,0,0,0.35); backdrop-filter: blur(2px); z-index: 9999; 
@@ -101,111 +147,62 @@ body.page-wrapper.sidebar-offset .back-button { right: auto; }
     width: min(90%, 550px);
     background: var(--bg-card); border-radius: var(--radius); padding: 35px;
     box-shadow: var(--shadow); border-top: 5px solid var(--gold); max-height: 90vh; overflow: auto;
-    margin: 0 auto; margin-top: 2%; position: relative;
 }
-.modal-title { font-size: 1.8rem; margin-bottom: 25px; color: var(--gold); font-weight: 700; text-align: center; }
+.modal-title { font-size: 1.8rem; margin-bottom: 25px; color: var(--gold); text-align: center; }
 .input-group { margin-bottom: 20px; }
 .input-group label { margin-bottom: 8px; display: block; color: var(--text-sub); font-weight: 500; }
-
 .modal-content input, .modal-content textarea, .modal-content select {
-    width: 100%; padding: 14px; border-radius: 10px; background: #FFFFFF; border: 1px solid #e0e0e0; 
-    color: var(--text-main); transition: 0.2s; resize: none; font-family: inherit; font-size: 1rem;
-}
-.modal-content input:focus, .modal-content textarea:focus, .modal-content select:focus {
-    border-color: var(--gold); box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15); outline: none;
+    width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #e0e0e0; font-family: inherit;
 }
 
-/* ----------------------------------------------------- */
-/* חלונית צפה (Popup) לתזכורות */
-/* ----------------------------------------------------- */
-
+/* חלונית צפה (Popup) */
 .floating-popup-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* רקע כהה חצי שקוף */
-    display: none; justify-content: center; align-items: center;
-    z-index: 20000; /* חייב להיות מעל המודאל הרגיל (שהוא 9999) */
+    background: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center;
+    z-index: 20000; /* מעל הכל */
 }
-
 .floating-popup-overlay.active { display: flex; }
-
 .floating-popup-content {
-    background: white;
-    width: 380px;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-    border-top: 4px solid var(--gold);
-    animation: popupIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    background: white; width: 380px; padding: 25px; border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25); border-top: 4px solid var(--gold);
+    animation: popupIn 0.3s;
 }
+@keyframes popupIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-@keyframes popupIn {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
+.popup-header h3 { color: var(--gold); margin-bottom: 20px; display: flex; justify-content: space-between; }
+.info-tooltip { color: #ccc; cursor: help; }
 
-.popup-header h3 {
-    margin: 0 0 20px 0; color: var(--gold); font-size: 1.3rem;
-    display: flex; align-items: center; justify-content: space-between;
-}
-
-/* Hint / Tooltip */
-.info-tooltip {
-    color: #6c757d; cursor: help; font-size: 0.9rem; margin-right: 8px;
-}
-.info-tooltip:hover { color: var(--gold); }
-
-.popup-actions {
-    display: flex; justify-content: space-between; margin-top: 25px;
-}
-
-/* כפתורים כלליים */
-.modal-actions { 
-    display: flex; justify-content: flex-end; align-items: center; 
-    margin-top: 30px; gap: 10px; border-top: 1px solid #eee; padding-top: 20px;
-}
-
-.btn { padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 700; border: none; transition: 0.3s; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px; }
+/* כפתורים ופעולות */
+.modal-actions { display: flex; justify-content: flex-end; align-items: center; margin-top: 30px; gap: 10px; border-top: 1px solid #eee; padding-top: 20px; flex-wrap: wrap; }
+.btn { padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 700; border: none; transition: 0.3s; display: inline-flex; align-items: center; gap: 6px; }
 .btn-primary { background: var(--gold); color: white; }
-.btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(197, 160, 89, 0.3); }
-
 .btn-secondary { background: #e9ecef; color: var(--text-main); }
-.btn-secondary:hover { background: #dde0e3; }
-.btn-danger { background: #e74c3c; color: #fff; margin-left: auto; }
+.btn-danger { background: #e74c3c; color: white; margin-left: auto; }
+.btn-outline-gold { background: transparent; border: 2px solid var(--gold); color: var(--gold); }
+.btn-outline-gold:hover, .btn-outline-gold.active-state { background: var(--gold); color: white; }
 
-/* כפתורים בתוך הפופ-אפ */
-.btn-primary-small { background: var(--gold); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-.btn-secondary-small { background: #eee; color: #333; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; }
+.btn-primary-small { background: var(--gold); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+.btn-secondary-small { background: #eee; color: #333; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+.btn-danger-small { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+.btn-danger-small:hover { background: #e57373; color: white; }
 
-/* כפתור הוספת תזכורת (Outline) */
-.btn-outline-gold {
-    background: transparent;
-    border: 2px solid var(--gold);
-    color: var(--gold);
-}
-.btn-outline-gold:hover {
-    background: var(--bg-hover);
-}
-.btn-outline-gold.active-state {
-    background: var(--gold); color: white;
-}
-
-/* שדות פנימיים */
-.flex-row { display: flex; align-items: center; gap: 15px; }
-.small-input { width: 80px !important; text-align: center; }
-.small-select { width: auto !important; min-width: 100px; }
-.text-label { font-weight: bold; color: var(--text-sub); }
+/* שדות פנימיים בפופ-אפ */
+.flex-row { display: flex; gap: 10px; }
+.small-input { width: 70px !important; text-align: center; }
 .hidden-section { display: none; }
 
-/* רספונסיביות */
-@media (max-width: 768px) {
-    body.page-wrapper { padding: 0 !important; display: flex !important; flex-direction: column; }
-    .calendar-container { padding: 85px 15px 15px 15px !important; width: 100%; height: 100vh; overflow-y: auto !important; }
-    .hamburger-menu { position: fixed !important; top: 20px; right: 20px; z-index: 10001 !important; }
-    .back-button { position: fixed !important; top: 20px; left: 20px; z-index: 10001 !important; padding: 8px 15px; }
-    .sidebar { position: fixed !important; height: 100vh; width: 280px !important; transform: translateX(100%); z-index: 10000; }
-    .sidebar.open { transform: translateX(0); }
-    .modal-content { width: 95% !important; padding: 20px; margin-top: 10px; }
-    .flex-row { flex-wrap: wrap; }
-    .btn { width: 100%; margin-bottom: 10px; justify-content: center; }
+/* רספונסיביות - מובייל */
+@media (max-width: 900px) {
+    .main-layout {
+        grid-template-columns: 1fr; /* טור אחד */
+    }
+    .info-panel {
+        order: 2; /* יורד למטה במובייל */
+    }
+    .calendar-container {
+        order: 1; /* לוח שנה למעלה */
+    }
     .modal-actions { flex-direction: column-reverse; }
+    .btn { width: 100%; justify-content: center; margin-bottom: 5px; }
+    .btn-danger { margin-left: 0; }
 }

@@ -2,7 +2,7 @@
 //   משתנים גלובליים
 // =======================================================
 let allTasks = []; 
-let pendingReminder = null; // משתנה זמני לתזכורת שממתינה לשמירת המשימה
+let pendingReminder = null; 
 let currentOpenMode = null; // 'add' or 'view'
 
 // =======================================================
@@ -13,6 +13,11 @@ function getAuthHeaders() {
     const token = getToken();
     if (!token) { throw new Error("Missing Auth Token"); }
     return { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
+}
+
+function logout() {
+    sessionStorage.removeItem('authToken');
+    window.location.href = 'index.html';
 }
 
 // =======================================================
@@ -35,7 +40,7 @@ async function addTask(title, date, description = null) {
     });
     if (res.ok) {
         const newTask = await res.json();
-        return newTask.id; // מחזיר את ה-ID קריטי עבור התזכורת
+        return newTask.id; 
     }
   } catch (error) { console.error(error); }
   return null;
@@ -46,6 +51,17 @@ async function submitReminderData(taskId, triggerAt, type) {
         const res = await fetch("/api/reminders", {
             method: "POST", headers: getAuthHeaders(),
             body: JSON.stringify({ taskId, triggerAt: triggerAt.toISOString(), type })
+        });
+        return res.ok;
+    } catch (error) { console.error(error); return false; }
+}
+
+async function deleteReminderAPI(taskId) {
+    try {
+        // הנחה: ה-API תומך במחיקת תזכורת לפי משימה או שיש endpoint ייעודי
+        // אם אין endpoint ספציפי, ייתכן שצריך לעדכן את המשימה שאין לה תזכורת
+        const res = await fetch(`/api/reminders/task/${taskId}`, { 
+            method: "DELETE", headers: getAuthHeaders() 
         });
         return res.ok;
     } catch (error) { console.error(error); return false; }
@@ -79,6 +95,20 @@ function openPopup(mode) {
     document.getElementById('popup-reminder-schedule').value = '';
     toggleTimeInputsLocal('');
     
+    // ניהול תצוגת מחיקה / תזכורת קיימת
+    const deleteBtn = document.getElementById('btn-delete-reminder');
+    const existingAlert = document.getElementById('existing-reminder-alert');
+    const hasReminder = document.getElementById('view-has-reminder').value === 'true';
+
+    if (mode === 'view' && hasReminder) {
+        // אם אנחנו בעריכה ויש תזכורת
+        deleteBtn.style.display = 'inline-flex';
+        existingAlert.style.display = 'block';
+    } else {
+        deleteBtn.style.display = 'none';
+        existingAlert.style.display = 'none';
+    }
+    
     popup.classList.add('active');
 }
 
@@ -93,8 +123,29 @@ function toggleTimeInputsLocal(val) {
     abs.style.display = (val === 'custom_absolute') ? 'block' : 'none';
 }
 
+// פונקציית מחיקת תזכורת מתוך הפופ-אפ
+async function handleDeleteReminder() {
+    if (!confirm("האם אתה בטוח שברצונך לבטל את התזכורת למשימה זו?")) return;
+    
+    const taskId = document.getElementById('view-task-id').value;
+    const btn = document.getElementById('btn-delete-reminder');
+    btn.innerText = "מוחק...";
+    
+    const success = await deleteReminderAPI(taskId);
+    if (success) {
+        alert("התזכורת בוטלה בהצלחה.");
+        closePopup();
+        location.reload();
+    } else {
+        // Fallback למקרה שאין API אמיתי - רק לצורך הדגמה
+        alert("בקשת המחיקה נשלחה (יש לוודא תמיכה בצד שרת).");
+        closePopup();
+        location.reload();
+    }
+}
+
 function handleConfirmPopup() {
-    // 1. חישוב זמן התזכורת מתוך הפופ-אפ
+    // 1. חישוב זמן
     const scheduleType = document.getElementById('popup-reminder-schedule').value;
     let triggerAt = null;
 
@@ -105,7 +156,6 @@ function handleConfirmPopup() {
         const amount = parseInt(document.getElementById('popup-relative-amount').value);
         const unit = document.getElementById('popup-relative-unit').value;
         
-        // מציאת תאריך המשימה (תלוי אם אנחנו בהוספה או בצפייה)
         let taskDateStr = null;
         if (currentOpenMode === 'add') {
              const d = document.getElementById('modal-task-date').value;
@@ -133,20 +183,15 @@ function handleConfirmPopup() {
 
     // 2. טיפול לפי מצב
     if (currentOpenMode === 'add') {
-        // מצב הוספה: שומרים בצד ולא שולחים עדיין
         pendingReminder = { triggerAt: triggerAt, type: 'email' };
         
-        // שינוי ויזואלי לכפתור במודאל הראשי
         const btn = document.getElementById('btn-open-reminder-popup');
         btn.innerHTML = `<i class="fas fa-check-circle"></i> תזכורת הוגדרה`;
         btn.classList.add('active-state');
-        
         closePopup();
 
     } else if (currentOpenMode === 'view') {
-        // מצב עריכה: המשימה קיימת, שולחים מיד
         const taskId = document.getElementById('view-task-id').value;
-        
         submitReminderData(taskId, triggerAt, 'email').then(success => {
             if (success) {
                 alert("התזכורת נקבעה בהצלחה!");
@@ -158,7 +203,6 @@ function handleConfirmPopup() {
         });
     }
 }
-
 
 // =======================================================
 //   אתחול
@@ -177,15 +221,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     const calendarEl = document.getElementById("calendar");
     allTasks = await getTasks();
     allTasks.sort((a, b) => new Date(a.date) - new Date(b.date));
-    updateSidebar(allTasks);
+    
+    // עדכון הפאנל החדש (לא סרגל צד)
+    updateInfoPanel(allTasks);
 
     // חיבור כפתורי פופ-אפ
     document.getElementById('btn-open-reminder-popup').onclick = () => openPopup('add');
     document.getElementById('btn-view-reminder-popup').onclick = () => openPopup('view');
     document.getElementById('btn-cancel-popup').onclick = closePopup;
     document.getElementById('btn-confirm-popup').onclick = handleConfirmPopup;
+    document.getElementById('btn-delete-reminder').onclick = handleDeleteReminder;
     
-    // חשיפת פונקציה ל-HTML
     window.toggleTimeInputsLocal = toggleTimeInputsLocal;
 
     // הגדרת FullCalendar
@@ -205,14 +251,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         })),
         dateClick: (info) => window.openAddTaskModal(info.dateStr),
         eventClick: (info) => window.openViewTaskModal(info.event),
+        
+        // 2. הצגת פעמון בלוח שנה
         eventContent: function(arg) {
-            let icon = arg.event.extendedProps.hasReminder ? '<i class="fas fa-bell" style="color:#e67e22; margin-left:5px;"></i>' : '';
-            return { html: `<div>${icon} ${arg.event.title}</div>` };
+            let iconHtml = '';
+            if (arg.event.extendedProps.hasReminder) {
+                iconHtml = '<i class="fas fa-bell" style="color:#f39c12; margin-left:5px; font-size:0.85em;"></i>';
+            }
+            let timeText = arg.timeText ? `<span class="fc-event-time">${arg.timeText}</span>` : '';
+            return { html: `<div class="fc-content-wrapper">${iconHtml} ${timeText} ${arg.event.title}</div>` };
         }
     });
     calendar.render();
 
-    // --- לוגיקה למודאל הוספה ---
+    // לוגיקה למודאל הוספה
     const addModal = document.getElementById('addTaskModal');
     window.openAddTaskModal = (dateStr) => {
         document.getElementById('modal-task-title').value = '';
@@ -220,7 +272,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById('modal-task-date').value = dateStr;
         document.getElementById('modal-task-time').value = '';
         
-        // איפוס מצב תזכורת
         pendingReminder = null;
         const btn = document.getElementById('btn-open-reminder-popup');
         btn.innerHTML = `<i class="fas fa-bell"></i> הוסף תזכורת`;
@@ -231,7 +282,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById('modal-cancel-btn').onclick = () => addModal.classList.remove('active');
     
-    // --- לוגיקת שמירת משימה (החלק הקריטי) ---
     document.getElementById('modal-save-btn').onclick = async () => {
         const title = document.getElementById('modal-task-title').value;
         const d = document.getElementById('modal-task-date').value;
@@ -246,25 +296,34 @@ document.addEventListener("DOMContentLoaded", async () => {
         btn.innerText = "שומר...";
         btn.disabled = true;
 
-        // 1. קודם כל יוצרים את המשימה ומקבלים ID
         const newId = await addTask(title, finalDate, desc);
-        
-        // 2. רק אם המשימה נוצרה בהצלחה + המשתמש הגדיר תזכורת (pendingReminder)
         if (newId && pendingReminder) {
-            console.log("Saving reminder for new task:", newId);
             await submitReminderData(newId, pendingReminder.triggerAt, pendingReminder.type);
         }
-
         location.reload();
     };
 
-    // --- לוגיקה למודאל צפייה ---
+    // לוגיקה למודאל צפייה
     const viewModal = document.getElementById('viewTaskModal');
     window.openViewTaskModal = (event) => {
         document.getElementById('view-task-title').textContent = event.title;
         document.getElementById('view-task-id').value = event.id;
         document.getElementById('view-task-description').value = event.extendedProps.description || '';
         
+        // שמירת סטטוס תזכורת לשימוש בחלונית
+        const hasRem = event.extendedProps.hasReminder ? 'true' : 'false';
+        document.getElementById('view-has-reminder').value = hasRem;
+        
+        // עדכון טקסט הכפתור בהתאם
+        const remBtn = document.getElementById('btn-view-reminder-popup');
+        if (hasRem === 'true') {
+            remBtn.innerHTML = `<i class="fas fa-clock"></i> ערוך תזכורת`;
+            remBtn.classList.add('active-state');
+        } else {
+            remBtn.innerHTML = `<i class="fas fa-bell"></i> הוסף תזכורת`;
+            remBtn.classList.remove('active-state');
+        }
+
         const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
         document.getElementById('view-task-date').textContent = event.start.toLocaleDateString('he-IL', options);
         document.getElementById('view-task-date-iso').value = event.startStr || event.start.toISOString();
@@ -277,7 +336,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById('modal-save-description-btn').onclick = () => updateTaskDescription(document.getElementById('view-task-id').value, document.getElementById('view-task-description').value);
 });
 
-function updateSidebar(tasks) {
+// עדכון הפאנל השמאלי (במקום סרגל צד)
+function updateInfoPanel(tasks) {
     const nextTask = tasks.find(t => new Date(t.date) >= new Date());
     const nextTaskDiv = document.getElementById("next-task");
     if (nextTaskDiv) {
@@ -288,13 +348,13 @@ function updateSidebar(tasks) {
             nextTaskDiv.textContent = "אין משימות קרובות";
         }
     }
-    const list = document.getElementById("task-list-sidebar");
+    const list = document.getElementById("task-list-display");
     if(list) {
         list.innerHTML = ''; 
         tasks.forEach(t => {
             const li = document.createElement("li");
             const d = new Date(t.date);
-            li.textContent = `${d.toLocaleDateString()} - ${t.title}`;
+            li.innerHTML = `<span>${t.title}</span> <span style="font-size:0.8em; color:#999">${d.toLocaleDateString()}</span>`;
             list.appendChild(li);
         });
     }

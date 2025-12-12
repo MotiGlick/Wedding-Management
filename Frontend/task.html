@@ -20,15 +20,17 @@
     </button>
 
     <aside id="task-sidebar" class="sidebar">
-        <h2 class="sidebar-title">ניווט מהיר</h2>
-        <div class="top-info">
-            <h2>המשימה הקרובה</h2>
-            <div id="next-task">טוען...</div>
-        </div>
-        <div class="tasks-list">
-            <h3>רשימת המשימות</h3>
-            <ul id="task-list-sidebar"></ul> 
-        </div>
+        <h2 class="sidebar-title">תפריט ראשי</h2>
+        
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="homePage.html"><i class="fas fa-home"></i> דף הבית</a></li>
+                <li><a href="budget.html"><i class="fas fa-calculator"></i> ניהול תקציב</a></li>
+                <li><a href="AllGuests.html"><i class="fas fa-users"></i> רשימת מוזמנים</a></li>
+                <li><a href="upload_invitation.html"><i class="fas fa-store"></i> שליחת הזמנה</a></li>
+                <li><a href="login.html"><i class="fas fa-sign-out-alt"></i> התנתק</a></li>
+            </ul>
+        </nav>
     </aside>
 
     <div class="back-link-container">
@@ -37,9 +39,25 @@
         </a>
     </div>
 
-    <section class="calendar-container">
-        <div id="calendar"></div>
-    </section>
+    <div class="main-layout">
+        
+        <section class="calendar-container">
+            <div id="calendar"></div>
+        </section>
+
+        <section class="info-panel">
+            <div class="info-card next-task-card">
+                <h3><i class="fas fa-hourglass-half"></i> המשימה הקרובה</h3>
+                <div id="next-task">טוען...</div>
+            </div>
+
+            <div class="info-card task-list-card">
+                <h3><i class="fas fa-list-ul"></i> רשימת המשימות</h3>
+                <ul id="task-list-display"></ul> 
+            </div>
+        </section>
+
+    </div>
 
     <div id="addTaskModal" class="modal-overlay">
         <div class="modal-content">
@@ -83,6 +101,7 @@
             <h3 class="modal-title" id="view-task-title"></h3>
             <input type="hidden" id="view-task-id">
             <input type="hidden" id="view-task-date-iso">
+            <input type="hidden" id="view-has-reminder"> 
             
             <p style="margin-bottom: 20px; color: var(--gold); font-size: 1.2rem; font-weight:bold;">
                 <i class="far fa-calendar-alt"></i> <span id="view-task-date"></span>
@@ -116,6 +135,10 @@
                     </span>
                 </h3>
             </div>
+            
+            <div id="existing-reminder-alert" style="display:none; background:#e8f5e9; color:#2e7d32; padding:10px; border-radius:8px; margin-bottom:15px; font-size:0.9rem;">
+                <i class="fas fa-check-circle"></i> למשימה זו מוגדרת תזכורת פעילה.
+            </div>
 
             <div class="input-group">
                 <label>מתי לשלוח?</label>
@@ -140,9 +163,15 @@
                 <input type="datetime-local" id="popup-absolute-time">
             </div>
 
-            <div class="popup-actions">
-                <button id="btn-cancel-popup" class="btn btn-secondary-small">ביטול</button>
-                <button id="btn-confirm-popup" class="btn btn-primary-small">אשר תזכורת</button>
+            <div class="popup-actions" style="margin-top: 25px; display: flex; justify-content: space-between; gap: 10px;">
+                <button id="btn-delete-reminder" class="btn btn-danger-small" style="display:none;">
+                    <i class="fas fa-trash-alt"></i> בטל תזכורת
+                </button>
+                
+                <div style="margin-right: auto; display: flex; gap: 10px;">
+                    <button id="btn-cancel-popup" class="btn btn-secondary-small">ביטול</button>
+                    <button id="btn-confirm-popup" class="btn btn-primary-small">שמור</button>
+                </div>
             </div>
         </div>
     </div>
