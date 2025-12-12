@@ -28,32 +28,37 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // ============================================
-// נתיב 1: העלאת תמונה + שמירה ב-DB (כדי שתישאר!)
+// נתיב 1: העלאת תמונה + שמירה ב-DB (מתוקן!)
 // ============================================
 router.post('/upload', upload.single('invitationImage'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: "לא נשלח קובץ תמונה" });
 
-        // מנקים את הנתיב שיתאים לדפדפן (מחליפים \ ב /)
-        const relativePath = req.file.path.replace(/\\/g, '/');
+        // --- התיקון הקריטי כאן ---
+        // 1. מחליפים סלאשים הפוכים (\) לרגילים (/)
+        // 2. מוחקים את המילה 'backend/' או 'uploads/' מההתחלה כדי שהדפדפן יבין
+        // (אנחנו רוצים שהנתיב יהיה פשוט: uploads/filename.jpg)
+        let cleanPath = req.file.path.replace(/\\/g, '/');
+        
+        // אם הנתיב מתחיל ב-backend/uploads, ננקה את ה-backend
+        if (cleanPath.startsWith('backend/')) {
+            cleanPath = cleanPath.replace('backend/', '');
+        }
 
-        // --- שמירת הנתיב ב-DB למשתמש ---
-        // כרגע אנחנו מניחים שהמשתמש הוא 1 (או מה שבא מהטוקן אם יש)
+        // --- שמירה ב-DB ---
         const userId = req.user ? req.user.id : 1;
         
-        // כאן אנחנו מעדכנים את המשתמש
-        // הערה: אם זה נכשל, וודא שיש לך עמודת invitationImage בטבלת Users!
         await User.update(
-            { invitationImage: relativePath },
+            { invitationImage: cleanPath }, // שומרים את הנתיב הנקי
             { where: { id: userId } }
         );
         
-        console.log("Image saved to DB for user:", userId);
+        console.log("Image saved to DB:", cleanPath);
 
         res.json({ 
             success: true, 
             message: "ההזמנה נשמרה בשרת ובמסד הנתונים!",
-            filePath: relativePath 
+            filePath: cleanPath 
         });
 
     } catch (error) {
