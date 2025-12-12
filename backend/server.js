@@ -15,6 +15,7 @@ const Task = require('./models/Task');
 const Reminder = require('./models/Reminder'); 
 
 // --- ייבוא הראוטים ---
+const invitationRoutes = require('./routes/invitationRoutes');
 const authRoutes = require('./routes/auth.routes.js');
 const taskRoutes = require('./routes/task.routes.js');
 const expenseRoutes = require('./routes/expenses.routes.js');
