@@ -7,14 +7,16 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// ייבוא המודלים (שים לב: חייב לייבא גם את User!)
+// ייבוא המודלים - מוודאים ש-User מיובא כדי למנוע קריסה
 const { Guest, User } = require('../models/associations'); 
 const { sendMail } = require('../utils/notificationService');
 
-// --- הגדרת תיקיית השמירה ---
-const uploadDir = 'uploads/';
+// --- תיקון טכני יחיד: מיקום התיקייה ---
+// משתמשים ב-path.join כדי להבטיח שהקבצים יישמרו בתוך backend/uploads
+const uploadDir = path.join(__dirname, '../uploads'); 
+
 if (!fs.existsSync(uploadDir)){
-    fs.mkdirSync(uploadDir); 
+    fs.mkdirSync(uploadDir, { recursive: true }); 
 }
 
 // --- הגדרת Multer ---
@@ -28,33 +30,25 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // ============================================
-// נתיב 1: העלאת תמונה + שמירה ב-DB (מתוקן!)
+// נתיב 1: העלאת תמונה + שמירה ב-DB
 // ============================================
 router.post('/upload', upload.single('invitationImage'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: "לא נשלח קובץ תמונה" });
 
-        // --- התיקון הקריטי כאן ---
-        // 1. מחליפים סלאשים הפוכים (\) לרגילים (/)
-        // 2. מוחקים את המילה 'backend/' או 'uploads/' מההתחלה כדי שהדפדפן יבין
-        // (אנחנו רוצים שהנתיב יהיה פשוט: uploads/filename.jpg)
-        let cleanPath = req.file.path.replace(/\\/g, '/');
-        
-        // אם הנתיב מתחיל ב-backend/uploads, ננקה את ה-backend
-        if (cleanPath.startsWith('backend/')) {
-            cleanPath = cleanPath.replace('backend/', '');
-        }
+        // --- תיקון טכני: שמירת הנתיב ---
+        // לוקחים את שם הקובץ ומוסיפים לו uploads/ כדי שהדפדפן ידע לקרוא אותו
+        const cleanPath = 'uploads/' + req.file.filename;
 
-        // --- שמירה ב-DB ---
         const userId = req.user ? req.user.id : 1;
         
+        console.log(`✅ שומר ל-DB את הנתיב: ${cleanPath}`);
+
         await User.update(
-            { invitationImage: cleanPath }, // שומרים את הנתיב הנקי
+            { invitationImage: cleanPath },
             { where: { id: userId } }
         );
         
-        console.log("Image saved to DB:", cleanPath);
-
         res.json({ 
             success: true, 
             message: "ההזמנה נשמרה בשרת ובמסד הנתונים!",
@@ -68,16 +62,12 @@ router.post('/upload', upload.single('invitationImage'), async (req, res) => {
 });
 
 // ============================================
-// נתיב 2: בדיקה איזו תמונה קיימת (עבור טעינת הדף)
+// נתיב 2: שליפת תמונה קיימת
 // ============================================
 router.get('/current', async (req, res) => {
     try {
         const userId = req.user ? req.user.id : 1;
-        
-        // שליפת המשתמש והתמונה שלו
-        const user = await User.findByPk(userId, { 
-            attributes: ['invitationImage'] 
-        });
+        const user = await User.findByPk(userId, { attributes: ['invitationImage'] });
         
         if (user && user.invitationImage) {
             res.json({ hasImage: true, imageUrl: user.invitationImage });
@@ -91,14 +81,13 @@ router.get('/current', async (req, res) => {
 });
 
 // ============================================
-// נתיב 3: שליחת הזמנות במייל (ללא סינון UserId)
+// נתיב 3: שליחת הזמנות במייל (עם הטקסט שלך!)
 // ============================================
 router.post('/send-batch', async (req, res) => {
     try {
         const { sendToAll, guestIds } = req.body;
         let guestsToSend = [];
 
-        // שליפה ללא סינון userId כדי למנוע את באג ה-0 אורחים
         if (sendToAll) {
             guestsToSend = await Guest.findAll({
                 where: { email: { [Op.ne]: null } }
@@ -121,6 +110,7 @@ router.post('/send-batch', async (req, res) => {
                     await sendMail({
                         to: guest.email,
                         subject: `הזמנה לחתונה שלנו!`, 
+                        // --- כאן השארתי בדיוק את הטקסט שלך ---
                         html: `
                             <div dir="rtl" style="text-align: right; font-family: Arial;">
                             <h2>היי ${guest.firstName},</h2>
@@ -136,8 +126,6 @@ router.post('/send-batch', async (req, res) => {
                         <p>באהבה!</p>
                                 </div>
                                 `
-
-                        
                     });
                     results.push({ email: guest.email, status: 'success' });
                 } catch (err) {
