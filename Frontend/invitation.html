@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <title>הזמנה לחתונה</title>
+
+    <style>
+        body {
+            font-family: 'Arial';
+            background: linear-gradient(135deg, #fff7f9, #ffe3ec);
+            text-align: center;
+            padding-top: 50px;
+        }
+
+        .card {
+            background: white;
+            padding: 60px; /* יותר גדול */
+            margin: auto;
+            width: 80%; /* יותר רחב */
+            max-width: 700px; /* מקסימום גדול יותר */
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #d63384;
+            font-size: 40px;  /* גדול יותר */
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 24px; /* גדול יותר */
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>הינכם מוזמנים לחתונתנו ❤️</h1>
+        <p>נשמח לראותכם ביום המיוחד שלנו,</p>
+        <p>ולהיות חלק מהשמחה הגדולה!</p>
+    </div>
+
+    <!-- Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <script>
+        // פיצוץ קונפטי בטעינה
+        confetti({
+            particleCount: 300,
+            spread: 140,
+            origin: { y: 0.6 }
+        });
+
+        // פיצוץ נוסף אחרי חצי שנייה
+        setTimeout(() => {
+            confetti({
+                particleCount: 350,
+                spread: 120
+            });
+        }, 700);
+    </script>
+
+</body>
+</html>
