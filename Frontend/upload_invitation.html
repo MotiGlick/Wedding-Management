@@ -9,6 +9,106 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <link rel="stylesheet" href="css/upload_invitation.css">
+
+    <style>
+        /* תוספות CSS עבור החלק החדש */
+        .guest-selection-container {
+            display: none; /* מוסתר כברירת מחדל */
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .selection-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #d4af37;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            font-family: 'Heebo', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .option-btn:hover, .option-btn.active {
+            background: #d4af37;
+            color: white;
+        }
+
+        /* עיצוב רשימת האורחים והחיפוש */
+        .manual-selection-area {
+            display: none; /* מוסתר עד שבוחרים ידנית */
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-family: 'Heebo', sans-serif;
+        }
+
+        .guest-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .guest-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+
+        .guest-item:hover {
+            background-color: #ffffef;
+        }
+
+        .guest-item input[type="checkbox"] {
+            margin-left: 10px;
+            width: 18px;
+            height: 18px;
+            accent-color: #d4af37;
+            cursor: pointer;
+        }
+
+        .final-send-btn {
+            margin-top: 15px;
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .final-send-btn:hover {
+            background: #555;
+        }
+    </style>
 </head>
 
 <body>
@@ -46,48 +146,292 @@
                 <button class="action-btn save-btn" id="saveBtn">שמור הזמנה</button>
                 <button class="action-btn send-btn" id="sendBtn">שלח הזמנה</button>
             </div>
+
+            <div class="guest-selection-container" id="guestSelectionContainer">
+                <h3>איך תרצה לשלוח?</h3>
+                
+                <div class="selection-options">
+                    <button class="option-btn" id="sendAllBtn">
+                        <i class="fas fa-users"></i> שלח לכולם
+                    </button>
+                    <button class="option-btn" id="selectManuallyBtn">
+                        <i class="fas fa-list-check"></i> בחירה ידנית
+                    </button>
+                </div>
+
+                <div class="manual-selection-area" id="manualSelectionArea">
+                    <input type="text" id="guestSearch" class="search-bar" placeholder="חפש אורח לפי שם...">
+                    
+                    <div class="guest-list" id="guestListContainer">
+                        </div>
+
+                    <button class="final-send-btn" id="executeSendBtn">שלח למסומנים</button>
+                </div>
+            </div>
+
         </div>
 
     </div>
-
     <script>
-        const uploadBox = document.getElementById("uploadBox");
-        const fileInput = document.getElementById("fileInput");
-        const preview = document.getElementById("preview");
-        let currentFile = null;
+    const uploadBox = document.getElementById("uploadBox");
+    const fileInput = document.getElementById("fileInput");
+    const preview = document.getElementById("preview");
+    
+    // משתנה גלובלי לאחסון האורחים שנקבל מהשרת
+    let guestsDB = []; 
+    // משתנה גלובלי לקובץ הנוכחי. שים לב: הוא יכול להיות File אמיתי או סתם 'true' אם טענו תמונה קיימת
+    let currentFile = null; 
 
-        // Click to open file picker
-        uploadBox.addEventListener("click", () => fileInput.click());
+    // --- לוגיקת העלאת תמונה (UI) ---
+    uploadBox.addEventListener("click", () => fileInput.click());
 
-        // File selected
-        fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
+    fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
 
-        // Drag & Drop
-        uploadBox.addEventListener("dragover", (e) => { e.preventDefault(); uploadBox.classList.add("dragover"); });
-        uploadBox.addEventListener("dragleave", () => uploadBox.classList.remove("dragover"));
-        uploadBox.addEventListener("drop", (e) => {
-            e.preventDefault();
-            uploadBox.classList.remove("dragover");
-            handleFile(e.dataTransfer.files[0]);
-        });
+    uploadBox.addEventListener("dragover", (e) => { e.preventDefault(); uploadBox.classList.add("dragover"); });
+    uploadBox.addEventListener("dragleave", () => uploadBox.classList.remove("dragover"));
+    uploadBox.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadBox.classList.remove("dragover");
+        handleFile(e.dataTransfer.files[0]);
+    });
 
-        function handleFile(file) {
-            if (!file || !file.type.startsWith("image/")) { alert("נא להעלות קובץ תמונה בלבד"); return; }
-            currentFile = file;
-            preview.src = URL.createObjectURL(file);
-            preview.style.display = "block";
+    function handleFile(file) {
+        if (!file || !file.type.startsWith("image/")) { alert("נא להעלות קובץ תמונה בלבד"); return; }
+        currentFile = file; // שומרים את הקובץ האמיתי
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+    }
+
+    // --- שמירת ההזמנה (תמונה) ---
+    document.getElementById("saveBtn").addEventListener("click", async () => {
+        // בדיקה אם המשתמש מנסה לשמור בלי שבחר קובץ חדש
+        if (!currentFile || currentFile === true) { 
+            alert("נא לבחור תמונה חדשה לשמירה"); 
+            return; 
+        }
+        
+        const formData = new FormData();
+        formData.append('invitationImage', currentFile);
+
+        try {
+            const response = await fetch('/api/invitations/upload', { 
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+
+            if(response.ok) {
+                alert("ההזמנה נשמרה בהצלחה!");
+            } else {
+                alert("שגיאה: " + (result.error || "בעיה בשמירה"));
+            }
+        } catch (err) {
+            console.error(err);
+            alert("שגיאת תקשורת בעת השמירה");
+        }
+    });
+
+    // ==================================================
+    // לוגיקה לשליחת הזמנות וטעינת אורחים
+    // ==================================================
+
+    const sendBtn = document.getElementById("sendBtn");
+    const guestSelectionContainer = document.getElementById("guestSelectionContainer");
+    const manualSelectionArea = document.getElementById("manualSelectionArea");
+    const guestListContainer = document.getElementById("guestListContainer");
+    const guestSearch = document.getElementById("guestSearch");
+
+    // פונקציה לטעינת אורחים מה-DB
+    async function loadGuestsFromServer() {
+        try {
+            const response = await fetch('/api/guests'); 
+            if (!response.ok) throw new Error('שגיאה בטעינת הנתונים');
+            const data = await response.json();
+            guestsDB = data;
+            console.log("Guests loaded:", guestsDB);
+        } catch (error) {
+            console.error("Error loading guests:", error);
+            // לא נקפיץ אלרט בטעינה ראשונית כדי לא להציק למשתמש
+        }
+    }
+
+    // 1. כפתור "שלח הזמנה"
+    sendBtn.addEventListener("click", async () => {
+        // בדיקה: האם יש תמונה? (בין אם חדשה או טעונה מהשרת)
+        if (!currentFile) { 
+            alert("קודם כל תעלה תמונה או תוודא שיש הזמנה שמורה!"); 
+            return; 
+        }
+        
+        if (guestsDB.length === 0) {
+            await loadGuestsFromServer();
         }
 
-        document.getElementById("saveBtn").addEventListener("click", () => {
-            if (!currentFile) { alert("לא נבחרה תמונה"); return; }
-            alert("הזמנה נשמרה (פיקטיבי כרגע)");
-        });
+        guestSelectionContainer.style.display = "block";
+        guestSelectionContainer.scrollIntoView({ behavior: 'smooth' });
+    });
 
-        document.getElementById("sendBtn").addEventListener("click", () => {
-            if (!currentFile) { alert("לא נבחרה תמונה לשליחה"); return; }
-            alert("מעבר לדף שליחת ההזמנות");
+    // 2. כפתור "שלח לכולם"
+    document.getElementById("sendAllBtn").addEventListener("click", async () => {
+        manualSelectionArea.style.display = "none";
+        
+        const guestsWithEmail = guestsDB.filter(g => g.email);
+        if (guestsWithEmail.length === 0) {
+            alert("לא נמצאו אורחים עם אימייל ברשימה.");
+            return;
+        }
+
+        if(confirm(`האם לשלוח את ההזמנה במייל לכל ${guestsWithEmail.length} האורחים?`)) {
+            try {
+                const response = await fetch('/api/invitations/send-batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sendToAll: true })
+                });
+                
+                const result = await response.json();
+                if (response.ok) {
+                    alert(result.message || "ההזמנות נשלחו בהצלחה!");
+                } else {
+                    alert("שגיאה: " + (result.error || "הייתה בעיה בשליחה"));
+                }
+            } catch (err) {
+                console.error(err);
+                alert("שגיאת תקשורת מול השרת");
+            }
+        }
+    });
+
+    // 3. כפתור "בחירה ידנית"
+    document.getElementById("selectManuallyBtn").addEventListener("click", () => {
+        manualSelectionArea.style.display = "block";
+        renderGuests(guestsDB);
+    });
+
+    // פונקציית הרינדור
+    function renderGuests(guestsToRender) {
+        guestListContainer.innerHTML = "";
+        
+        if (!guestsToRender || guestsToRender.length === 0) {
+            guestListContainer.innerHTML = "<p style='padding:10px; text-align:center'>לא נמצאו תוצאות</p>";
+            return;
+        }
+
+        guestsToRender.forEach(guest => {
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "guest-item";
+            
+            const hasEmail = guest.email && guest.email.includes('@');
+            const displayName = guest.fullName || `${guest.firstName} ${guest.lastName}`;
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.value = guest.id; 
+            checkbox.id = `guest-${guest.id}`;
+            
+            if (!hasEmail) {
+                checkbox.disabled = true;
+                itemDiv.style.opacity = "0.6";
+                itemDiv.title = "לאורח זה אין כתובת אימייל";
+            }
+
+            const label = document.createElement("label");
+            label.htmlFor = `guest-${guest.id}`;
+            label.style.flexGrow = "1";
+            label.style.cursor = hasEmail ? "pointer" : "not-allowed";
+            
+            label.innerHTML = `
+                <div style="display:flex; justify-content:space-between; width:100%">
+                    <span class="guest-name">${displayName}</span>
+                    <span class="guest-email" style="font-size:0.85em; color:#888;">
+                        ${hasEmail ? guest.email : '(חסר אימייל)'}
+                    </span>
+                </div>
+            `;
+
+            itemDiv.appendChild(checkbox);
+            itemDiv.appendChild(label);
+            guestListContainer.appendChild(itemDiv);
         });
-    </script>
+    }
+
+    // 4. חיפוש
+    guestSearch.addEventListener("input", (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredGuests = guestsDB.filter(guest => {
+            const fullName = (guest.fullName || `${guest.firstName} ${guest.lastName}`).toLowerCase();
+            return fullName.includes(searchTerm);
+        });
+        renderGuests(filteredGuests);
+    });
+    
+    // 5. כפתור "שלח למסומנים"
+    document.getElementById("executeSendBtn").addEventListener("click", async () => {
+        const checkedBoxes = document.querySelectorAll('.guest-item input[type="checkbox"]:checked');
+        const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+        if (selectedIds.length === 0) {
+            alert("לא בחרת אף אורח!");
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/invitations/send-batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    sendToAll: false,
+                    guestIds: selectedIds 
+                })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert(result.message || `ההזמנה נשלחה בהצלחה ל-${selectedIds.length} אורחים!`);
+                manualSelectionArea.style.display = "none";
+            } else {
+                alert("שגיאה: " + (result.error || "בעיה בשליחה"));
+            }
+        } catch (error) {
+            console.error(error);
+            alert("שגיאת תקשורת מול השרת");
+        }
+    });
+
+    // --- טעינת תמונה קיימת בטעינת הדף ---
+    async function loadCurrentInvitation() {
+        try {
+            const response = await fetch('/api/invitations/current');
+            
+            // בדיקה אם השרת החזיר בכלל תשובה תקינה (למנוע קריסה אם הראוט לא קיים)
+            if (!response.ok) return;
+
+            const data = await response.json();
+
+            if (data.hasImage) {
+                // הצגת התמונה
+                preview.src = '/' + data.imageUrl;
+                preview.style.display = "block";
+                
+                // --- הטריק החשוב: ---
+                // מסמנים שיש תמונה ("true") כדי שכפתור השליחה יעבוד
+                // אנחנו לא יכולים ליצור אובייקט File אמיתי מסיבות אבטחה של דפדפן, אבל זה מספיק ללוגיקה שלנו
+                currentFile = true; 
+            }
+        } catch (error) {
+            console.error("לא הצלחנו לטעון את ההזמנה הקיימת", error);
+        }
+    }
+
+    // הרצת הפונקציות בטעינת הדף
+    window.addEventListener('DOMContentLoaded', () => {
+        loadCurrentInvitation();
+        loadGuestsFromServer(); 
+    });
+</script>
+
+
 
 </body>
 </html>

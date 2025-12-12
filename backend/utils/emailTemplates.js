@@ -20,11 +20,11 @@ const getReminderTemplate = (title, date) => {
     const formattedTime = timePart !== '00:00' ? ` בשעה: ${timePart}` : '';
 
     return `
-    <div style="font-family: Arial, sans-serif; direction: rtl; text-align: right; background-color: #f8f8f8; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden;">
+    <div style="font-family: Arial, sans-serif; direction: rtl; text-align: right; background-color: #c3448eff; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(34, 141, 212, 0.3); overflow: hidden;">
             
-            <div style="background-color: #f7f7f7; color: #333; padding: 15px; border-bottom: 2px solid #ffcc00; text-align: right;">
-                <h2 style="margin: 0; font-size: 20px;"><span style="color: #ffcc00; font-size: 1.2em;">⭐</span> תזכורת ממערכת WedManage</h2>
+            <div style="background-color: #f7f7f7; color: #1d20e1ff; padding: 15px; border-bottom: 2px solid #ffcc00; text-align: right;">
+                <h2 style="margin: 0; font-size: 20px;"><span style="color: #0de735ff; font-size: 1.2em;">⭐</span> תזכורת ממערכת WedManage</h2>
             </div>
 
             <div style="padding: 25px;">

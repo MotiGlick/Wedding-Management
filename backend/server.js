@@ -14,6 +14,7 @@ const Task = require('./models/Task');
 const Reminder = require('./models/Reminder'); 
 
 // --- ייבוא הראוטים ---
+const invitationRoutes = require('./routes/invitationRoutes');
 const authRoutes = require('./routes/auth.routes.js');
 const taskRoutes = require('./routes/task.routes.js');
 const expenseRoutes = require('./routes/expenses.routes.js');
@@ -38,6 +39,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../Frontend')));
 
 // --- Routes ---
+app.use('/api/invitations', invitationRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'backend/uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/expenses', expenseRoutes);
