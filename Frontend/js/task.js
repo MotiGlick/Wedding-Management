@@ -5,20 +5,6 @@ let allTasks = [];
 let pendingReminder = null; 
 let currentOpenMode = null; // 'add' or 'view'
 
-// =======================================================
-//   פונקציות עזר לאימות ו-Token
-// =======================================================
-function getToken() { return sessionStorage.getItem('authToken'); }
-function getAuthHeaders() {
-    const token = getToken();
-    if (!token) { throw new Error("Missing Auth Token"); }
-    return { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
-}
-
-function logout() {
-    sessionStorage.removeItem('authToken');
-    window.location.href = 'index.html';
-}
 
 // =======================================================
 //   פונקציות API
@@ -26,12 +12,12 @@ function logout() {
 
 async function getTasks() {
     try {
-        const res = await fetch("/api/tasks", { headers: getAuthHeaders() });
+        // קורא ל-getAuthHeaders מ-utils.js
+        const res = await fetch("/api/tasks", { headers: getAuthHeaders() }); 
         if (res.ok) return res.json();
     } catch (e) { console.error(e); }
     return [];
 }
-
 async function addTask(title, date, description = null) {
   try {
     const res = await fetch("/api/tasks", {
@@ -210,12 +196,7 @@ function handleConfirmPopup() {
 
 document.addEventListener("DOMContentLoaded", async () => {
     
-    // המבורגר
-    const hamburgerBtn = document.getElementById('hamburger-btn');
-    if (hamburgerBtn) {
-        hamburgerBtn.addEventListener('click', () => 
-            document.getElementById('task-sidebar').classList.toggle('open'));
-    }
+  
 
     // טעינת נתונים
     const calendarEl = document.getElementById("calendar");

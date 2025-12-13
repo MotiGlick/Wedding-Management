@@ -1,0 +1,23 @@
+<template id="main-sidebar-template">
+    <style>
+        /* כאן ניתן להוסיף CSS ספציפי לקומפוננטה אם רוצים, אך נעדיף להשתמש בקובץ task.css */
+    </style>
+    
+    <h3 class="sidebar-title">ניווט מהיר</h2>
+    <nav class="sidebar-nav">
+        <ul>
+            <li id="nav-home"><a href="homePage.html"><i class="fas fa-home"></i> דף הבית</a></li>
+            <li id="nav-budget"><a href="budget.html"><i class="fas fa-funnel-dollar icon"></i> ניהול תקציב</a></li>
+            <li id="nav-task"><a href="task.html"><i class="fas fa-calendar-alt icon"></i>  לוח זמנים</a></li>
+            <li id="nav-guests"><a href="AllGuests.html"><i class="fas fa-users"></i> רשימת מוזמנים</a></li>
+            <li id="nav-invitation"><a href="upload_invitation.html"><i class="fas fa-envelope-open-text icon"></i> שליחת הזמנה</a></li>
+            <li id="nav-reports"><a href="reports.html"><i class="fas fa-chart-line icon"></i>דוחות וסטטיסטיקה</a></li>
+        </ul>
+    </nav>
+    
+    <div class="sidebar-footer">
+        <a href="#" onclick="logout()" class="logout-link">
+            <i class="fas fa-sign-out-alt"></i> התנתק
+        </a>
+    </div>
+</template>

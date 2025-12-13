@@ -7,7 +7,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
+      <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" href="css/reports.css">
 </head>
 
@@ -21,11 +21,17 @@
         </div>
     </div>
 
+      <button id="hamburger-btn" class="hamburger-menu">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+    </button>
+
+    <aside id="task-sidebar" class="sidebar"></aside>
+    
     <header class="header">
-        <a href="homePage.html" class="logo">WedManage<span class="dot">.</span></a>
-        <button class="back-btn" onclick="window.location.href='homePage.html'">
-            <i class="fas fa-arrow-right"></i> חזרה ללוח הבקרה
-        </button>
+      <a href="homePage.html" class="logo">WedManage<span class="dot">.</span></a>
+   
     </header>
 
     <div class="main-content">
@@ -109,6 +115,6 @@
     </div>
 
     <script src="js/reports.js"></script>
-
+    <script src="js/sidebar.js"></script>
 </body>
 </html>

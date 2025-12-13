@@ -9,9 +9,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <link rel="stylesheet" href="css/budget_styles.css"> 
+    <link rel="stylesheet" href="css/sidebar.css">
 </head>
 
-<body>
+<body class="page-wrapper hide-budget"> 
     <div class="background-decorations">
         <i class="fas fa-gem decoration-item floating-diamond"></i>
         <div class="constructed-ring">
@@ -20,14 +21,19 @@
         </div>
     </div>
 
-    <header class="header">
+  <header class="header">
         <a href="homePage.html" class="logo">WedManage<span class="dot">.</span></a>
         
-        <button class="back-btn" onclick="window.history.back();">
-            חזרה ללוח הבקרה
-        </button>
+     
     </header>
-
+    
+    <button id="hamburger-btn" class="hamburger-menu">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+    </button>
+    <aside id="task-sidebar" class="sidebar"></aside>
+    
     <div class="main-content">
         <h1><i class="fas fa-funnel-dollar"></i> תקציב ובקרה פיננסית</h1>
 
@@ -185,7 +191,18 @@
         </div>
     </div>
 
+    <script src="js/utils.js"></script> 
     <script src="js/budget_script.js"></script> 
+    <script src="js/sidebar.js"></script>
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+ 
