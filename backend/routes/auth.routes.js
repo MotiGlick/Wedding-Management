@@ -12,6 +12,7 @@ router.post('/login', authController.login);
 
 // ראוט שכחתי סיסמה - שליחת סיסמה זמנית במייל
 router.post('/forgotpassword', authController.forgotPassword);
+router.post('/resetpassword', authController.resetPassword);
 
 module.exports = router;
 
