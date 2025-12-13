@@ -24,8 +24,19 @@ const User = sequelize.define('User', {
     password: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    // ===============================================
+    // 🆕 הוספה: שדות זמניים לאיפוס סיסמה
+    // ===============================================
+    resetPasswordToken: {
+        type: DataTypes.STRING,
+        allowNull: true, // יכול להיות Null כאשר אין בקשת איפוס פעילה
+    },
+    resetPasswordExpire: {
+        type: DataTypes.DATE,
+        allowNull: true, // יכול להיות Null כאשר אין בקשת איפוס פעילה
     }
-    
+    // ===============================================
     
 }, {
     
@@ -33,5 +44,3 @@ const User = sequelize.define('User', {
 });
 
 module.exports = User;
-
-// הוספה 
