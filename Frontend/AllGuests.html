@@ -85,33 +85,9 @@
 
     async function fetchGuests() {
         try {
-            // 1. שליפת הטוקן מהזיכרון של הדפדפן
-            const token = localStorage.getItem('token'); 
-
-            if (!token) {
-                // אם אין טוקן, אי אפשר להביא אורחים פרטיים -> לך להתחבר
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // 2. הבקשה לשרת - חייבים להוסיף את הכותרת עם הטוקן!
-            const response = await fetch('/api/guests', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` // <--- זה המפתח שחסר לך!
-                }
-            }); 
-            
-            // בדיקה אם הטוקן פג תוקף
-            if (response.status === 401) {
-                alert('פג תוקף ההתחברות, נא להתחבר מחדש');
-                window.location.href = 'login.html';
-                return;
-            }
-
+            // שליפת כל האורחים מה-API
+            const response = await fetch('/api/guests'); 
             if (!response.ok) throw new Error('שגיאה בשליפת האורחים');
-            
             guests = await response.json();
             
             // במקרה ואין צד מוגדר, נשמור ריק
@@ -124,9 +100,7 @@
             renderTable(filteredGuests);
         } catch (err) {
             console.error(err);
-            // הודעה עדינה יותר למשתמש
-            document.getElementById('noDataMessage').style.display = 'block';
-            document.getElementById('noDataMessage').innerText = 'שגיאה בטעינת הנתונים';
+            alert('שגיאה בשליפת האורחים: ' + err.message);
         }
     }
 
