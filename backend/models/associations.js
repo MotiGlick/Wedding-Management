@@ -26,7 +26,7 @@ Expense.belongsTo(User, { foreignKey: 'UserId', as: 'user' });
 
 // User <-> Guest
 User.hasMany(Guest, { foreignKey: 'userId', as: 'guests', onDelete: 'CASCADE' });
-Guest.belongsTo(User, { foreignKey: 'userId', as: 'user' });/////היה owner
+Guest.belongsTo(User, { foreignKey: 'userId', as: 'owner' });
 
 // User <-> Message
 User.hasMany(Message, { foreignKey: 'senderId', as: 'sentMessages', onDelete: 'CASCADE' });

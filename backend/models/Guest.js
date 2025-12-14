@@ -16,7 +16,10 @@ const Guest = sequelize.define('Guest', {
     plusOne: { type: DataTypes.STRING, allowNull: true },
     diet: { type: DataTypes.STRING, allowNull: true },
     notes: { type: DataTypes.TEXT, allowNull: true },
-    side: { type: DataTypes.ENUM('חתן','כלה'), allowNull: true } // צד האורח
+
+    side: { type: DataTypes.ENUM('חתן','כלה'), allowNull: true }, // צד האורח
+     userId: { type: DataTypes.INTEGER, allowNull: false }  // ← הוסף שורה זו כאן!
+
 }, { timestamps: true }); // timestamps מוסיף createdAt ו-updatedAt
 
 module.exports = Guest;
