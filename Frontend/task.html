@@ -6,12 +6,14 @@
     <title>ניהול משימות חתונה</title>
 
     <link rel="stylesheet" href="css/task.css">
+    <link rel="stylesheet" href="css/sidebar.css">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
-<body class="page-wrapper">
+<body class="page-wrapper hide-task">
+  
 
     <button id="hamburger-btn" class="hamburger-menu">
         <div class="bar"></div>
@@ -19,93 +21,42 @@
         <div class="bar"></div>
     </button>
 
-    <aside id="task-sidebar" class="sidebar">
-        
-        <h2 class="sidebar-title">ניווט מהיר</h2>
-        
-        <div class="top-info">
-            <h2>המשימה הקרובה</h2>
-            <div id="next-task"></div>
-        </div>
-
-        <div class="tasks-list">
-            <h3>רשימת המשימות</h3>
-            <ul id="task-list-sidebar"></ul> 
-        </div>
-        
-        <div class="reminder-card">
-            <h3><i class="fas fa-bell"></i> שליחת תזכורות</h3>
-            
-            <div class="input-group" style="margin-bottom: 15px;">
-                <label style="color: var(--gold);">בחר משימה לתזכורת:</label>
-                <select id="reminder-task-select" style="width: 100%; padding: 8px; border-radius: 8px; background: var(--bg-main); border: 1px solid #2b3750; color: var(--text-main); margin-top: 5px;">
-                    <option value="">בחר משימה...</option>
-                </select>
-            </div>
+    <aside id="task-sidebar" class="sidebar"></aside>
     
-            <div class="input-group">
-                <label style="color: var(--gold);">אמצעי תזכורת:</label>
-                <div id="reminder-method-options" style="display: flex; gap: 15px; margin-top: 5px; margin-bottom: 15px;">
-                    <label><input type="radio" name="reminder-type" value="email" checked> אימייל</label>
-                    <label><input type="radio" name="reminder-type" value="phone"> SMS</label>
-                </div>
+ <header class="header">
+    <a href="homePage.html" class="logo">WedManage<span class="dot">.</span></a>
+   
+ </header>
+
+   
+
+    <div class="main-layout">
+        
+        <section class="calendar-container">
+            <div id="calendar"></div>
+        </section>
+
+        <section class="info-panel">
+            <div class="info-card next-task-card">
+                <h3><i class="fas fa-hourglass-half"></i> המשימה הקרובה</h3>
+                <div id="next-task">טוען...</div>
             </div>
 
-            <div class="input-group">
-                <label style="color: var(--gold);">מתי לשלוח:</label>
-                <select id="reminder-schedule-select" onchange="toggleReminderInputs(this.value)" style="width: 100%; padding: 8px; border-radius: 8px; background: var(--bg-main); border: 1px solid #2b3750; color: var(--text-main); margin-top: 5px;">
-                    <option value="">בחר מועד...</option>
-                    <option value="custom_relative">זמן לפני המשימה</option>
-                    <option value="custom_absolute">תאריך ושעה מדויקים</option>
-                </select>
-
-                <div id="reminder-time-options" style="margin-top: 10px;">
-                    <div id="custom-relative-container" style="display: none; align-items: center; gap: 10px;">
-                        <input type="number" id="relative-amount-input" min="1" value="1" style="width: 50px; padding: 8px; border-radius: 8px; border: 1px solid #2b3750; text-align: center;">
-                        <select id="relative-unit-select" style="padding: 8px; border-radius: 8px; border: 1px solid #2b3750; background: var(--bg-main); color: var(--text-main);">
-                            <option value="minutes">דקות</option>
-                            <option value="hours">שעות</option>
-                            <option value="days">ימים</option>
-                        </select>
-                        <label style="color: var(--text-sub);">לפני</label>
-                    </div>
-
-                    <div id="custom-absolute-container" style="display: none;">
-                        <input type="datetime-local" id="custom-reminder-datetime" style="width: 100%; padding: 8px; border-radius: 8px; background: var(--bg-main); border: 1px solid #2b3750; color: var(--text-main);">
-                    </div>
-                </div>
+            <div class="info-card task-list-card">
+                <h3><i class="fas fa-list-ul"></i> רשימת המשימות</h3>
+                <ul id="task-list-display"></ul> 
             </div>
+        </section>
 
-            <div class="input-group" style="margin-top: 15px;">
-                <label style="color: var(--gold);">למי לשלוח:</label>
-                <div id="reminder-recipient-options" style="display: flex; gap: 15px; margin-top: 5px; margin-bottom: 15px;">
-                    <label><input type="radio" name="reminder-recipient" value="me" checked> אני</label>
-                    <label><input type="radio" name="reminder-recipient" value="partner"> בן/בת הזוג</label>
-                    <label><input type="radio" name="reminder-recipient" value="both"> שנינו</label>
-                </div>
-            </div>
-            
-            <button type="button" onclick="sendReminder()" class="btn-primary" style="width: 100%;">אשר תזכורת</button>
-        </div>
-    </aside>
-
-    <div class="back-link-container">
-        <a href="homePage.html" class="back-button back-button-style">
-            <i class="fas fa-arrow-right"></i> חזרה לדף הבית
-        </a>
     </div>
-
-    <section class="calendar-container">
-        <div id="calendar"></div>
-    </section>
 
     <div id="addTaskModal" class="modal-overlay">
         <div class="modal-content">
-            <h3 class="modal-title">הוספת משימה</h3>
+            <h3 class="modal-title">הוספת משימה חדשה</h3>
 
             <div class="input-group">
                 <label>כותרת</label>
-                <input type="text" id="modal-task-title">
+                <input type="text" id="modal-task-title" placeholder="לדוגמה: פגישה עם הצלם">
             </div>
 
             <div class="input-group">
@@ -113,12 +64,11 @@
                 <textarea id="modal-task-description-add" rows="3"></textarea>
             </div>
 
-            <div style="display: flex; gap: 15px;">
+            <div style="display: flex; gap: 20px;">
                 <div class="input-group" style="flex: 1;">
                     <label>תאריך</label>
                     <input type="text" id="modal-task-date" readonly>
                 </div>
-                
                 <div class="input-group" style="flex: 1;">
                     <label>שעה (אופציונלי)</label>
                     <input type="time" id="modal-task-time">
@@ -127,7 +77,12 @@
 
             <div class="modal-actions">
                 <button id="modal-cancel-btn" class="btn btn-secondary">ביטול</button>
-                <button id="modal-save-btn" class="btn btn-primary">שמור</button>
+                
+                <button id="btn-open-reminder-popup" class="btn btn-outline-gold">
+                    <i class="fas fa-bell"></i> הוסף תזכורת
+                </button>
+
+                <button id="modal-save-btn" class="btn btn-primary">שמור משימה</button>
             </div>
         </div>
     </div>
@@ -136,21 +91,83 @@
         <div class="modal-content">
             <h3 class="modal-title" id="view-task-title"></h3>
             <input type="hidden" id="view-task-id">
-            <p><strong>זמן:</strong> <span id="view-task-date"></span></p>
+            <input type="hidden" id="view-task-date-iso">
+            <input type="hidden" id="view-has-reminder"> 
+            
+            <p style="margin-bottom: 20px; color: var(--gold); font-size: 1.2rem; font-weight:bold;">
+                <i class="far fa-calendar-alt"></i> <span id="view-task-date"></span>
+            </p>
 
             <div class="input-group">
-                <label>תיאור</label>
-                <textarea id="view-task-description" rows="4"></textarea>
+                <label>תיאור המשימה</label>
+                <textarea id="view-task-description" rows="3"></textarea>
             </div>
 
             <div class="modal-actions">
                 <button id="modal-delete-btn" class="btn btn-danger">מחיקה</button>
+                
+                <button id="btn-view-reminder-popup" class="btn btn-outline-gold">
+                    <i class="fas fa-bell"></i> נהל תזכורת
+                </button>
+
                 <button id="modal-close-view-btn" class="btn btn-secondary">סגור</button>
-                <button id="modal-save-description-btn" class="btn btn-primary">שמור</button>
+                <button id="modal-save-description-btn" class="btn btn-primary">עדכן פרטים</button>
             </div>
         </div>
     </div>
 
+    <div id="reminderFloatingPopup" class="floating-popup-overlay">
+        <div class="floating-popup-content">
+            <div class="popup-header">
+                <h3>
+                    <i class="fas fa-clock"></i> מועד התזכורת
+                    <span class="info-tooltip" title="התזכורת תישלח לכתובת המייל המוגדרת בחשבונך">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                </h3>
+            </div>
+            
+            <div id="existing-reminder-alert" style="display:none; background:#e8f5e9; color:#2e7d32; padding:10px; border-radius:8px; margin-bottom:15px; font-size:0.9rem;">
+                <i class="fas fa-check-circle"></i> למשימה זו מוגדרת תזכורת פעילה.
+            </div>
+
+            <div class="input-group">
+                <label>מתי לשלוח?</label>
+                <select id="popup-reminder-schedule" onchange="toggleTimeInputsLocal(this.value)" class="styled-select">
+                    <option value="">-- בחר מועד --</option>
+                    <option value="custom_relative">פרק זמן לפני המשימה</option>
+                    <option value="custom_absolute">תאריך ושעה מדויקים</option>
+                </select>
+            </div>
+
+            <div id="popup-relative-container" class="hidden-section flex-row">
+                <input type="number" id="popup-relative-amount" min="1" value="1" class="small-input">
+                <select id="popup-relative-unit" class="small-select">
+                    <option value="minutes">דקות</option>
+                    <option value="hours">שעות</option>
+                    <option value="days">ימים</option>
+                </select>
+                <span class="text-label">לפני המשימה</span>
+            </div>
+
+            <div id="popup-absolute-container" class="hidden-section">
+                <input type="datetime-local" id="popup-absolute-time">
+            </div>
+
+            <div class="popup-actions" style="margin-top: 25px; display: flex; justify-content: space-between; gap: 10px;">
+                <button id="btn-delete-reminder" class="btn btn-danger-small" style="display:none;">
+                    <i class="fas fa-trash-alt"></i> בטל תזכורת
+                </button>
+                
+                <div style="margin-right: auto; display: flex; gap: 10px;">
+                    <button id="btn-cancel-popup" class="btn btn-secondary-small">ביטול</button>
+                    <button id="btn-confirm-popup" class="btn btn-primary-small">שמור</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/utils.js"></script>
+    <script src="js/sidebar.js"></script>
     <script src="js/task.js"></script>
 </body>
 </html>

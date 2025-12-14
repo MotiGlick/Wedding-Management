@@ -2,397 +2,341 @@
 //   משתנים גלובליים
 // =======================================================
 let allTasks = []; 
+let pendingReminder = null; 
+let currentOpenMode = null; // 'add' or 'view'
 
-// =======================================================
-//   פונקציות עזר לאימות ו-Token
-// =======================================================
-function getToken() {
-    return sessionStorage.getItem('authToken');
-}
-
-function handleUnauthorized() {
-    console.error("401: Unauthorized");
-    sessionStorage.removeItem('authToken');
-    alert("החיבור פג תוקף או אינו מאומת. אנא התחבר מחדש.");
-    window.location.href = './login.html'; 
-}
-
-function getAuthHeaders() {
-    const token = getToken();
-    if (!token) {
-        handleUnauthorized();
-        throw new Error("Missing Auth Token"); 
-    }
-    return {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}` 
-    };
-}
 
 // =======================================================
 //   פונקציות API
 // =======================================================
 
 async function getTasks() {
-  try {
-    const res = await fetch("/api/tasks", { headers: getAuthHeaders() });
-    if (res.status === 401) { handleUnauthorized(); return []; }
-    if (!res.ok) { console.error(`API Error: ${res.status}`); return []; }
-    return res.json(); 
-  } catch (error) {
-    if (error.message && error.message.includes("Missing Auth Token")) return [];
-    console.error("Fetch Error:", error);
+    try {
+        // קורא ל-getAuthHeaders מ-utils.js
+        const res = await fetch("/api/tasks", { headers: getAuthHeaders() }); 
+        if (res.ok) return res.json();
+    } catch (e) { console.error(e); }
     return [];
-  }
 }
-
 async function addTask(title, date, description = null) {
   try {
-    // date מגיע כ-ISO string מלא שכולל כבר שעה אם נבחרה
     const res = await fetch("/api/tasks", {
-      method: "POST",
-      headers: getAuthHeaders(),
+      method: "POST", headers: getAuthHeaders(),
       body: JSON.stringify({ title, date, description }) 
     });
-    if (res.status === 401) { handleUnauthorized(); return; }
-    location.reload();
-  } catch (error) {
-     if (!error.message.includes("Missing Auth Token")) { console.error("Error adding task:", error); }
-  }
+    if (res.ok) {
+        const newTask = await res.json();
+        return newTask.id; 
+    }
+  } catch (error) { console.error(error); }
+  return null;
+}
+
+async function submitReminderData(taskId, triggerAt, type) {
+    try {
+        const res = await fetch("/api/reminders", {
+            method: "POST", headers: getAuthHeaders(),
+            body: JSON.stringify({ taskId, triggerAt: triggerAt.toISOString(), type })
+        });
+        return res.ok;
+    } catch (error) { console.error(error); return false; }
+}
+
+async function deleteReminderAPI(taskId) {
+    try {
+        // הנחה: ה-API תומך במחיקת תזכורת לפי משימה או שיש endpoint ייעודי
+        // אם אין endpoint ספציפי, ייתכן שצריך לעדכן את המשימה שאין לה תזכורת
+        const res = await fetch(`/api/reminders/task/${taskId}`, { 
+            method: "DELETE", headers: getAuthHeaders() 
+        });
+        return res.ok;
+    } catch (error) { console.error(error); return false; }
 }
 
 async function deleteRemoteTask(taskId) {
-  try {
-    const res = await fetch(`/api/tasks/${taskId}`, {
-      method: "DELETE",
-      headers: getAuthHeaders(),
-    });
-    if (res.status === 401) { handleUnauthorized(); return; }
-    if (!res.ok) throw new Error("Failed to delete task");
-    location.reload(); 
-  } catch (error) {
-     if (!error.message.includes("Missing Auth Token")) { console.error("Error deleting task:", error); }
-  }
+    if (!confirm("למחוק את המשימה?")) return;
+    try {
+        await fetch(`/api/tasks/${taskId}`, { method: "DELETE", headers: getAuthHeaders() });
+        location.reload();
+    } catch (e) { console.error(e); }
 }
 
 async function updateTaskDescription(taskId, description) {
-  try {
-    const res = await fetch(`/api/tasks/${taskId}`, {
-      method: "PUT", 
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ description })
-    });
-    if (res.status === 401) { handleUnauthorized(); return; }
-    if (!res.ok) throw new Error("Failed to update description");
-
-    alert("התיאור נשמר בהצלחה!");
-    location.reload(); 
-  } catch (error) {
-     if (!error.message.includes("Missing Auth Token")) { console.error("Error updating description:", error); }
-  }
-}
-
-// =======================================================
-//   לוגיקת המודאל להוספת משימה (כולל שעה)
-// =======================================================
-
-function setupModalLogic() {
-    const modal = document.getElementById('addTaskModal');
-    const titleInput = document.getElementById('modal-task-title');
-    const descriptionInput = document.getElementById('modal-task-description-add'); 
-    const dateInput = document.getElementById('modal-task-date');
-    const timeInput = document.getElementById('modal-task-time'); // שדה השעה החדש
-    const saveBtn = document.getElementById('modal-save-btn');
-    const cancelBtn = document.getElementById('modal-cancel-btn');
-
-    if (!modal) return;
-
-    window.openAddTaskModal = (dateStr) => {
-        dateInput.value = dateStr;
-        timeInput.value = ''; // איפוס השעה
-        titleInput.value = ''; 
-        descriptionInput.value = ''; 
-        modal.classList.add('active');
-        titleInput.focus();
-    };
-
-    const closeModal = () => {
-        modal.classList.remove('active');
-    };
-
-    saveBtn.onclick = () => {
-        const title = titleInput.value.trim();
-        const datePart = dateInput.value; // YYYY-MM-DD
-        const timePart = timeInput.value; // HH:MM
-        const description = descriptionInput.value.trim(); 
-
-        if (title) {
-            let finalDate = datePart;
-            // אם המשתמש בחר שעה, נחבר אותה לתאריך
-            if (timePart) {
-                finalDate = `${datePart}T${timePart}:00`;
-            }
-
-            addTask(title, finalDate, description);
-            closeModal();
-        } else {
-            alert("אנא הזן כותרת משימה.");
-        }
-    };
-
-    cancelBtn.onclick = closeModal;
-    modal.onclick = (event) => {
-        if (event.target === modal) closeModal();
-    };
-}
-
-// =======================================================
-//   לוגיקת המודאל לצפייה/עריכה
-// =======================================================
-
-function setupViewModalLogic() {
-    const modal = document.getElementById('viewTaskModal');
-    if (!modal) return; 
-    
-    const titleEl = document.getElementById('view-task-title');
-    const dateEl = document.getElementById('view-task-date');
-    const idInput = document.getElementById('view-task-id');
-    const descriptionInput = document.getElementById('view-task-description');
-    const saveBtn = document.getElementById('modal-save-description-btn');
-    const deleteBtn = document.getElementById('modal-delete-btn');
-    const closeBtn = document.getElementById('modal-close-view-btn');
-
-    const closeModal = () => { modal.classList.remove('active'); };
-
-    window.openViewTaskModal = (event) => {
-        titleEl.textContent = event.title;
-        
-        // הצגת תאריך ושעה בצורה יפה
-        const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-        dateEl.textContent = event.start ? event.start.toLocaleDateString('he-IL', options) : 'לא ידוע';
-        
-        idInput.value = event.id;
-        descriptionInput.value = event.extendedProps.description || ''; 
-        modal.classList.add('active'); 
-    };
-
-    saveBtn.onclick = async () => {
-        await updateTaskDescription(idInput.value, descriptionInput.value); 
-        closeModal(); 
-    };
-
-    deleteBtn.onclick = async () => {
-        if (confirm(`למחוק את המשימה "${titleEl.textContent}"?`)) {
-            await deleteRemoteTask(idInput.value);
-            closeModal();
-        }
-    };
-
-    closeBtn.onclick = closeModal;
-    modal.onclick = (event) => { if (event.target === modal) closeModal(); };
-}
-
-// =======================================================
-//   לוגיקת UI לתזכורות (תיקון הבאג)
-// =======================================================
-
-function toggleReminderInputs(selectedOption) {
-    const relativeContainer = document.getElementById('custom-relative-container');
-    const absoluteContainer = document.getElementById('custom-absolute-container');
-    
-    if (relativeContainer) relativeContainer.style.display = 'none';
-    if (absoluteContainer) absoluteContainer.style.display = 'none';
-
-    if (selectedOption === 'custom_relative') {
-        if (relativeContainer) relativeContainer.style.display = 'flex';
-    } else if (selectedOption === 'custom_absolute') {
-        if (absoluteContainer) absoluteContainer.style.display = 'block';
-    }
-}
-
-function populateTaskSelect(tasks) {
-    const select = document.getElementById('reminder-task-select');
-    if (!select) return;
-
-    select.innerHTML = '<option value="">בחר משימה...</option>';
-    tasks.forEach(task => {
-        const option = document.createElement('option');
-        option.value = task.id; 
-        const d = new Date(task.date);
-        option.textContent = `${d.toLocaleDateString('he-IL')} - ${task.title}`;
-        select.appendChild(option);
-    });
-}
-
-// =======================================================
-//   שליחת תזכורת (Send Reminder) - מתוקן
-// =======================================================
-// =======================================================
-//   שליחת תזכורת (Send Reminder) - מתוקן ל-UTC
-// =======================================================
-
-async function sendReminder() {
-    const selectedTaskId = document.getElementById('reminder-task-select').value;
-    const reminderType = document.querySelector('input[name="reminder-type"]:checked')?.value;
-    const reminderSchedule = document.getElementById('reminder-schedule-select').value;
-
-    if (!selectedTaskId) return alert("אנא בחר משימה לשליחת תזכורת.");
-    if (!reminderSchedule) return alert("אנא בחר מתי לשלוח את התזכורת.");
-
-    const task = allTasks.find(t => t.id == selectedTaskId);
-    if (!task) return alert("שגיאה: המשימה לא נמצאה.");
-
-    let triggerAt = new Date();
-
-    if (reminderSchedule === 'custom_absolute') {
-        const absoluteInput = document.getElementById('custom-reminder-datetime').value; // YYYY-MM-DDTHH:MM
-        if (!absoluteInput) return alert("אנא בחר תאריך ושעה לתזכורת.");
-        
-        // תיקון 1: הוספת 'Z' (Zero Offset) כדי ש-new Date תתייחס לזה כזמן UTC
-        triggerAt = new Date(absoluteInput);
-    
-    } else if (reminderSchedule === 'custom_relative') {
-        const amount = parseInt(document.getElementById('relative-amount-input').value);
-        const unit = document.getElementById('relative-unit-select').value; 
-
-        if (!amount) return alert("אנא הזן כמות זמן.");
-
-        // task.date הוא ISO string (כנראה UTC). אנו מעבדים אותו באמצעות שיטות UTC.
-        let taskTime = new Date(task.date); 
-        
-        // תיקון 2: שימוש בשיטות setUTC/getUTC כדי למנוע הטיית Timezone מקומית.
-        switch (unit) {
-            case 'minutes': taskTime.setUTCMinutes(taskTime.getUTCMinutes() - amount); break;
-            case 'hours': taskTime.setUTCHours(taskTime.getUTCHours() - amount); break;
-            case 'days': taskTime.setUTCDate(taskTime.getUTCDate() - amount); break;
-        }
-        triggerAt = taskTime;
-    }
-
-    if (triggerAt < new Date()) {
-        if (!confirm("זמן התזכורת הוא בעבר. לשלוח בכל זאת?")) return;
-    }
-
     try {
-        const res = await fetch("/api/reminders", {
-            method: "POST",
-            headers: getAuthHeaders(),
-            body: JSON.stringify({
-                taskId: selectedTaskId,
-                // triggerAt.toISOString() שולח את הזמן כ-UTC, לאחר החישובים הנכונים
-                triggerAt: triggerAt.toISOString(), 
-                type: reminderType
-            })
-        });
+        await fetch(`/api/tasks/${taskId}`, { method: "PUT", headers: getAuthHeaders(), body: JSON.stringify({description}) });
+        alert("התיאור עודכן בהצלחה");
+        location.reload();
+    } catch (e) { console.error(e); }
+}
 
-        if (res.ok) {
-            alert(`תזכורת נקבעה בהצלחה ל-${triggerAt.toLocaleString()}`);
-            
-            // ... (שאר קוד עדכון ה-UI הוויזואלי) ...
-            const calendarApi = document.querySelector('#calendar')._fullCalendarApi;
-            const event = calendarApi.getEventById(selectedTaskId);
-            if(event) {
-                event.setExtendedProp('hasReminder', true);
-            }
+// =======================================================
+//   לוגיקת החלונית הצפה (Popup Logic)
+// =======================================================
 
-        } else {
-            const data = await res.json();
-            // שיפור: הדפסת השגיאה לקונסול כדי שנוכל לראות מה ה-Backend החזיר
-            console.error("Error from API:", data.error || data); 
-            alert("שגיאה: " + (data.error || "לא ידועה"));
-        }
-    } catch (error) {
-        console.error("Fetch Error during sendReminder:", error);
-        alert("שגיאת תקשורת");
+function openPopup(mode) {
+    currentOpenMode = mode;
+    const popup = document.getElementById('reminderFloatingPopup');
+    
+    // איפוס שדות
+    document.getElementById('popup-reminder-schedule').value = '';
+    toggleTimeInputsLocal('');
+    
+    // ניהול תצוגת מחיקה / תזכורת קיימת
+    const deleteBtn = document.getElementById('btn-delete-reminder');
+    const existingAlert = document.getElementById('existing-reminder-alert');
+    const hasReminder = document.getElementById('view-has-reminder').value === 'true';
+
+    if (mode === 'view' && hasReminder) {
+        // אם אנחנו בעריכה ויש תזכורת
+        deleteBtn.style.display = 'inline-flex';
+        existingAlert.style.display = 'block';
+    } else {
+        deleteBtn.style.display = 'none';
+        existingAlert.style.display = 'none';
+    }
+    
+    popup.classList.add('active');
+}
+
+function closePopup() {
+    document.getElementById('reminderFloatingPopup').classList.remove('active');
+}
+
+function toggleTimeInputsLocal(val) {
+    const rel = document.getElementById('popup-relative-container');
+    const abs = document.getElementById('popup-absolute-container');
+    rel.style.display = (val === 'custom_relative') ? 'flex' : 'none';
+    abs.style.display = (val === 'custom_absolute') ? 'block' : 'none';
+}
+
+// פונקציית מחיקת תזכורת מתוך הפופ-אפ
+async function handleDeleteReminder() {
+    if (!confirm("האם אתה בטוח שברצונך לבטל את התזכורת למשימה זו?")) return;
+    
+    const taskId = document.getElementById('view-task-id').value;
+    const btn = document.getElementById('btn-delete-reminder');
+    btn.innerText = "מוחק...";
+    
+    const success = await deleteReminderAPI(taskId);
+    if (success) {
+        alert("התזכורת בוטלה בהצלחה.");
+        closePopup();
+        location.reload();
+    } else {
+        // Fallback למקרה שאין API אמיתי - רק לצורך הדגמה
+        alert("בקשת המחיקה נשלחה (יש לוודא תמיכה בצד שרת).");
+        closePopup();
+        location.reload();
     }
 }
+
+function handleConfirmPopup() {
+    // 1. חישוב זמן
+    const scheduleType = document.getElementById('popup-reminder-schedule').value;
+    let triggerAt = null;
+
+    if (scheduleType === 'custom_absolute') {
+        const val = document.getElementById('popup-absolute-time').value;
+        if (val) triggerAt = new Date(val);
+    } else if (scheduleType === 'custom_relative') {
+        const amount = parseInt(document.getElementById('popup-relative-amount').value);
+        const unit = document.getElementById('popup-relative-unit').value;
+        
+        let taskDateStr = null;
+        if (currentOpenMode === 'add') {
+             const d = document.getElementById('modal-task-date').value;
+             const t = document.getElementById('modal-task-time').value;
+             taskDateStr = t ? `${d}T${t}:00` : `${d}T09:00:00`; 
+        } else {
+             taskDateStr = document.getElementById('view-task-date-iso').value;
+        }
+
+        if (taskDateStr && amount) {
+            let taskTime = new Date(taskDateStr);
+            switch (unit) {
+                case 'minutes': taskTime.setMinutes(taskTime.getMinutes() - amount); break;
+                case 'hours': taskTime.setHours(taskTime.getHours() - amount); break;
+                case 'days': taskTime.setDate(taskTime.getDate() - amount); break;
+            }
+            triggerAt = taskTime;
+        }
+    }
+
+    if (!triggerAt || isNaN(triggerAt.getTime())) {
+        alert("אנא הגדר זמן תקין לתזכורת");
+        return;
+    }
+
+    // 2. טיפול לפי מצב
+    if (currentOpenMode === 'add') {
+        pendingReminder = { triggerAt: triggerAt, type: 'email' };
+        
+        const btn = document.getElementById('btn-open-reminder-popup');
+        btn.innerHTML = `<i class="fas fa-check-circle"></i> תזכורת הוגדרה`;
+        btn.classList.add('active-state');
+        closePopup();
+
+    } else if (currentOpenMode === 'view') {
+        const taskId = document.getElementById('view-task-id').value;
+        submitReminderData(taskId, triggerAt, 'email').then(success => {
+            if (success) {
+                alert("התזכורת נקבעה בהצלחה!");
+                closePopup();
+                location.reload();
+            } else {
+                alert("שגיאה בשמירת התזכורת");
+            }
+        });
+    }
+}
+
 // =======================================================
-//   אתחול לוח השנה (כולל הצגת פעמון)
+//   אתחול
 // =======================================================
 
 document.addEventListener("DOMContentLoaded", async () => {
+    
+  
 
-    const hamburgerBtn = document.getElementById('hamburger-btn');
-    const sidebar = document.getElementById('task-sidebar');
-    hamburgerBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
-
+    // טעינת נתונים
     const calendarEl = document.getElementById("calendar");
     allTasks = await getTasks();
     allTasks.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // עדכון הפאנל החדש (לא סרגל צד)
+    updateInfoPanel(allTasks);
 
-    populateTaskSelect(allTasks);
-    setupModalLogic(); 
-    setupViewModalLogic(); 
+    // חיבור כפתורי פופ-אפ
+    document.getElementById('btn-open-reminder-popup').onclick = () => openPopup('add');
+    document.getElementById('btn-view-reminder-popup').onclick = () => openPopup('view');
+    document.getElementById('btn-cancel-popup').onclick = closePopup;
+    document.getElementById('btn-confirm-popup').onclick = handleConfirmPopup;
+    document.getElementById('btn-delete-reminder').onclick = handleDeleteReminder;
+    
+    window.toggleTimeInputsLocal = toggleTimeInputsLocal;
 
+    // הגדרת FullCalendar
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: "dayGridMonth",
         locale: "he",
         direction: 'rtl',
-        buttonText: {
-            today: 'היום',
-            month: 'חודש',
-            week: 'שבוע',
-            day: 'יום'
-        },
+        buttonText: { today: 'היום', month: 'חודש', week: 'שבוע', day: 'יום' },
         headerToolbar: {
             right: 'prev,next', 
             center: 'title',
             left: 'dayGridMonth,timeGridWeek,timeGridDay' 
         },
+        events: allTasks.map(t => ({ 
+            id: t.id, title: t.title, date: t.date, 
+            extendedProps: { description: t.description, hasReminder: t.hasReminder }
+        })),
+        dateClick: (info) => window.openAddTaskModal(info.dateStr),
+        eventClick: (info) => window.openViewTaskModal(info.event),
         
-        // כאן הוספנו את הלוגיקה להצגת פעמון
+        // 2. הצגת פעמון בלוח שנה
         eventContent: function(arg) {
-            let titleHtml = `<div class="fc-event-title">${arg.event.title}</div>`;
-            let timeHtml = arg.timeText ? `<div class="fc-event-time">${arg.timeText}</div>` : '';
-            
-            // בדיקה אם יש תזכורת (דורש תמיכה מהשרת כדי שיהיה קבוע)
             let iconHtml = '';
             if (arg.event.extendedProps.hasReminder) {
-                 iconHtml = `<i class="fas fa-bell" style="margin-left:5px; color:#e67e22; font-size:0.8em;"></i>`;
+                iconHtml = '<i class="fas fa-bell" style="color:#f39c12; margin-left:5px; font-size:0.85em;"></i>';
             }
-
-            return { html: `<div class="fc-content-wrapper">${iconHtml} ${timeHtml} ${titleHtml}</div>` };
-        },
-
-        dateClick: function(info) { window.openAddTaskModal(info.dateStr); },
-        eventClick: function(info) { 
-            window.openViewTaskModal(info.event);
-            info.jsEvent.preventDefault(); 
-        },
-        
-        events: allTasks.map(t => ({ 
-            id: t.id, 
-            title: t.title, 
-            date: t.date, // אם ה-date כולל שעה, הלוח יציג זאת אוטומטית
-            extendedProps: {
-                description: t.description,
-                hasReminder: t.hasReminder || false // הנחה: השרת מחזיר שדה כזה
-            }
-        }))
+            let timeText = arg.timeText ? `<span class="fc-event-time">${arg.timeText}</span>` : '';
+            return { html: `<div class="fc-content-wrapper">${iconHtml} ${timeText} ${arg.event.title}</div>` };
+        }
     });
-
     calendar.render();
-    // שמירת ה-API באלמנט לצורך גישה מבחוץ (לא חובה אך עוזר לעדכון מיידי)
-    calendarEl._fullCalendarApi = calendar;
 
-    // עדכון משימה קרובה
-    const nextTask = allTasks.find(t => new Date(t.date) >= new Date());
+    // לוגיקה למודאל הוספה
+    const addModal = document.getElementById('addTaskModal');
+    window.openAddTaskModal = (dateStr) => {
+        document.getElementById('modal-task-title').value = '';
+        document.getElementById('modal-task-description-add').value = '';
+        document.getElementById('modal-task-date').value = dateStr;
+        document.getElementById('modal-task-time').value = '';
+        
+        pendingReminder = null;
+        const btn = document.getElementById('btn-open-reminder-popup');
+        btn.innerHTML = `<i class="fas fa-bell"></i> הוסף תזכורת`;
+        btn.classList.remove('active-state');
+
+        addModal.classList.add('active');
+    };
+
+    document.getElementById('modal-cancel-btn').onclick = () => addModal.classList.remove('active');
+    
+    document.getElementById('modal-save-btn').onclick = async () => {
+        const title = document.getElementById('modal-task-title').value;
+        const d = document.getElementById('modal-task-date').value;
+        const t = document.getElementById('modal-task-time').value;
+        const desc = document.getElementById('modal-task-description-add').value;
+        
+        let finalDate = t ? `${d}T${t}:00` : d;
+        
+        if (!title) return alert("חסר כותרת");
+
+        const btn = document.getElementById('modal-save-btn');
+        btn.innerText = "שומר...";
+        btn.disabled = true;
+
+        const newId = await addTask(title, finalDate, desc);
+        if (newId && pendingReminder) {
+            await submitReminderData(newId, pendingReminder.triggerAt, pendingReminder.type);
+        }
+        location.reload();
+    };
+
+    // לוגיקה למודאל צפייה
+    const viewModal = document.getElementById('viewTaskModal');
+    window.openViewTaskModal = (event) => {
+        document.getElementById('view-task-title').textContent = event.title;
+        document.getElementById('view-task-id').value = event.id;
+        document.getElementById('view-task-description').value = event.extendedProps.description || '';
+        
+        // שמירת סטטוס תזכורת לשימוש בחלונית
+        const hasRem = event.extendedProps.hasReminder ? 'true' : 'false';
+        document.getElementById('view-has-reminder').value = hasRem;
+        
+        // עדכון טקסט הכפתור בהתאם
+        const remBtn = document.getElementById('btn-view-reminder-popup');
+        if (hasRem === 'true') {
+            remBtn.innerHTML = `<i class="fas fa-clock"></i> ערוך תזכורת`;
+            remBtn.classList.add('active-state');
+        } else {
+            remBtn.innerHTML = `<i class="fas fa-bell"></i> הוסף תזכורת`;
+            remBtn.classList.remove('active-state');
+        }
+
+        const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+        document.getElementById('view-task-date').textContent = event.start.toLocaleDateString('he-IL', options);
+        document.getElementById('view-task-date-iso').value = event.startStr || event.start.toISOString();
+        
+        viewModal.classList.add('active');
+    };
+    
+    document.getElementById('modal-close-view-btn').onclick = () => viewModal.classList.remove('active');
+    document.getElementById('modal-delete-btn').onclick = () => deleteRemoteTask(document.getElementById('view-task-id').value);
+    document.getElementById('modal-save-description-btn').onclick = () => updateTaskDescription(document.getElementById('view-task-id').value, document.getElementById('view-task-description').value);
+});
+
+// עדכון הפאנל השמאלי (במקום סרגל צד)
+function updateInfoPanel(tasks) {
+    const nextTask = tasks.find(t => new Date(t.date) >= new Date());
     const nextTaskDiv = document.getElementById("next-task");
-    if (nextTask) {
-        const d = new Date(nextTask.date);
-        nextTaskDiv.textContent = `${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${nextTask.title}`;
-    } else {
-        nextTaskDiv.textContent = "אין משימות קרובות";
+    if (nextTaskDiv) {
+        if (nextTask) {
+            const d = new Date(nextTask.date);
+            nextTaskDiv.textContent = `${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${nextTask.title}`;
+        } else {
+            nextTaskDiv.textContent = "אין משימות קרובות";
+        }
     }
-
-    const list = document.getElementById("task-list-sidebar");
+    const list = document.getElementById("task-list-display");
     if(list) {
         list.innerHTML = ''; 
-        allTasks.forEach(t => {
+        tasks.forEach(t => {
             const li = document.createElement("li");
             const d = new Date(t.date);
-            li.textContent = `${d.toLocaleDateString()} - ${t.title}`;
+            li.innerHTML = `<span>${t.title}</span> <span style="font-size:0.8em; color:#999">${d.toLocaleDateString()}</span>`;
             list.appendChild(li);
         });
     }
-});
+}

@@ -88,15 +88,6 @@ body {
     backdrop-filter: blur(5px);
 }
 
-.logo {
-    font-family: 'Heebo', sans-serif;
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--text-dark);
-    letter-spacing: 1px;
-    text-decoration: none;
-}
-.dot { color: var(--primary-gold); }
 
 /* --- Main Content --- */
 .main-content {

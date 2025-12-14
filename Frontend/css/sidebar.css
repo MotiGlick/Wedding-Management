@@ -1,0 +1,117 @@
+/* ----------------------------------------------------- */
+/* Sidebar.css - עיצוב מודולרי גנרי לסרגל הצד וההמבורגר */
+/* ----------------------------------------------------- */
+
+:root {
+    --bg-main: #F9F9F9; 
+    --bg-card: #ffffff; 
+    --bg-hover: #FFF8E7; 
+    --gold: #C5A059; 
+    --gold-light: #B08D45; 
+    --text-main: #2C3E50; /* כחול כהה / אפור כהה */
+    --text-sub: #6c757d; 
+    --radius: 14px;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.08); 
+    --sidebar-full-width: 280px; 
+    --sidebar-min-width: 0px; 
+    --hamburger-size: 25px;
+    
+}
+
+/* RESET (מומלץ לוודא שה-RESET הגלובלי קיים גם בקובץ גנרי ראשי אחר) */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body.page-wrapper {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg-main);
+    min-height: 100vh;
+    color: var(--text-main);
+    direction: rtl;
+    padding: 5px;
+}
+
+
+.logo {
+    font-family: 'Heebo', sans-serif;
+    font-size: 27px;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: 1px;
+    text-decoration: none;
+    padding: 0px;
+    margin: 0; /* איפוס מרג'ינים קודמים */
+    margin-left: auto; /* דוחף את האלמנט לקצה השמאלי הזמין */
+    /* *** סוף שינויים *** */
+    margin-inline-start: auto; 
+    margin-block: 0; 
+    margin-inline-end: 0;
+}
+
+.header {
+    width: 100%;
+    padding: 15px 10px;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-header);
+    backdrop-filter: blur(5px);
+}
+.dot { color: var(--primary-gold); }
+
+/* כפתור המבורגר */
+.hamburger-menu {
+    position: fixed; top: 24px; right: 25px; width: var(--hamburger-size); height: var(--hamburger-size); 
+    border-radius: 50%; background: var(--bg-card); border: 1px solid var(--gold); display: flex; flex-direction: column; 
+    justify-content: center; align-items: center; cursor: pointer; z-index: 1200; 
+  /* מרכוז כפתור ההמבורגר בתוך ה-Header (אופציונלי אך מומלץ) */
+     
+}
+.hamburger-menu .bar { width: 16px; height: 2px; margin: 1px ; background: var(--gold); }
+
+/* סרגל צד - ניווט ומעברים */
+.sidebar {
+    position: fixed; top: 0; right: 0; width: var(--sidebar-full-width); height: 100%; background: var(--bg-card);
+    transform: translateX(100%); /* מוסתר כברירת מחדל */
+    transition: transform 0.35s ease;
+    box-shadow: -4px 0 25px rgba(0,0,0,0.1); padding: 80px 20px; z-index: 1100; 
+}
+.sidebar.open { transform: translateX(0); } /* פותח את הסרגל */
+
+.sidebar-title { color: var(--gold); margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+
+.sidebar-nav ul { list-style: none; padding: 0; }
+.sidebar-nav li { margin-bottom: 15px; }
+.sidebar-nav a { 
+    text-decoration: none; color: var(--text-main); font-size: 0.91rem; display: flex; align-items: center; gap: 10px; 
+    padding: 10px; border-radius: 8px; transition: 0.2s;
+}
+.sidebar-nav a:hover { background: var(--bg-hover); color: var(--gold); }
+.sidebar-nav i { width: 25px; text-align: center; color: var(--gold); }
+
+/* עיצוב הפוטר של הסרגל (כפתור התנתקות) */
+.sidebar-footer { 
+    position: absolute; bottom: 20px; right: 20px; left: 20px; padding-top: 15px; border-top: 1px solid #eee;
+}
+.logout-link { 
+     text-decoration: none; color: var(--text-sub); display: flex; align-items: center; gap: 10px; font-weight: 600;
+}
+.logout-link:hover { color: var(--text-main); }
+
+
+/* ---------------------------------------------------------------------- */
+/* כללי הסתרה גנריים לפריטי ניווט - מופעלים על ידי מחלקות ב-<body> */
+/* ---------------------------------------------------------------------- */
+
+body.hide-home #nav-home { display: none; }
+body.hide-budget #nav-budget { display: none; }
+body.hide-guests #nav-guests { display: none; }
+body.hide-invitation #nav-invitation { display: none; }
+body.hide-reports #nav-reports { display: none; }
+body.hide-task #nav-task { display: none; }
+
+/* הוסף גם אם תרצה להסתיר את ההתנתקות: */
+body.hide-logout .sidebar-footer { display: none; }

@@ -8,9 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+    <link rel="stylesheet" href="css/sidebar.css">
    <link rel="stylesheet" href="css/all_guests.css">
 </head>
-<body>
+<body class="page-wrapper hide-guests">
 
 <div class="hero-decorations">
     <i class="fas fa-gem decoration-item floating-diamond"></i>
@@ -20,11 +21,16 @@
     </div>
 </div>
 
+<button id="hamburger-btn" class="hamburger-menu">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+</button>
+
+<aside id="task-sidebar" class="sidebar"></aside>
 <header class="header">
     <a href="index.html" class="logo">WedManage<span class="dot">.</span></a>
-    <button class="btn btn-primary" onclick="location.href='homePage.html'">
-        <i class="fas fa-arrow-right"></i>&nbsp; חזרה לדף הבית
-    </button>
+   
 </header>
 
 <div class="main-content">
@@ -71,7 +77,8 @@
     
     <p id="noDataMessage" style="display:none; text-align:center; margin-top:20px; color:#999;">לא נמצאו אורחים.</p>
 </div>
-
+<script src="js/utils.js"></script> 
+<script src="js/sidebar.js"></script>
 <script>
     let guests = [];
     let filteredGuests = [];
