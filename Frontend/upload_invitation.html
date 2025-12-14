@@ -181,6 +181,11 @@
 <script src="js/sidebar.js"></script>
 
 <script>
+    // --- בדיקת בטיחות: האם utils.js נטען? ---
+    if (typeof getAuthHeaders !== 'function') {
+        alert("שגיאה קריטית: הקובץ js/utils.js לא נטען! בדוק את המיקום שלו.");
+    }
+
     const uploadBox = document.getElementById("uploadBox");
     const fileInput = document.getElementById("fileInput");
     const preview = document.getElementById("preview");
@@ -188,12 +193,54 @@
     let guestsDB = []; 
     let currentFile = null; 
 
-    // --- בדיקת התחברות בהתחלה ---
-    if (!sessionStorage.getItem('authToken')) {
-        window.location.href = 'login.html';
+    // --- 1. טעינת האורחים עם דיווח שגיאות ---
+    async function loadGuestsFromServer() {
+        try {
+            console.log("מנסה לטעון אורחים...");
+            
+            // בדיקה אם יש טוקן לפני שיוצאים לדרך
+            const token = sessionStorage.getItem('authToken');
+            if (!token) {
+                alert("אין חיבור פעיל (חסר טוקן). מעביר להתחברות...");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // השימוש ב-getAuthHeaders מתוך utils.js
+            const response = await fetch('/api/guests', {
+                headers: getAuthHeaders() 
+            }); 
+
+            // בדיקת סטטוס שגיאה
+            if (response.status === 401 || response.status === 403) {
+                alert("שגיאת הרשאה (401/403). הטוקן כנראה פג תוקף.");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`שגיאת שרת: ${response.status} - ${errText}`);
+            }
+
+            const data = await response.json();
+            guestsDB = data;
+
+            // --- הודעת דיאגנוסטיקה ---
+            if (guestsDB.length === 0) {
+                console.log("השרת החזיר רשימה ריקה.");
+                // אופציונלי: alert("השרת ענה בהצלחה, אבל רשימת האורחים שלך ריקה.");
+            } else {
+                console.log(`הצלחה! נטענו ${guestsDB.length} אורחים.`);
+            }
+
+        } catch (error) {
+            console.error("Error loading guests:", error);
+            alert("שגיאה בטעינת האורחים: " + error.message);
+        }
     }
 
-    // --- לוגיקת העלאת תמונה (UI) ---
+    // --- 2. לוגיקת העלאת תמונה ---
     uploadBox.addEventListener("click", () => fileInput.click());
 
     fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
@@ -213,7 +260,7 @@
         preview.style.display = "block";
     }
 
-    // --- שמירת ההזמנה (תמונה) ---
+    // --- שמירת ההזמנה ---
     document.getElementById("saveBtn").addEventListener("click", async () => {
         if (!currentFile || currentFile === true) { 
             alert("נא לבחור תמונה חדשה לשמירה"); 
@@ -224,20 +271,14 @@
         formData.append('invitationImage', currentFile);
 
         try {
-            // בהעלאת קובץ לא משתמשים ב-getAuthHeaders הרגיל כי הוא מוסיף JSON Type
-            // אז אנחנו שולחים את הטוקן ידנית
             const token = sessionStorage.getItem('authToken');
-            
             const response = await fetch('/api/invitations/upload', { 
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}` // רק הטוקן, בלי Content-Type
-                },
+                headers: { 'Authorization': `Bearer ${token}` }, // העלאת קובץ דורשת רק Authorization ידני
                 body: formData
             });
             
             const result = await response.json();
-
             if(response.ok) {
                 alert("ההזמנה נשמרה בהצלחה!");
             } else {
@@ -249,69 +290,49 @@
         }
     });
 
-    // ==================================================
-    // לוגיקה לשליחת הזמנות וטעינת אורחים
-    // ==================================================
-
+    // --- כפתור "שלח הזמנה" ---
     const sendBtn = document.getElementById("sendBtn");
     const guestSelectionContainer = document.getElementById("guestSelectionContainer");
     const manualSelectionArea = document.getElementById("manualSelectionArea");
     const guestListContainer = document.getElementById("guestListContainer");
     const guestSearch = document.getElementById("guestSearch");
 
-    // פונקציה לטעינת אורחים מה-DB - תיקון קריטי!
-    async function loadGuestsFromServer() {
-        try {
-            // שימוש ב-getAuthHeaders כדי לעבור את האבטחה
-            const response = await fetch('/api/guests', {
-                headers: getAuthHeaders() 
-            }); 
-
-            if (response.status === 401) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            if (!response.ok) throw new Error('שגיאה בטעינת הנתונים');
-            const data = await response.json();
-            guestsDB = data;
-            console.log("Guests loaded:", guestsDB);
-        } catch (error) {
-            console.error("Error loading guests:", error);
-        }
-    }
-
-    // 1. כפתור "שלח הזמנה"
     sendBtn.addEventListener("click", async () => {
         if (!currentFile) { 
             alert("קודם כל תעלה תמונה או תוודא שיש הזמנה שמורה!"); 
             return; 
         }
         
+        // אם הרשימה ריקה, נסה לטעון אותה עכשיו
         if (guestsDB.length === 0) {
             await loadGuestsFromServer();
         }
-
+        
+        // הצג את אזור הבחירה בכל מקרה (גם אם ריק, כדי שהמשתמש יראה שאין תוצאות)
         guestSelectionContainer.style.display = "block";
         guestSelectionContainer.scrollIntoView({ behavior: 'smooth' });
+        
+        // אם בחרנו "ידני" כבר פתוח, נרענן את הרשימה
+        if (manualSelectionArea.style.display === "block") {
+            renderGuests(guestsDB);
+        }
     });
 
-    // 2. כפתור "שלח לכולם"
+    // --- כפתור "שלח לכולם" ---
     document.getElementById("sendAllBtn").addEventListener("click", async () => {
         manualSelectionArea.style.display = "none";
         
         const guestsWithEmail = guestsDB.filter(g => g.email);
         if (guestsWithEmail.length === 0) {
-            alert("לא נמצאו אורחים עם אימייל ברשימה.");
+            alert("לא נמצאו אורחים עם אימייל ברשימה (או שהרשימה ריקה).");
             return;
         }
 
         if(confirm(`האם לשלוח את ההזמנה במייל לכל ${guestsWithEmail.length} האורחים?`)) {
             try {
-                // הוספת getAuthHeaders
                 const response = await fetch('/api/invitations/send-batch', {
                     method: 'POST',
-                    headers: getAuthHeaders(), // <--- הוסף כאן
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({ sendToAll: true })
                 });
                 
@@ -328,18 +349,18 @@
         }
     });
 
-    // 3. כפתור "בחירה ידנית"
+    // --- כפתור "בחירה ידנית" ---
     document.getElementById("selectManuallyBtn").addEventListener("click", () => {
         manualSelectionArea.style.display = "block";
         renderGuests(guestsDB);
     });
 
-    // פונקציית הרינדור
+    // --- פונקציית הרינדור (בניית הרשימה) ---
     function renderGuests(guestsToRender) {
         guestListContainer.innerHTML = "";
         
         if (!guestsToRender || guestsToRender.length === 0) {
-            guestListContainer.innerHTML = "<p style='padding:10px; text-align:center'>לא נמצאו תוצאות</p>";
+            guestListContainer.innerHTML = "<p style='padding:10px; text-align:center'>לא נמצאו אורחים ברשימה.</p>";
             return;
         }
 
@@ -381,7 +402,7 @@
         });
     }
 
-    // 4. חיפוש
+    // --- חיפוש ---
     guestSearch.addEventListener("input", (e) => {
         const searchTerm = e.target.value.toLowerCase();
         const filteredGuests = guestsDB.filter(guest => {
@@ -391,7 +412,7 @@
         renderGuests(filteredGuests);
     });
     
-    // 5. כפתור "שלח למסומנים"
+    // --- כפתור "שלח למסומנים" ---
     document.getElementById("executeSendBtn").addEventListener("click", async () => {
         const checkedBoxes = document.querySelectorAll('.guest-item input[type="checkbox"]:checked');
         const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
@@ -402,10 +423,9 @@
         }
 
         try {
-            // הוספת getAuthHeaders
             const response = await fetch('/api/invitations/send-batch', {
                 method: 'POST',
-                headers: getAuthHeaders(), // <--- הוסף כאן
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ 
                     sendToAll: false,
                     guestIds: selectedIds 
@@ -425,15 +445,17 @@
         }
     });
 
-    // --- טעינת תמונה קיימת בטעינת הדף ---
+    // --- טעינת תמונה קיימת + אורחים בטעינת הדף ---
     async function loadCurrentInvitation() {
         try {
-            // הוספת getAuthHeaders
+            const token = sessionStorage.getItem('authToken');
+            if(!token) return; // לא מציק אם לא מחובר
+
             const response = await fetch('/api/invitations/current', {
-                headers: getAuthHeaders() // <--- הוסף כאן
+                headers: getAuthHeaders()
             });
             
-            if (response.status === 401) return; // לא מאומת
+            if (response.status === 401) return; 
             if (!response.ok) return;
 
             const data = await response.json();
@@ -448,7 +470,6 @@
         }
     }
 
-    // הרצת הפונקציות בטעינת הדף
     window.addEventListener('DOMContentLoaded', () => {
         loadCurrentInvitation();
         loadGuestsFromServer(); 
