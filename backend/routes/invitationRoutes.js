@@ -110,7 +110,6 @@ router.post('/send-batch', async (req, res) => {
                     await sendMail({
                         to: guest.email,
                         subject: `הזמנה לחתונה שלנו!`, 
-                        // --- כאן השארתי בדיוק את הטקסט שלך ---
                         html: `
                             <div dir="rtl" style="text-align: right; font-family: Arial;">
                             <h2>היי ${guest.firstName},</h2>

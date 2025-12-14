@@ -4,6 +4,11 @@ const sequelize = require('../db').sequelize;
 const Guest = sequelize.define('Guest', {
     firstName: { type: DataTypes.STRING, allowNull: false },
     lastName: { type: DataTypes.STRING, allowNull: false },
+    userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+},
+
     fullName: { 
         type: DataTypes.VIRTUAL,
         get() { return `${this.firstName} ${this.lastName}`; }
