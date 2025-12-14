@@ -117,7 +117,7 @@ router.post('/send-batch', async (req, res) => {
                             <p>שמחים להזמינך לחתונה שלנו!</p>
                             <p>לצפייה בהזמנה ואישור הגעה, היכנס/י לקישור:</p>
 
-                            <a href="https://your-domain.com/invitation/" 
+                            <a href="https://wedding-management-0253.onrender.com/invitation.html" 
                             style="font-size:18px; color:#1a73e8;">
                             לחץ כאן לפתיחת ההזמנה 🎉
                             </a>
