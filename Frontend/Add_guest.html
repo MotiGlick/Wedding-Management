@@ -118,10 +118,20 @@
     </section>
 </main>
 
-<script src="js/utils.js"></script> <script src="js/sidebar.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/sidebar.js"></script>
 <script>
     document.querySelector('form').addEventListener('submit', async function(e) {
         e.preventDefault();
+
+        // 1. התיקון הגדול: שימוש ב-sessionStorage ובשם authToken
+        const token = sessionStorage.getItem('authToken');
+        
+        if (!token) {
+            alert('החיבור התנתק, נא להתחבר מחדש');
+            window.location.href = 'login.html';
+            return;
+        }
 
         const formData = {
             firstName: document.getElementById('firstName').value,
@@ -136,10 +146,12 @@
         };
 
         try {
-            // שימוש ב-getAuthHeaders() בדיוק כמו במטלות!
             const response = await fetch('/api/guests', {
                 method: 'POST',
-                headers: getAuthHeaders(), // <--- הנה הקסם
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // שולח את הטוקן הנכון
+                },
                 body: JSON.stringify(formData)
             });
 
@@ -150,7 +162,7 @@
                 window.location.href = 'AllGuests.html';
             } else {
                 if (response.status === 401 || response.status === 403) {
-                    alert('צריך להתחבר מחדש');
+                    alert('פג תוקף ההתחברות');
                     window.location.href = 'login.html';
                 } else {
                     alert('שגיאה: ' + (data.message || 'נסה שוב'));
@@ -162,6 +174,5 @@
         }
     });
 </script>
-
 </body>
 </html>

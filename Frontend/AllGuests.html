@@ -84,41 +84,50 @@
 
     async function fetchGuests() {
         try {
-            const token = localStorage.getItem('token'); 
-            if (!token) { window.location.href = 'login.html'; return; }
+            // 1. התיקון: בדיקה במקום הנכון (sessionStorage) ובשם הנכון (authToken)
+            const token = sessionStorage.getItem('authToken'); 
+            
+            if (!token) { 
+                // אם אין טוקן, מעביר להתחברות
+                window.location.href = 'login.html'; 
+                return; 
+            }
 
+            // 2. קריאה לשרת עם הכותרות הנכונות מ-utils.js
             const response = await fetch('/api/guests', { 
                 headers: getAuthHeaders() 
             }); 
             
-            // אם הטוקן לא טוב
+            // בדיקת תוקף טוקן
             if (response.status === 401 || response.status === 403) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            // === התיקון: חשיפת השגיאה האמיתית ===
+            // בדיקת שגיאות שרת אחרות
             if (!response.ok) {
-                const errorData = await response.json(); // קורא את ההודעה מהשרת
+                const errorData = await response.json(); 
                 throw new Error(errorData.message || 'שגיאה לא ידועה בשרת');
             }
-            // ====================================
 
             guests = await response.json();
+            
+            // סידור נתונים למניעת קריסה
             guests = guests.map(g => ({ ...g, side: g.side || '' }));
+            
             filteredGuests = [...guests];
             renderTable(filteredGuests);
 
         } catch (err) {
             console.error(err);
-            // מציג את השגיאה האמיתית על המסך
-            alert('השרת אמר: ' + err.message); 
+            // מציג הודעה ברורה במקרה של תקלה
             document.getElementById('noDataMessage').style.display = 'block';
             document.getElementById('noDataMessage').innerText = 'שגיאה: ' + err.message;
         }
     }
 
-    // שאר הפונקציות (renderTable, applySort, applyFilter) נשארות אותו דבר...
+    // --- שאר הפונקציות נשארות אותו דבר ---
+
     function renderTable(data) {
         const tbody = document.getElementById('guestTableBody');
         if (!tbody) return;
