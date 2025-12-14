@@ -5,11 +5,16 @@ const Guest = sequelize.define('Guest', {
     firstName: { type: DataTypes.STRING, allowNull: false },
     lastName: { type: DataTypes.STRING, allowNull: false },
 
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: true // ⚠️ חייב להיות TRUE כדי לאפשר סנכרון עם רשומות ישנות
+    },
 
     fullName: { 
         type: DataTypes.VIRTUAL,
         get() { return `${this.firstName} ${this.lastName}`; }
     },
+
     email: { type: DataTypes.STRING, allowNull: true, validate: { isEmail: true } },
     phone: { type: DataTypes.STRING, allowNull: true },
     rsvp: { type: DataTypes.ENUM('yes','no','maybe'), allowNull: false },
@@ -18,7 +23,6 @@ const Guest = sequelize.define('Guest', {
     notes: { type: DataTypes.TEXT, allowNull: true },
 
     side: { type: DataTypes.ENUM('חתן','כלה'), allowNull: true }, // צד האורח
-     userId: { type: DataTypes.INTEGER, allowNull: false }  // ← הוסף שורה זו כאן!
 
 }, { timestamps: true }); // timestamps מוסיף createdAt ו-updatedAt
 
