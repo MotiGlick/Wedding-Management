@@ -118,40 +118,49 @@
     </section>
 </main>
 
+<script src="js/utils.js"></script> <script src="js/sidebar.js"></script>
 <script>
-async function handleSubmit(e) {
-    e.preventDefault();
-    const form = document.getElementById('guestForm');
-    const data = Object.fromEntries(new FormData(form).entries());
+    document.querySelector('form').addEventListener('submit', async function(e) {
+        e.preventDefault();
 
-    // בדיקה בסיסית עם trim
-    if (!data.firstName.trim() || !data.lastName.trim() || !data.rsvp.trim()) {
-        alert('נא למלא שם פרטי, שם משפחה וסטטוס אישור הגעה.');
-        return;
-    }
+        const formData = {
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            email: document.getElementById('email')?.value || '',
+            phone: document.getElementById('phone')?.value || '',
+            side: document.getElementById('side').value,
+            rsvp: document.getElementById('rsvp').value,
+            plusOne: document.getElementById('plusOne')?.value || '',
+            diet: document.getElementById('diet')?.value || '',
+            notes: document.getElementById('notes')?.value || ''
+        };
 
-    try {
-        // שליחת הנתונים ל־backend
-        const response = await fetch('/api/guests', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
+        try {
+            // שימוש ב-getAuthHeaders() בדיוק כמו במטלות!
+            const response = await fetch('/api/guests', {
+                method: 'POST',
+                headers: getAuthHeaders(), // <--- הנה הקסם
+                body: JSON.stringify(formData)
+            });
 
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'שגיאה בהוספת אורח');
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('האורח נוסף בהצלחה!');
+                window.location.href = 'AllGuests.html';
+            } else {
+                if (response.status === 401 || response.status === 403) {
+                    alert('צריך להתחבר מחדש');
+                    window.location.href = 'login.html';
+                } else {
+                    alert('שגיאה: ' + (data.message || 'נסה שוב'));
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('שגיאה בתקשורת');
         }
-
-        const result = await response.json();
-        alert(`האורח ${result.firstName} ${result.lastName} נוסף בהצלחה!`);
-        form.reset();
-
-    } catch (err) {
-        console.error(err);
-        alert(`שגיאה: ${err.message}`);
-    }
-}
+    });
 </script>
 
 </body>

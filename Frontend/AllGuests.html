@@ -77,36 +77,51 @@
     
     <p id="noDataMessage" style="display:none; text-align:center; margin-top:20px; color:#999;">לא נמצאו אורחים.</p>
 </div>
-<script src="js/utils.js"></script> 
-<script src="js/sidebar.js"></script>
+<script src="js/utils.js"></script> <script src="js/sidebar.js"></script>
 <script>
     let guests = [];
     let filteredGuests = [];
 
     async function fetchGuests() {
         try {
-            // שליפת כל האורחים מה-API
-            const response = await fetch('/api/guests'); 
+            // שימוש ב-getAuthHeaders() במקום לכתוב הכל ידנית
+            const response = await fetch('/api/guests', { 
+                headers: getAuthHeaders() // <--- הנה הקסם
+            }); 
+            
+            if (response.status === 401 || response.status === 403) {
+                window.location.href = 'login.html';
+                return;
+            }
+
             if (!response.ok) throw new Error('שגיאה בשליפת האורחים');
+            
             guests = await response.json();
             
-            // במקרה ואין צד מוגדר, נשמור ריק
-            guests = guests.map(g => ({
-                ...g,
-                side: g.side || ''
-            }));
+            // מניעת קריסה אם חסר צד
+            guests = guests.map(g => ({ ...g, side: g.side || '' }));
 
             filteredGuests = [...guests];
             renderTable(filteredGuests);
         } catch (err) {
             console.error(err);
-            alert('שגיאה בשליפת האורחים: ' + err.message);
+            document.getElementById('noDataMessage').style.display = 'block';
+            document.getElementById('noDataMessage').innerText = 'שגיאה בטעינת הנתונים';
         }
     }
 
+    // שאר הפונקציות (renderTable, applySort, applyFilter) נשארות אותו דבר...
     function renderTable(data) {
         const tbody = document.getElementById('guestTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
+        
+        if (data.length === 0) {
+            document.getElementById('noDataMessage').style.display = 'block';
+            return;
+        }
+        document.getElementById('noDataMessage').style.display = 'none';
+
         data.forEach(guest => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -121,11 +136,8 @@
 
     function applySort() {
         const sortValue = document.getElementById('sortSelect').value;
-        if (sortValue === 'alphabet') {
-            filteredGuests.sort((a, b) => a.firstName.localeCompare(b.firstName));
-        } else if (sortValue === 'date') {
-            filteredGuests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        }
+        if (sortValue === 'alphabet') filteredGuests.sort((a, b) => a.firstName.localeCompare(b.firstName));
+        else if (sortValue === 'date') filteredGuests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         renderTable(filteredGuests);
     }
 
