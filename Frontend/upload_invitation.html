@@ -177,16 +177,21 @@
         </div>
 
     </div>
-    <script src="js/sidebar.js"></script>
-    <script>
+    <script src="js/utils.js"></script> 
+<script src="js/sidebar.js"></script>
+
+<script>
     const uploadBox = document.getElementById("uploadBox");
     const fileInput = document.getElementById("fileInput");
     const preview = document.getElementById("preview");
     
-    // משתנה גלובלי לאחסון האורחים שנקבל מהשרת
     let guestsDB = []; 
-    // משתנה גלובלי לקובץ הנוכחי. שים לב: הוא יכול להיות File אמיתי או סתם 'true' אם טענו תמונה קיימת
     let currentFile = null; 
+
+    // --- בדיקת התחברות בהתחלה ---
+    if (!sessionStorage.getItem('authToken')) {
+        window.location.href = 'login.html';
+    }
 
     // --- לוגיקת העלאת תמונה (UI) ---
     uploadBox.addEventListener("click", () => fileInput.click());
@@ -203,14 +208,13 @@
 
     function handleFile(file) {
         if (!file || !file.type.startsWith("image/")) { alert("נא להעלות קובץ תמונה בלבד"); return; }
-        currentFile = file; // שומרים את הקובץ האמיתי
+        currentFile = file; 
         preview.src = URL.createObjectURL(file);
         preview.style.display = "block";
     }
 
     // --- שמירת ההזמנה (תמונה) ---
     document.getElementById("saveBtn").addEventListener("click", async () => {
-        // בדיקה אם המשתמש מנסה לשמור בלי שבחר קובץ חדש
         if (!currentFile || currentFile === true) { 
             alert("נא לבחור תמונה חדשה לשמירה"); 
             return; 
@@ -220,8 +224,15 @@
         formData.append('invitationImage', currentFile);
 
         try {
+            // בהעלאת קובץ לא משתמשים ב-getAuthHeaders הרגיל כי הוא מוסיף JSON Type
+            // אז אנחנו שולחים את הטוקן ידנית
+            const token = sessionStorage.getItem('authToken');
+            
             const response = await fetch('/api/invitations/upload', { 
                 method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}` // רק הטוקן, בלי Content-Type
+                },
                 body: formData
             });
             
@@ -248,23 +259,30 @@
     const guestListContainer = document.getElementById("guestListContainer");
     const guestSearch = document.getElementById("guestSearch");
 
-    // פונקציה לטעינת אורחים מה-DB
+    // פונקציה לטעינת אורחים מה-DB - תיקון קריטי!
     async function loadGuestsFromServer() {
         try {
-            const response = await fetch('/api/guests'); 
+            // שימוש ב-getAuthHeaders כדי לעבור את האבטחה
+            const response = await fetch('/api/guests', {
+                headers: getAuthHeaders() 
+            }); 
+
+            if (response.status === 401) {
+                window.location.href = 'login.html';
+                return;
+            }
+
             if (!response.ok) throw new Error('שגיאה בטעינת הנתונים');
             const data = await response.json();
             guestsDB = data;
             console.log("Guests loaded:", guestsDB);
         } catch (error) {
             console.error("Error loading guests:", error);
-            // לא נקפיץ אלרט בטעינה ראשונית כדי לא להציק למשתמש
         }
     }
 
     // 1. כפתור "שלח הזמנה"
     sendBtn.addEventListener("click", async () => {
-        // בדיקה: האם יש תמונה? (בין אם חדשה או טעונה מהשרת)
         if (!currentFile) { 
             alert("קודם כל תעלה תמונה או תוודא שיש הזמנה שמורה!"); 
             return; 
@@ -290,9 +308,10 @@
 
         if(confirm(`האם לשלוח את ההזמנה במייל לכל ${guestsWithEmail.length} האורחים?`)) {
             try {
+                // הוספת getAuthHeaders
                 const response = await fetch('/api/invitations/send-batch', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getAuthHeaders(), // <--- הוסף כאן
                     body: JSON.stringify({ sendToAll: true })
                 });
                 
@@ -383,9 +402,10 @@
         }
 
         try {
+            // הוספת getAuthHeaders
             const response = await fetch('/api/invitations/send-batch', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(), // <--- הוסף כאן
                 body: JSON.stringify({ 
                     sendToAll: false,
                     guestIds: selectedIds 
@@ -408,21 +428,19 @@
     // --- טעינת תמונה קיימת בטעינת הדף ---
     async function loadCurrentInvitation() {
         try {
-            const response = await fetch('/api/invitations/current');
+            // הוספת getAuthHeaders
+            const response = await fetch('/api/invitations/current', {
+                headers: getAuthHeaders() // <--- הוסף כאן
+            });
             
-            // בדיקה אם השרת החזיר בכלל תשובה תקינה (למנוע קריסה אם הראוט לא קיים)
+            if (response.status === 401) return; // לא מאומת
             if (!response.ok) return;
 
             const data = await response.json();
 
             if (data.hasImage) {
-                // הצגת התמונה
                 preview.src = '/' + data.imageUrl;
                 preview.style.display = "block";
-                
-                // --- הטריק החשוב: ---
-                // מסמנים שיש תמונה ("true") כדי שכפתור השליחה יעבוד
-                // אנחנו לא יכולים ליצור אובייקט File אמיתי מסיבות אבטחה של דפדפן, אבל זה מספיק ללוגיקה שלנו
                 currentFile = true; 
             }
         } catch (error) {
@@ -436,7 +454,6 @@
         loadGuestsFromServer(); 
     });
 </script>
-
 
 
 </body>
