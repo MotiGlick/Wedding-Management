@@ -146,8 +146,7 @@
             const data = await response.json();
 
             if (response.ok) {
-                            alert(`האורח "${fullName}" נוסף בהצלחה!`);
-
+                alert('האורח נוסף בהצלחה!');
                 window.location.href = 'AllGuests.html';
             } else {
                 if (response.status === 401 || response.status === 403) {
