@@ -84,29 +84,37 @@
 
     async function fetchGuests() {
         try {
-            // שימוש ב-getAuthHeaders() במקום לכתוב הכל ידנית
+            const token = localStorage.getItem('token'); 
+            if (!token) { window.location.href = 'login.html'; return; }
+
             const response = await fetch('/api/guests', { 
-                headers: getAuthHeaders() // <--- הנה הקסם
+                headers: getAuthHeaders() 
             }); 
             
+            // אם הטוקן לא טוב
             if (response.status === 401 || response.status === 403) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            if (!response.ok) throw new Error('שגיאה בשליפת האורחים');
-            
-            guests = await response.json();
-            
-            // מניעת קריסה אם חסר צד
-            guests = guests.map(g => ({ ...g, side: g.side || '' }));
+            // === התיקון: חשיפת השגיאה האמיתית ===
+            if (!response.ok) {
+                const errorData = await response.json(); // קורא את ההודעה מהשרת
+                throw new Error(errorData.message || 'שגיאה לא ידועה בשרת');
+            }
+            // ====================================
 
+            guests = await response.json();
+            guests = guests.map(g => ({ ...g, side: g.side || '' }));
             filteredGuests = [...guests];
             renderTable(filteredGuests);
+
         } catch (err) {
             console.error(err);
+            // מציג את השגיאה האמיתית על המסך
+            alert('השרת אמר: ' + err.message); 
             document.getElementById('noDataMessage').style.display = 'block';
-            document.getElementById('noDataMessage').innerText = 'שגיאה בטעינת הנתונים';
+            document.getElementById('noDataMessage').innerText = 'שגיאה: ' + err.message;
         }
     }
 
