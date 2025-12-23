@@ -46,20 +46,25 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
     <script>
-        // פיצוץ קונפטי בטעינה
-        confetti({
+        i = 6;
+        while (i > 0){
+             confetti({
             particleCount: 300,
             spread: 140,
-            origin: { y: 0.6 }
+            origin: { y: 0.5 }
         });
 
-        // פיצוץ נוסף אחרי חצי שנייה
-        setTimeout(() => {
+            setTimeout(() => {
             confetti({
                 particleCount: 350,
                 spread: 120
             });
         }, 700);
+        i = i-1;
+
+     }
+       
+
     </script>
 
 </body>
