@@ -153,7 +153,7 @@ async function startServer() {
         await connectDB();
 
         console.log("🚩 [SERVER] Syncing DB...");
-        await syncDB({ force: true });
+        await syncDB({ alter: true });
 
         app.listen(PORT, () => {
             console.log(`✅ [SERVER] Server is running on port ${PORT}`);
