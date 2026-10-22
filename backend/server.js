@@ -41,7 +41,6 @@ app.use(express.static(path.join(__dirname, '../Frontend')));
 
 // --- Routes ---
 app.use('/api/invitations', invitationRoutes);
-// שינוי: מורידים את המילה backend מהנתיב כי אנחנו כבר בתוכה
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);

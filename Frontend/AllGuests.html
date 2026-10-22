@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <link rel="stylesheet" href="css/sidebar.css">
-   <link rel="stylesheet" href="css/all_guests.css">
+    <link rel="stylesheet" href="css/all_guests.css">
 </head>
 <body class="page-wrapper hide-guests">
 
@@ -30,7 +30,6 @@
 <aside id="task-sidebar" class="sidebar"></aside>
 <header class="header">
     <a href="index.html" class="logo"><span class="dot">.</span>WedManage</a>
-   
 </header>
 
 <div class="main-content">
@@ -68,43 +67,54 @@
                     <th>שם משפחה</th>
                     <th>צד</th>
                     <th>תאריך הוספה</th>
+                    <th style="text-align: center;">פעולות</th> <!-- עמודה חדשה -->
                 </tr>
             </thead>
             <tbody id="guestTableBody">
-                </tbody>
+            </tbody>
         </table>
     </div>
     
     <p id="noDataMessage" style="display:none; text-align:center; margin-top:20px; color:#999;">לא נמצאו אורחים.</p>
 </div>
-<script src="js/utils.js"></script> <script src="js/sidebar.js"></script>
+
+<script src="js/utils.js"></script> 
+<script src="js/sidebar.js"></script>
 <script>
     let guests = [];
     let filteredGuests = [];
 
+    
+    function escapeHTML(str) {
+        if (!str) return '';
+        return str.toString().replace(/[&<>'"]/g, 
+            tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag]));
+    }
+
     async function fetchGuests() {
         try {
-            // 1. התיקון: בדיקה במקום הנכון (sessionStorage) ובשם הנכון (authToken)
             const token = sessionStorage.getItem('authToken'); 
             
             if (!token) { 
-                // אם אין טוקן, מעביר להתחברות
                 window.location.href = 'login.html'; 
                 return; 
             }
 
-            // 2. קריאה לשרת עם הכותרות הנכונות מ-utils.js
             const response = await fetch('/api/guests', { 
                 headers: getAuthHeaders() 
             }); 
             
-            // בדיקת תוקף טוקן
             if (response.status === 401 || response.status === 403) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            // בדיקת שגיאות שרת אחרות
             if (!response.ok) {
                 const errorData = await response.json(); 
                 throw new Error(errorData.message || 'שגיאה לא ידועה בשרת');
@@ -112,21 +122,16 @@
 
             guests = await response.json();
             
-            // סידור נתונים למניעת קריסה
             guests = guests.map(g => ({ ...g, side: g.side || '' }));
-            
             filteredGuests = [...guests];
             renderTable(filteredGuests);
 
         } catch (err) {
             console.error(err);
-            // מציג הודעה ברורה במקרה של תקלה
             document.getElementById('noDataMessage').style.display = 'block';
             document.getElementById('noDataMessage').innerText = 'שגיאה: ' + err.message;
         }
     }
-
-    // --- שאר הפונקציות נשארות אותו דבר ---
 
     function renderTable(data) {
         const tbody = document.getElementById('guestTableBody');
@@ -142,26 +147,78 @@
         data.forEach(guest => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${guest.firstName}</td>
-                <td>${guest.lastName}</td>
-                <td>${guest.side}</td>
+                <td>${escapeHTML(guest.firstName)}</td>
+                <td>${escapeHTML(guest.lastName)}</td>
+                <td>${escapeHTML(guest.side)}</td>
                 <td>${guest.createdAt ? new Date(guest.createdAt).toLocaleString('he-IL') : ''}</td>
+                <td style="text-align: center;">
+                    <i class="fas fa-trash" 
+                       style="color: #ff4d4d; cursor: pointer; font-size: 1.1rem; transition: color 0.2s;" 
+                       title="מחק אורח" 
+                       onclick="deleteGuest('${guest.id}')" 
+                       onmouseover="this.style.color='#cc0000'" 
+                       onmouseout="this.style.color='#ff4d4d'">
+                    </i>
+                </td>
             `;
             tbody.appendChild(tr);
         });
     }
 
+    
+    async function deleteGuest(guestId) {
+        if (!confirm('האם אתה בטוח שברצונך למחוק אורח זה?')) {
+            return; 
+        }
+
+        try {
+            const response = await fetch(`/api/guests/${guestId}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'שגיאה במחיקת האורח');
+            }
+
+           
+            guests = guests.filter(g => g.id != guestId);
+            applyFilter(); 
+
+        } catch (err) {
+            console.error(err);
+            alert('שגיאה במחיקה: ' + err.message);
+        }
+    }
+
     function applySort() {
         const sortValue = document.getElementById('sortSelect').value;
-        if (sortValue === 'alphabet') filteredGuests.sort((a, b) => a.firstName.localeCompare(b.firstName));
-        else if (sortValue === 'date') filteredGuests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        if (sortValue === 'alphabet') {
+            filteredGuests.sort((a, b) => (a.firstName || '').localeCompare(b.firstName || ''));
+        } else if (sortValue === 'date') {
+            filteredGuests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        }
         renderTable(filteredGuests);
     }
 
     function applyFilter() {
         const filterValue = document.getElementById('filterSelect').value;
+        
         filteredGuests = filterValue ? guests.filter(g => g.side === filterValue) : [...guests];
-        applySort();
+        
+       
+        const sortValue = document.getElementById('sortSelect').value;
+        if (sortValue) {
+            applySort();
+        } else {
+            renderTable(filteredGuests); 
+        }
     }
 
     fetchGuests();

@@ -11,32 +11,38 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadDashboardData(token) {
+    const headers = { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+
+    // 1. הגדרת משתנים ריקים כברירת מחדל
+    let guests = [];
+    let tasks = [];
+    let expenses = [];
+
+    // 2. בקשות נפרדות 
     try {
-        const headers = { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        };
+        const guestsRes = await fetch('/api/guests', { headers });
+        if (guestsRes.ok) guests = await guestsRes.json();
+    } catch (e) { console.error('שגיאה בטעינת אורחים:', e); }
 
-        // 2. ביצוע כל קריאות השרת במקביל
-        const [guestsRes, tasksRes, expensesRes] = await Promise.all([
-            fetch('/api/guests', { headers }),
-            fetch('/api/tasks', { headers }),
-            fetch('/api/expenses', { headers })
-        ]);
+    try {
+        const tasksRes = await fetch('/api/tasks', { headers });
+        if (tasksRes.ok) tasks = await tasksRes.json();
+    } catch (e) { console.error('שגיאה בטעינת משימות:', e); }
 
-        const guests = await guestsRes.json();
-        const tasks = await tasksRes.json();
-        const expenses = await expensesRes.json();
+    try {
+        const expensesRes = await fetch('/api/expenses', { headers });
+        if (expensesRes.ok) {
+            const expData = await expensesRes.json();
+                      expenses = expData.expenses ? expData.expenses : expData;
+        }
+    } catch (e) { console.error('שגיאה בטעינת הוצאות:', e); }
 
-        // 3. עדכון הממשק
-        updateGuestStats(guests);
-        updateTaskStats(tasks);
-        updateBudgetStats(expenses); // הפונקציה המעודכנת לגרף עגול
-
-    } catch (error) {
-        console.error('Error loading report data:', error);
-        // אופציונלי: להציג הודעה למשתמש, או להשאיר את המצב הריק
-    }
+    // 3. עדכון הממשק    updateGuestStats(guests);
+    updateTaskStats(tasks);
+    updateBudgetStats(expenses);
 }
 
 // --- לוגיקה: אורחים ---

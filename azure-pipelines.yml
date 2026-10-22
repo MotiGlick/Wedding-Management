@@ -1,21 +1,43 @@
-# Node.js
-# Build a general Node.js project with npm.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
-- main
+- main # הענף הראשי שלך
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest' # סביבה וירטואלית נפוצה התומכת ב-Node.js
 
 steps:
+# ----------------------------------------------------------------------
+# 1. הגדרת סביבת Node.js
+# ----------------------------------------------------------------------
 - task: NodeTool@0
+  displayName: 'Use Node.js 18.x'
   inputs:
-    versionSpec: '20.x'
-  displayName: 'Install Node.js'
+    versionSpec: '18.x' # בחר את גרסת Node.js הנדרשת לפרויקט שלך
 
+# ----------------------------------------------------------------------
+# 2. התקנת תלויות (Dependencies) והרצת Build
+# ----------------------------------------------------------------------
 - script: |
+    # אם קוד ה-Frontend וה-Backend נמצאים בתיקייה אחת:
     npm install
-    npm run build
-  displayName: 'npm install and build'
+    npm run build # החלף ב'build' אם זו הפקודה שלך ליצירת קוד סטטי (אם יש)
+    
+    # או אם יש לך תיקיות נפרדות (לדוגמה: 'client' ו-'server'):
+    # npm install --prefix client
+    # npm run build --prefix client
+  displayName: 'Install Dependencies and Build'
+
+# ----------------------------------------------------------------------
+# 3. פרסום תוצרי ה-Build (Artifacts)
+# ----------------------------------------------------------------------
+# העתקת כל הקבצים הנדרשים להרצה (כולל קוד שרת, HTML, CSS, JS)
+- task: CopyFiles@2
+  displayName: 'Copy Files for Artifacts'
+  inputs:
+    contents: '**' # מעתיק את כל הקבצים הרלוונטיים
+    targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Final Artifacts'
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'FinalDrop'

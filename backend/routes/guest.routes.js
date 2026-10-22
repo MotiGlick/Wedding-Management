@@ -2,20 +2,19 @@ const express = require('express');
 const router = express.Router();
 const Guest = require('../models/Guest');
 
-// 1. ייבוא ה-Middleware בדיוק כמו ב-expenses.routes.js
+// ייבוא ה-Middleware לאימות
 const { protect } = require('../middleware/auth.middleware');
 
 // ----- הוספה -----
-// הוספנו את protect - עכשיו יש אימות!
 router.post('/', protect, async (req, res) => {
     try {
-        // 2. לוקחים את ה-ID האמיתי (req.user מלא בזכות protect)
         const userId = req.user.id;
-
         const { firstName, lastName, email, phone, rsvp, plusOne, diet, notes, side } = req.body;
         
-        if (!firstName || !lastName || !rsvp) 
-            return res.status(400).json({ success: false, message: 'firstName, lastName ו-rsvp הם חובה' });
+        // נדרש רק שם פרטי ושם משפחה
+        if (!firstName || !lastName) {
+            return res.status(400).json({ success: false, message: 'שם פרטי ושם משפחה הם שדות חובה' });
+        }
 
         const guest = await Guest.create({ 
             firstName, 
@@ -37,24 +36,25 @@ router.post('/', protect, async (req, res) => {
     }
 });
 
-// ----- מחיקה -----
-// הוספנו את protect
-router.post('/delete', protect, async (req, res) => {
+// ----- מחיקה חכמה לפי ID -----
+router.delete('/:id', protect, async (req, res) => {
     try {
-        const userId = req.user.id; // שימוש ב-ID האמיתי
-        const { email } = req.body;
+        const userId = req.user.id; 
+        const guestId = req.params.id; // לוקח את ה-ID מהנתיב
         
-        if (!email) return res.status(400).json({ success: false, message: 'נא להזין מייל' });
-
+        // מוחק רק אם ה-ID תואם והאורח שייך למשתמש
         const deleted = await Guest.destroy({ 
             where: { 
-                email: email,
-                userId: userId // מוחק רק מהרשימה של המשתמש הספציפי
+                id: guestId,
+                userId: userId 
             } 
         });
 
-        if (deleted) res.json({ success: true, message: 'האורח נמחק בהצלחה' });
-        else res.status(404).json({ success: false, message: 'לא נמצא אורח כזה בחשבון שלך' });
+        if (deleted) {
+            res.json({ success: true, message: 'האורח נמחק בהצלחה' });
+        } else {
+            res.status(404).json({ success: false, message: 'לא נמצא אורח כזה בחשבון שלך' });
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'שגיאה במחיקת אורח' });
@@ -62,10 +62,9 @@ router.post('/delete', protect, async (req, res) => {
 });
 
 // ----- קבלת כל האורחים -----
-// הוספנו את protect
 router.get('/', protect, async (req, res) => {
     try {
-        const userId = req.user.id; // שימוש ב-ID האמיתי
+        const userId = req.user.id; 
 
         const guests = await Guest.findAll({ 
             where: { userId: userId }, // מביא רק את האורחים של המשתמש המחובר

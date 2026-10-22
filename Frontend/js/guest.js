@@ -6,15 +6,18 @@ async function handleSubmit(e) {
     const form = document.getElementById('guestForm'); 
     const data = Object.fromEntries(new FormData(form).entries()); 
 
-    if (!data.firstName || !data.lastName || !data.rsvp) { 
-        alert('נא למלא שם פרטי, שם משפחה וסטטוס אישור הגעה.'); 
+    // בדיקת ולידציה בסיסית (רק שם חובה)
+    if (!data.firstName || !data.lastName) { 
+        alert('נא למלא שם פרטי ושם משפחה.'); 
         return; 
     } 
 
     try { 
-        const token = localStorage.getItem('token'); // אם יש JWT מאומת
+        // שימוש נכון במשתנה האחסון של הטוקן כפי שמוגדר בשאר המערכת
+        const token = sessionStorage.getItem('authToken'); 
 
-        const response = await fetch('http://localhost:3000/api/guests', { 
+        // שימוש בנתיב יחסי כדי שיעבוד גם בענן של Render וגם ב-Localhost
+        const response = await fetch('/api/guests', { 
             method: 'POST', 
             headers: { 
                 'Content-Type': 'application/json', 
@@ -23,7 +26,9 @@ async function handleSubmit(e) {
             body: JSON.stringify(data) 
         }); 
 
-        if (!response.ok) throw new Error('שגיאה בשמירת האורח'); 
+        if (!response.ok) {
+            throw new Error('שגיאה בשמירת האורח'); 
+        }
 
         const savedGuest = await response.json(); 
         alert(`האורח ${savedGuest.firstName} ${savedGuest.lastName} נוסף בהצלחה!`); 
