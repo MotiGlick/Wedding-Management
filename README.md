@@ -7,7 +7,20 @@
 ![Dashboard Overview](Frontend/assets/screenshots/dashboard-overview.png)
 
 ---
-##  System Architecture & Tech Stack
+
+##  Key Features
+
+* **Real-Time Analytics & Reports:** Visual KPI cards and dynamic CSS/JS distribution charts summarizing budget usage, RSVP statuses, and open tasks.
+* **Financial & Budget Control:** Full CRUD functionality for wedding expenses, categorized tracking, paid vs. pending status calculations, and dynamic budget limits.
+* ** Task & Schedule Management:** Interactive calendar and task lists to track wedding planning progress and deadlines.
+* **Smart Guest Management:** Organize guests by side (Bride/Groom), filter and sort lists dynamically, and track dietary restrictions and plus-ones.
+* **Automated Email Invitations & Reminders:** Upload custom invitation images and dispatch batch or targeted emails to guests, backed by automated reminder services.
+* **Secure Authentication:** Complete user registration, login, and password reset flows secured with JWT (JSON Web Tokens) and encrypted passwords.
+* **Quality Assurance & CI/CD:** Integrated with **Selenium** for End-to-End (E2E) UI testing and configured with **Azure Pipelines** for continuous integration.
+
+---
+
+## System Architecture & Tech Stack
 
 ### Frontend
 * **Core:** HTML5, CSS3, Vanilla JavaScript (ES6+)
@@ -24,27 +37,9 @@
 * **CI/CD:** Azure DevOps Pipelines (`azure-pipelines.yml`)
 * **Cloud Deployment:** Render (Web Service) & Supabase (Cloud PostgreSQL)
 
-## Key Features
-
-* **Real-Time Analytics & Reports:** Visual KPI cards and dynamic CSS/JS distribution charts summarizing budget usage, RSVP statuses, and open tasks.
-* **Financial & Budget Control:** Full CRUD functionality for wedding expenses, categorized tracking, paid vs. pending status calculations, and dynamic budget limits.
-* **Smart Guest Management:** Organize guests by side (Bride/Groom), filter and sort lists dynamically, and track dietary restrictions and plus-ones.
-* **Automated Email Invitations & Reminders:** Upload custom invitation images and dispatch batch or targeted emails to guests, backed by automated reminder services.
-* **Secure Authentication:** Complete user registration, login, and password reset flows secured with JWT (JSON Web Tokens) and encrypted passwords.
-* **Quality Assurance & CI/CD:** Integrated with **Selenium** for End-to-End (E2E) UI testing and configured with **Azure Pipelines** for continuous integration.
-
 ---
 
-## Application Screenshots
-
-###  Home Page & Dashboard
-![Home Page Overview](Frontend/assets/screenshots/home-page.png)
-
-### Financial & Budget Tracker
-![Budget Tracker](Frontend/assets/screenshots/budget-tracker.png)
-
-###  Analytics & Statistical Reports
-![Reports and Analytics](Frontend/assets/screenshots/reports-analytics.png)
+##  Application Screenshots
 
 ###  Guest List & Filtering
 ![Guest Management](Frontend/assets/screenshots/guest-management.png)
@@ -52,7 +47,15 @@
 ###  Custom Invitation Uploader & Batch Sender
 ![Smart Invitations](Frontend/assets/screenshots/smart-invitations.png)
 
----
+###  Task & Schedule Management
+![Schedule Management](Frontend/assets/screenshots/schedule-management.png)
 
+###  Financial & Budget Tracker
+![Budget Tracker](Frontend/assets/screenshots/budget-tracker.png)
+
+###  Analytics & Statistical Reports
+![Reports and Analytics](Frontend/assets/screenshots/reports-analytics.png)
+
+---
 
 
