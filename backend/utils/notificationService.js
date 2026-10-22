@@ -1,69 +1,53 @@
 const nodemailer = require('nodemailer');
 
-// 1. שליפת המפתח של SendGrid מתוך Render
-const sendgridApiKey = process.env.SENDGRID_API_KEY;
+// 1. שליפת פרטי ההתחברות לג'ימייל מתוך Render
+const emailUser = process.env.EMAIL_USER;
+const emailPass = process.env.EMAIL_PASS;
 
-// 2. הגדרת ה-Transporter עבור SendGrid
+// 2. הגדרת ה-Transporter עבור Gmail (הרבה יותר קצר ופשוט מ-SendGrid)
 const transporter = nodemailer.createTransport({
-    host: 'smtp.sendgrid.net',
-    port: 2525,              // <--- פורט 2525 (פורט הגיבוי של SendGrid)
-    secure: false,           // <--- חובה לשנות ל-FALSE בפורט הזה
+    service: 'gmail',
     auth: {
-        user: 'apikey',
-        pass: sendgridApiKey // שימוש במפתח ה-API
-    },
-    tls: {
-        rejectUnauthorized: false
+        user: emailUser,
+        pass: emailPass
     }
 });
 
-// פונקציה לבדיקת חיבור (אופציונלי)
+// פונקציה לבדיקת חיבור - מופעלת פעם אחת כשהשרת עולה כדי לוודא שהסיסמה תקינה
 transporter.verify((error, success) => {
     if (error) {
-        //
-        console.error("❌ שגיאה בחיבור ל-SendGrid:", error.message);
+        console.error("❌ שגיאה בחיבור לשרתי Gmail:", error.message);
+        console.error("ודא שהשתמשת ב'סיסמת אפליקציה' (App Password) ולא בסיסמה הרגילה של המייל.");
     } else {
-        //
-        console.log("✅ מחובר ל-SendGrid בהצלחה (Port 465)");
+        console.log("✅ מחובר ל-Gmail בהצלחה! מוכן לשליחת מיילים.");
     }
 });
 
 const sendMail = async (options) => {
-    if (!sendgridApiKey) {
-        //
-        console.error("❌ שגיאה: חסר SENDGRID_API_KEY בהגדרות הסביבה (.env)");
+    if (!emailUser || !emailPass) {
+        console.error("❌ שגיאה: חסרים EMAIL_USER או EMAIL_PASS בהגדרות הסביבה (.env)");
         return;
     }
 
     const mailOptions = {
-        // הכתובת הזו חייבת להיות תואמת לכתובת שאימתת ב-SendGrid
-        from: 'wedmanageweb@gmail.com', 
-        
+        from: emailUser, 
         to: options.to,
         subject: options.subject,
         html: options.html
     };
 
     try {
-        console.log(`⏳ שולח מייל דרך SendGrid ל-${options.to}...`);
+        console.log(`⏳ שולח מייל דרך Gmail ל-${options.to}...`);
         const info = await transporter.sendMail(mailOptions);
         console.log(`✅ [MAIL] נשלח בהצלחה! ID: ${info.messageId}`);
         return info;
     } catch (error) {
-        // --- שינוי 1: הדפסת השגיאה המלאה ל-Debugging ---
-        console.error("❌ שגיאה בשליחת המייל (SendGrid):", error);
+        // --- הדפסת השגיאה המלאה ל-Debugging ---
+        console.error("❌ שגיאה בשליחת המייל (Gmail):", error.message);
         
-        //
-        // טיפול בשגיאות נפוצות של SendGrid (אם יש response object)
-        if (error.response && error.response.body && error.response.body.errors) {
-             console.error("פרטי השגיאה מ-SendGrid:", error.response.body.errors);
-        } else {
-             // --- שינוי 2: לכידת שגיאות רשת או שגיאות אחרות (כמו ETIMEDOUT) ---
-             console.error("שגיאה נוספת/רשת:", error.message);
-        }
         // *הערה חשובה:* מכיוון שאנו נמצאים בפונקציה sendMail, כדי שה-Cron Job ידע שהמייל נכשל,
         // הפונקציה צריכה לזרוק את השגיאה הלאה.
-        throw error; // זורק את השגיאה כדי שה-Cron Job (server.js) ילכוד אותה וימנע עדכון DB
+        throw error; // זורק את השגיאה כדי שה-Cron Job (server.js) או ה-Controller ילכדו אותה
     }
 };
 
