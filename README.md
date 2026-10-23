@@ -35,7 +35,7 @@
 ### DevOps & Testing
 * **E2E Testing:** Selenium WebDriver (`tests/selenium/test.js`)
 * **CI/CD:** Azure DevOps Pipelines (`azure-pipelines.yml`)
-* **Cloud Deployment:** Render (Web Service) & Supabase (Cloud PostgreSQL)
+* **Cloud Deployment:** koyeb (Web Service) & Supabase (Cloud PostgreSQL)
 
 ---
 
