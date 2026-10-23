@@ -1,6 +1,6 @@
 #  WedManage - Full-Stack Wedding Management Platform
 
- **[Live Demo - Click Here](objective-crow-summar-7375e746.koyeb.app/)**
+ **[Live Demo - Click Here](https://objective-crow-summar-7375e746.koyeb.app/)**
 
 **WedManage** is an end-to-end, full-stack web application developed using Agile methodologies. It empowers couples to seamlessly plan, track, and manage their wedding events—combining real-time financial analytics, dynamic guest management, task scheduling, and automated batch email invitations in one unified platform.
 
