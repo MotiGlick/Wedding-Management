@@ -66,7 +66,7 @@ router.post('/upload', upload.single('invitationImage'), async (req, res) => {
 // ============================================
 router.get('/current', async (req, res) => {
     try {
-        const userId = req.user ? req.user.id : 1;
+        const userId = req.query.userId || (req.user ? req.user.id : 1);
         const user = await User.findByPk(userId, { attributes: ['invitationImage'] });
         
         if (user && user.invitationImage) {
@@ -116,7 +116,7 @@ router.post('/send-batch', async (req, res) => {
                             <p>שמחים להזמינך לחתונה שלנו!</p>
                             <p>לצפייה בהזמנה ואישור הגעה, היכנס/י לקישור:</p>
 
-                            <a href="https://wedding-management-0253.onrender.com/invitation.html" 
+                            <a href="https://objective-crow-summar-7375e746.koyeb.app/invitation.html?userId=${req.user ? req.user.id : 1}"
                             style="font-size:18px; color:#1a73e8;">
                             לחץ כאן לפתיחת ההזמנה 🎉
                             </a>

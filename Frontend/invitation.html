@@ -14,22 +14,22 @@
 
         .card {
             background: white;
-            padding: 60px; /* יותר גדול */
+            padding: 60px; 
             margin: auto;
-            width: 80%; /* יותר רחב */
-            max-width: 700px; /* מקסימום גדול יותר */
+            width: 80%; 
+            max-width: 700px; 
             border-radius: 25px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
         h1 {
             color: #d63384;
-            font-size: 40px;  /* גדול יותר */
+            font-size: 40px; 
             margin-bottom: 20px;
         }
 
         p {
-            font-size: 24px; /* גדול יותר */
+            font-size: 24px; 
             line-height: 1.7;
         }
     </style>
@@ -40,31 +40,56 @@
         <h1>הינכם מוזמנים לחתונתנו ❤️</h1>
         <p>נשמח לראותכם ביום המיוחד שלנו,</p>
         <p>ולהיות חלק מהשמחה הגדולה!</p>
+        
+        <!-- אלמנט התמונה שמוסתר כברירת מחדל עד שהתמונה נטענת -->
+        <img id="invitationImage" style="max-width: 100%; border-radius: 15px; margin-top: 20px; display: none;" alt="ההזמנה שלנו">
     </div>
 
     <!-- Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
     <script>
-        i = 6;
-        while (i > 0){
-             confetti({
-            particleCount: 300,
-            spread: 140,
-            origin: { y: 0.5 }
-        });
-
-            setTimeout(() => {
+        // 1. אפקט קונפטי מתוקן שעובד ברצף (ולא הכל באותה שניה)
+        let bursts = 0;
+        const confettiInterval = setInterval(() => {
             confetti({
-                particleCount: 350,
-                spread: 120
+                particleCount: 150,
+                spread: 120,
+                origin: { y: 0.6 }
             });
+            bursts++;
+            if (bursts >= 6) {
+                clearInterval(confettiInterval);
+            }
         }, 700);
-        i = i-1;
 
-     }
-       
+        // 2. משיכת התמונה הספציפית מהשרת
+        async function loadInvitationImage() {
+            try {
+                // שולף את מזהה המשתמש מתוך הקישור (לדוגמה: ?userId=5)
+                const urlParams = new URLSearchParams(window.location.search);
+                const userId = urlParams.get('userId');
+                
+                // בונה את נתיב הבקשה בהתאם
+                const fetchUrl = userId 
+                    ? `/api/invitations/current?userId=${userId}` 
+                    : '/api/invitations/current';
 
+                const response = await fetch(fetchUrl);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.hasImage) {
+                        const img = document.getElementById('invitationImage');
+                        img.src = '/' + data.imageUrl; 
+                        img.style.display = 'block'; 
+                    }
+                }
+            } catch (error) {
+                console.error("שגיאה בטעינת התמונה:", error);
+            }
+        }
+
+        loadInvitationImage();
     </script>
 
 </body>

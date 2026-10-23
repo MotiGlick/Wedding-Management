@@ -139,85 +139,88 @@ exports.login = async (req, res) => {
 // ----------------------------------------------------
 // 💡 [POST] /forgotpassword - שליחת סיסמה זמנית במייל
 // ----------------------------------------------------
+// ----------------------------------------------------
+// 💡 [POST] /forgotpassword - שליחת סיסמה זמנית במייל
+// ----------------------------------------------------
 exports.forgotPassword = async (req, res) => {
-    const { email } = req.body;
+    const { email } = req.body;
 
-    if (!email) {
-        return res.status(400).json({ message: 'אנא ספק אימייל.' });
-    }
+    if (!email) {
+        return res.status(400).json({ message: 'אנא ספק אימייל.' });
+    }
 
-    try {
-        const user = await User.findOne({ where: { email } });
+    try {
+        const user = await User.findOne({ where: { email } });
 
-        if (!user) {
-            return res.status(200).json({ 
-                message: 'אם האימייל קיים במערכת, תישלח סיסמה זמנית.' 
-            });
-        }
+        if (!user) {
+            return res.status(200).json({ 
+                message: 'אם האימייל קיים במערכת, תישלח סיסמה זמנית.' 
+            });
+        }
 
-        // יצירת סיסמה זמנית (8 תווים רנדומליים)
-        const tempPassword = crypto.randomBytes(4).toString('hex');
-        
-        // שמירת הסיסמה הזמנית המוצפנת בשדה זמני (לא בשדה password הרגיל!)
-        const salt = await bcrypt.genSalt(10);
-        const hashedTempPassword = await bcrypt.hash(tempPassword, salt);
-        
-        user.resetPasswordToken = hashedTempPassword; // שומרים את הסיסמה הזמנית כאן
-        user.resetPasswordExpire = new Date(Date.now() + 3600000); // תוקף שעה
-        await user.save();
+        // יצירת סיסמה זמנית (8 תווים רנדומליים)
+        const tempPassword = crypto.randomBytes(4).toString('hex');
+        
+        // שמירת הסיסמה הזמנית המוצפנת בשדה זמני (לא בשדה password הרגיל!)
+        const salt = await bcrypt.genSalt(10);
+        const hashedTempPassword = await bcrypt.hash(tempPassword, salt);
+        
+        user.resetPasswordToken = hashedTempPassword; // שומרים את הסיסמה הזמנית כאן
+        user.resetPasswordExpire = new Date(Date.now() + 3600000); // תוקף שעה
+        await user.save();
 
-        // הכנת תוכן המייל
-        const message = `
-            <div dir="rtl" style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5;">
-                <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                    <h2 style="color: #4a90e2; text-align: center;">🔐 איפוס סיסמה - WedManage</h2>
-                    <p>שלום <strong>${user.username}</strong>,</p>
-                    <p>קיבלנו בקשה לאיפוס הסיסמה שלך.</p>
-                    
-                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
-                        <p style="margin: 0; color: #666;">הסיסמה הזמנית שלך היא:</p>
-                        <h1 style="color: #4a90e2; font-size: 32px; letter-spacing: 3px; margin: 10px 0;">${tempPassword}</h1>
-                    </div>
-                    
-                    <p style="color: #d9534f; font-weight: bold;">⚠️ חשוב:</p>
-                    <ul style="color: #666;">
-                        <li>השתמש בסיסמה זו כדי לאפס את הסיסמה שלך</li>
-                        <li>הסיסמה הזמנית תקפה לשעה אחת בלבד</li>
-                        <li>אל תשתף סיסמה זו עם אף אחד</li>
-                    </ul>
-                    
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="http://127.0.0.1:5500/Wedding-Management/Frontend/resetpassword.html" 
-                           style="background-color: #4a90e2; color: white; padding: 12px 30px; 
-                                  text-decoration: none; border-radius: 5px; display: inline-block;">
-                            אפס סיסמה עכשיו
-                        </a>
-                    </div>
-                    
-                    <p style="color: #999; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-                        אם לא ביקשת לאפס את הסיסמה, אנא התעלם ממייל זה.
-                    </p>
-                </div>
-            </div>
-        `;
+        // הכנת תוכן המייל
+        const message = `
+            <div dir="rtl" style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h2 style="color: #4a90e2; text-align: center;">🔐 איפוס סיסמה - WedManage</h2>
+                    <p>שלום <strong>${user.username}</strong>,</p>
+                    <p>קיבלנו בקשה לאיפוס הסיסמה שלך.</p>
+                    
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                        <p style="margin: 0; color: #666;">הסיסמה הזמנית שלך היא:</p>
+                        <h1 style="color: #4a90e2; font-size: 32px; letter-spacing: 3px; margin: 10px 0;">${tempPassword}</h1>
+                    </div>
+                    
+                    <p style="color: #d9534f; font-weight: bold;">⚠️ חשוב:</p>
+                    <ul style="color: #666;">
+                        <li>השתמש בסיסמה זו כדי לאפס את הסיסמה שלך</li>
+                        <li>הסיסמה הזמנית תקפה לשעה אחת בלבד</li>
+                        <li>אל תשתף סיסמה זו עם אף אחד</li>
+                    </ul>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="https://objective-crow-summar-7375e746.koyeb.app//email_password.html?email=${user.email}" 
+                           style="background-color: #4a90e2; color: white; padding: 12px 30px; 
+                                  text-decoration: none; border-radius: 5px; display: inline-block;">
+                            אפס סיסמה עכשיו
+                        </a>
+                    </div>
+                    
+                    <p style="color: #999; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                        אם לא ביקשת לאפס את הסיסמה, אנא התעלם ממייל זה.
+                    </p>
+                </div>
+            </div>
+        `;
 
-        await sendMail({
-            to: user.email,
-            subject: '🔐 סיסמה זמנית - WedManage',
-            html: message
-        });
+        await sendMail({
+            to: user.email,
+            subject: '🔐 סיסמה זמנית - WedManage',
+            html: message
+        });
 
-        res.status(200).json({
-            success: true,
-            message: 'נשלחה סיסמה זמנית למייל.'
-        });
+        res.status(200).json({
+            success: true,
+            message: 'נשלחה סיסמה זמנית למייל.'
+        });
 
-    } catch (error) {
-        console.error("❌ שגיאה ב-forgotPassword:", error);
-        res.status(500).json({ 
-            message: 'שגיאה פנימית בשליחת הסיסמה הזמנית.' 
-        });
-    }
+    } catch (error) {
+        console.error("❌ שגיאה ב-forgotPassword:", error);
+        res.status(500).json({ 
+            message: 'שגיאה פנימית בשליחת הסיסמה הזמנית.' 
+        });
+    }
 };
 
 
