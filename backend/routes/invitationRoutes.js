@@ -6,20 +6,21 @@ const { Op } = require('sequelize');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const jwt = require('jsonwebtoken'); // נוסף כדי לזהות את המשתמש בתצוגה המקדימה
 
-// ייבוא המודלים - מוודאים ש-User מיובא כדי למנוע קריסה
 const { Guest, User } = require('../models/associations'); 
 const { sendMail } = require('../utils/notificationService');
 
-// --- תיקון טכני יחיד: מיקום התיקייה ---
-// משתמשים ב-path.join כדי להבטיח שהקבצים יישמרו בתוך backend/uploads
+// ⚠️ ייבוא מנגנון ההגנה - ודא שהנתיב תואם למיקום הקובץ שלך! ⚠️
+// אם הקובץ שלך נקרא אחרת (למשל auth.js) או נמצא בתיקייה אחרת, שנה את הנתיב כאן:
+const { protect } = require('../middleware/authMiddleware'); 
+
 const uploadDir = path.join(__dirname, '../uploads'); 
 
 if (!fs.existsSync(uploadDir)){
     fs.mkdirSync(uploadDir, { recursive: true }); 
 }
 
-// --- הגדרת Multer ---
 const storage = multer.diskStorage({
     destination: function (req, file, cb) { cb(null, uploadDir) },
     filename: function (req, file, cb) {
@@ -30,19 +31,18 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // ============================================
-// נתיב 1: העלאת תמונה + שמירה ב-DB
+// נתיב 1: העלאת תמונה (מוגן על ידי protect)
 // ============================================
-router.post('/upload', upload.single('invitationImage'), async (req, res) => {
+router.post('/upload', protect, upload.single('invitationImage'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: "לא נשלח קובץ תמונה" });
 
-        // --- תיקון טכני: שמירת הנתיב ---
-        // לוקחים את שם הקובץ ומוסיפים לו uploads/ כדי שהדפדפן ידע לקרוא אותו
         const cleanPath = 'uploads/' + req.file.filename;
 
-        const userId = req.user ? req.user.id : 1;
+        // מכיוון שיש protect, אנחנו בטוחים ש-req.user.id קיים והוא נכון!
+        const userId = req.user.id;
         
-        console.log(`✅ שומר ל-DB את הנתיב: ${cleanPath}`);
+        console.log(`✅ שומר ל-DB את הנתיב: ${cleanPath} עבור משתמש: ${userId}`);
 
         await User.update(
             { invitationImage: cleanPath },
@@ -62,11 +62,28 @@ router.post('/upload', upload.single('invitationImage'), async (req, res) => {
 });
 
 // ============================================
-// נתיב 2: שליפת תמונה קיימת
+// נתיב 2: שליפת תמונה קיימת (חכם - משרת גם את החתן וגם את האורחים)
 // ============================================
 router.get('/current', async (req, res) => {
     try {
-        const userId = req.query.userId || (req.user ? req.user.id : 1);
+        let userId = req.query.userId; // מנסה לקחת מהקישור (לאורחים)
+
+        // אם אין ID בקישור, מנסה לקחת מהטוקן (עבור המשתמש המחובר שצופה בתצוגה המקדימה)
+        if (!userId && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+            try {
+                const token = req.headers.authorization.split(' ')[1];
+                const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                userId = decoded.id;
+            } catch (err) {
+                console.log("No valid token found in /current, moving on...");
+            }
+        }
+
+        // אם עדיין אין משתמש, נחזיר שאין תמונה (במקום לשייך בטעות למשתמש 1)
+        if (!userId) {
+            return res.json({ hasImage: false });
+        }
+
         const user = await User.findByPk(userId, { attributes: ['invitationImage'] });
         
         if (user && user.invitationImage) {
@@ -81,9 +98,9 @@ router.get('/current', async (req, res) => {
 });
 
 // ============================================
-// נתיב 3: שליחת הזמנות במייל (עם הטקסט שלך!)
+// נתיב 3: שליחת הזמנות במייל (מוגן על ידי protect)
 // ============================================
-router.post('/send-batch', async (req, res) => {
+router.post('/send-batch', protect, async (req, res) => {
     try {
         const { sendToAll, guestIds } = req.body;
         let guestsToSend = [];
@@ -116,7 +133,8 @@ router.post('/send-batch', async (req, res) => {
                             <p>שמחים להזמינך לחתונה שלנו!</p>
                             <p>לצפייה בהזמנה ואישור הגעה, היכנס/י לקישור:</p>
 
-                            <a href="https://objective-crow-summar-7375e746.koyeb.app/invitation.html?userId=${req.user ? req.user.id : 1}"
+                            <!-- שים לב שכאן אנחנו משתמשים ב-req.user.id האמיתי שהגיע מהטוקן -->
+                            <a href="https://objective-crow-summar-7375e746.koyeb.app/invitation.html?userId=${req.user.id}"
                             style="font-size:18px; color:#1a73e8;">
                             לחץ כאן לפתיחת ההזמנה 🎉
                             </a>
